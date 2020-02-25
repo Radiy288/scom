@@ -82,7 +82,6 @@
 "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
 		</script> 
 		<script>
-			console.log(localStorage);
 			function OnStart(){
 				var input = document.getElementById("console_input");
 				var enter = document.getElementById("console_enter");
@@ -129,6 +128,18 @@
 					case "cmds":
 						Print("CMDS               Shows all available commands.");
 						Print("SAY [string]       Shows specified string.");
+						break;
+						
+					case "send":
+						for (let i=5; i<str.length; i++){
+							prs+=str.charAt(i);
+						}
+						console.log(prs);
+						$.ajax({
+							url: "updateFile.php",
+							method: "post",
+							data: { data: prs }
+						});
 						break;
 						
 					default:
