@@ -150,6 +150,12 @@
 			}
 		</script>
 		<script>
+			function Define(str){
+				if(str != null){
+					return str;
+				}
+				return "";
+			}
 			function Command(str){
 				var prs="";
 				var read="";
@@ -171,9 +177,87 @@
 						Print("AUDIO [src]        Plays audio from specified URL.");
 						Print("CMDS               Shows all available commands.");
 						Print("CLR                Clears the screen of all text.");
+						Print("EXIT               Exits S-COM Software.");
 						Print("IMAGE [src]        Displays image from specified URL.");
+						Print("INFO [command]     Shows info about client or specified command.");
 						Print("SAY [string]       Shows specified string.");
 						Print("STOP               Stops any currently playing audio.");
+						Print("TEXT [src]         Displays text from specified URL.");
+						break;
+						
+					case "info":
+						for (let i=5; i<str.length; i++){
+							prs+=str.charAt(i);
+						}
+						if(prs == ""){
+							Print("S-COM SOFTWARE 1.3. © SCP Foundation 1982-1997.");
+							Print(navigator.platform+Define(navigator.oscpu)+" "+navigator.language+". "+Define(navigator.vendor));
+							Print(Define(navigator.userAgent));
+							Print("Display: "+screen.width.toString()+"x"+screen.height.toString()+", "+screen.colorDepth.toString()+" bit.");
+							Print("  ");
+							Print(" S-COM SOFTWARE is a property of SCP Foundation and SCP Technologies Ltd.");
+							Print(" It is strictly forbidden to copy, share, publish, use or distribute the software outside of authorized SCP facilities");
+							Print(" without express prior written permission by level 4+ personnel.");
+							Print(" S-COM SOFTWARE 1.3 programmed and built by Eugeniy Ionenko at SCP Technologies Ltd.");
+							console.log(navigator);
+						}
+						else{
+							switch (prs.toLowerCase()){
+								case "audio":
+									Print("AUDIO [src]");
+									Print("Plays audio from specified URL.");
+									Print("[src] The specified URL. Can be a local file or a web link.");
+									break;
+									
+								case "clr":
+									Print("CLR");
+									Print("Clears the screen of all text.");
+									break;
+									
+								case "cmds":
+									Print("CMDS");
+									Print("Shows all available commands on screen.");
+									break;
+									
+								case "exit":
+									Print("EXIT");
+									Print("Exits S-COM Software, disconnecting and ending all sessions.");
+									break;
+									
+								case "image":
+									Print("IMAGE [src]");
+									Print("Displays image from specified URL.");
+									Print("[src] The specified URL. Can be a local file or a web link.");
+									break;
+									
+								case "info":
+									Print("INFO [command]");
+									Print("Shows detailed information about the client or specified command.");
+									Print("[command] - The specified command. Leave blank to display client information.");
+									break;
+									
+								case "say":
+									Print("SAY [string]");
+									Print("Shows specified string. If used in a hosted session will send a server message.");
+									Print("[string] - The specified string to be shown.");
+									break;
+									
+								case "stop":
+									Print("STOP");
+									Print("Stops any currently playing audio (as by the AUDIO [src] command).");
+									break;
+									
+								case "text":
+									Print("TEXT [src]");
+									Print("Displays text from specified URL.");
+									Print("[src] The specified URL. Can be a local file or a web link.");
+									break;
+									
+								default:
+									Print('No info found about "'+prs+'" command.');
+									break;
+							}
+						}
 						break;
 						
 					case "send":
@@ -196,6 +280,10 @@
 						for (let i=6; i<str.length; i++){
 							prs+=str.charAt(i);
 						}
+						if(prs == ""){
+							Print("Please provide a valid URL.");
+							break;
+						}
 						console.log(prs);
 						document.getElementById('audio_source').src = prs;
 						document.getElementById('audio').load();
@@ -205,6 +293,10 @@
 					case "image":
 						for (let i=6; i<str.length; i++){
 							prs+=str.charAt(i);
+						}
+						if(prs == ""){
+							Print("Please provide a valid URL.");
+							break;
 						}
 						console.log(prs);
 						var image = document.createElement("img");
@@ -220,7 +312,37 @@
 							input.style.top = parseInt(input.style.top)+18;
 							console.log(image.naturalHeight);
 							input.style.top = parseInt(input.style.top)+image.naturalHeight;
+							input.scrollIntoView();
 						}
+						break;
+						
+					case "text":
+						for (let i=5; i<str.length; i++){
+							prs+=str.charAt(i);
+						}
+						if(prs == ""){
+							Print("Please provide a valid URL.");
+							break;
+						}
+						console.log(prs);
+						var rawFile = new XMLHttpRequest();
+						rawFile.open("GET", prs, true);
+						rawFile.onreadystatechange = function ()
+						{
+							if(rawFile.readyState === 4)
+							{
+								if(rawFile.status === 200 || rawFile.status == 0)
+								{
+									var allText = rawFile.responseText;
+									var splitText = allText.split("\n");
+									for (let i=0; i<splitText.length; i++){
+										Print(splitText[i]);
+									}
+									//Print(allText);
+								}
+							}
+						}
+						rawFile.send(null);
 						break;
 						
 					case "stop":
@@ -235,6 +357,22 @@
 						}
 						var input = document.getElementById("console_input");
 						input.style.top = "172px";
+						break;
+						
+					case "exit":
+						Exit();
+						break;
+						
+					case "username":
+						for (let i=9; i<str.length; i++){
+							prs+=str.charAt(i);
+						}
+						if(prs != ""){
+							document.getElementById("ip").innerHTML = prs;
+							username.innerHTML = prs+'>';
+							break;
+						}
+						Print("Please provide a valid username.");
 						break;
 						
 					default:
