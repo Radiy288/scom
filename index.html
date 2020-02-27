@@ -102,6 +102,8 @@
 "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
 		</script> 
 		<script>
+			var commands = [];
+			var commandIndex = -1;
 			function OnStart(){
 				var input = document.getElementById("console_input");
 				var enter = document.getElementById("console_enter");
@@ -110,12 +112,47 @@
 					if (event.keyCode === 13) {
 						Print(username.innerHTML+enter.value);
 						if(enter.value != ""){
+							commands.push(enter.value);
 							Command(enter.value);
 						}
 						//console.log(enter.value);
 						enter.value = "";
 						enter.style.width = "60%";
 						input.scrollIntoView();
+						commandIndex = -1;
+					}
+					if(commands.length > 0){
+						if (event.keyCode === 38) {
+							if(commandIndex === -1){
+								commandIndex = commands.length;
+							}
+							if(commandIndex > 0){
+								commandIndex--;
+							}
+							enter.value = commands[commandIndex];
+						}
+						
+						if (event.keyCode === 40) {
+							if(commandIndex === -1){
+								commandIndex = commands.length;
+							}
+							if(commandIndex < commands.length-1){
+								commandIndex++;
+							}
+							else{
+								enter.value = "";
+								commandIndex = -1;
+								return;
+							}
+							enter.value = commands[commandIndex];
+						}
+					}
+				});
+				document.addEventListener("keydown", function(event) {
+					if (input.style.display == "none"){
+						input.style.display = "inline-block";
+						enter.focus();
+						console.log("unpaused");
 					}
 				});
 				Print("Welcome to S-COM 1.3. To proceed please enter a command.");
@@ -180,9 +217,13 @@
 						Print("EXIT               Exits S-COM Software.");
 						Print("IMAGE [src]        Displays image from specified URL.");
 						Print("INFO [command]     Shows info about client or specified command.");
+						Print("INTERNAL [code]    Executes a piece of code internally.");
+						Print("PAUSE              Pause the client, hiding the input field.");
 						Print("SAY [string]       Shows specified string.");
+						Print("SCREEN [w] [h] [fs]Sets display mode to w*h and fullscreen fs (0/1).");
 						Print("STOP               Stops any currently playing audio.");
 						Print("TEXT [src]         Displays text from specified URL.");
+						Print("USERNAME [name]    Changes username (for changes to apply must not be joined a session).");
 						break;
 						
 					case "info":
@@ -236,12 +277,31 @@
 									Print("[command] - The specified command. Leave blank to display client information.");
 									break;
 									
+								case "internal":
+									Print("INTERNAL [code]");
+									Print("Executes a piece of code internally.");
+									Print("[code] - The specified JavaScript code to be executed.");
+									break;
+									
+								case "pause":
+									Print("PAUSE");
+									Print("Pause the client, hiding the input field. Can be useful for standalone monitors with no input capabilities.");
+									break;
+									
 								case "say":
 									Print("SAY [string]");
 									Print("Shows specified string. If used in a hosted session will send a server message.");
 									Print("[string] - The specified string to be shown.");
 									break;
 									
+								case "screen":
+									Print("SCREEN [w] [h] [fs]");
+									Print("Sets display mode to w*h and fullscreen fs (0/1).");
+									Print("[w] - The specified screen width (e.g. 1024).");
+									Print("[h] - The specified screen height (e.g. 768).");
+									Print("[fs] - The specified optional boolean fullscreen parameter (0 for windowed mode, 1 for fullscreen).");
+									break;
+												
 								case "stop":
 									Print("STOP");
 									Print("Stops any currently playing audio (as by the AUDIO [src] command).");
@@ -251,6 +311,12 @@
 									Print("TEXT [src]");
 									Print("Displays text from specified URL.");
 									Print("[src] The specified URL. Can be a local file or a web link.");
+									break;
+									
+								case "username":
+									Print("USERNAME [name]");
+									Print("Changes client's public username. If changed when connected to a session changes will not apply.");
+									Print("[name] - The specified new public username.");
 									break;
 									
 								default:
@@ -351,7 +417,6 @@
 						
 					case "clr":
 						var lines = document.getElementsByClassName("line_paragraph");
-						console.log(lines);
 						while (lines[0]) {
 							lines[0].parentNode.removeChild(lines[0]);
 						}
@@ -373,6 +438,57 @@
 							break;
 						}
 						Print("Please provide a valid username.");
+						break;
+						
+					case "screen":
+						var subPrs = "";
+						for (let i=7; i<str.length; i++){
+							if(str.charAt(i) == " "){
+								break;
+							}
+							prs+=str.charAt(i);
+						}
+						for (let i=8+prs.length; i<str.length; i++){
+							if(str.charAt(i) == " "){
+								break;
+							}
+							subPrs+=str.charAt(i);
+						}
+						var fs = "";
+						for (let i=9+prs.length+subPrs.length; i<str.length; i++){
+							if(str.charAt(i) == " "){
+								break;
+							}
+							fs+=str.charAt(i);
+						}
+						if(prs != "" && subPrs != ""){
+							window.resizeTo(parseInt(prs), parseInt(subPrs));
+							if(fs != ""){
+								if(fs == "1" || fs == "true"){
+									openFullscreen();
+								}
+								else{
+									closeFullscreen();
+								}
+							}
+							break;
+						}
+						Print("Please provide a valid screen resolution.");
+						break;
+						
+					case "pause":
+						document.getElementById("console_input").style.display = 'none';
+						var lines = document.getElementsByClassName("line_paragraph");
+						lines[lines.length-1].parentNode.removeChild(lines[lines.length-1]);
+						var input = document.getElementById("console_input");
+						input.style.top = parseInt(input.style.top)-18;
+						break;
+						
+					case "internal":
+						for (let i=9; i<str.length; i++){
+							prs+=str.charAt(i);
+						}
+						eval(prs);
 						break;
 						
 					default:
@@ -397,6 +513,31 @@
 			function Exit(){
 				document.write();
 				close();
+			}
+			function openFullscreen() {
+				var elem = document.documentElement;
+				if (elem.requestFullscreen) {
+					elem.requestFullscreen();
+				} else if (elem.mozRequestFullScreen) { /* Firefox */
+					elem.mozRequestFullScreen();
+				} else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+					elem.webkitRequestFullscreen();
+				} else if (elem.msRequestFullscreen) { /* IE/Edge */
+					elem.msRequestFullscreen();
+				}
+			}
+
+			function closeFullscreen() {
+				var elem = document.documentElement;
+				if (document.exitFullscreen) {
+					document.exitFullscreen();
+				} else if (document.mozCancelFullScreen) {
+					document.mozCancelFullScreen();
+				} else if (document.webkitExitFullscreen) {
+					document.webkitExitFullscreen();
+				} else if (document.msExitFullscreen) {
+					document.msExitFullscreen();
+				}
 			}
 		</script>
 		<link rel="shortcut icon" href="favicon.png">
@@ -426,7 +567,7 @@
 		</div>
 		<div class="console">
 			<div id="console_input" style="position:absolute; left:290px; top:172px; width:75%; display:inline-block; float:left;">
-				<b id="username" style="display:inline-block; float:left; line-height:1.3;">Null></b></b><input style="display:inline-block; float:left;" id="console_enter" onblur="this.focus()" onafterupdate="this.style.width = (this.value.length + 2) + 'ch';" autofocus>
+				<b id="username" style="display:inline-block; float:left; line-height:1.3;">Null></b></b><input style="display:inline-block; float:left;" id="console_enter" onblur="this.focus()" autocomplete="off" oninput="this.style.width = (this.value.length + 2) + 'ch';" autofocus>
 			</div>
 		</div>
 	</body>
