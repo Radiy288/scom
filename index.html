@@ -102,16 +102,37 @@
 		<script>
 			var commands = [];
 			var commandIndex = -1;
+			function pad(d) {
+				return (d < 10) ? '0' + d.toString() : d.toString();
+			}
 			function OnStart(){
 				var input = document.getElementById("console_input");
 				var enter = document.getElementById("console_enter");
 				var username = document.getElementById("username");
 				input.addEventListener("keyup", function(event) {
 					if (event.keyCode === 13) {
-						Print(username.innerHTML+enter.value);
+						if(!connected){
+							Print(username.innerHTML+enter.value);
+						}
+						else{
+							var today = new Date();
+							var time = pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds());
+							var msg = '['+time+'] '+document.getElementById("ip").innerHTML+': '+enter.value;
+							Print(msg);
+						}
 						if(enter.value != ""){
 							commands.push(enter.value);
-							Command(enter.value);
+							if(!connected){
+								Command(enter.value);
+							}
+							else{
+								if(enter.value.charAt(0) == "/"){
+									Command(enter.value.substring(1));
+								}
+								else{
+									Command("send "+msg);
+								}
+							}
 						}
 						//console.log(enter.value);
 						enter.value = "";
@@ -145,6 +166,7 @@
 							enter.value = commands[commandIndex];
 						}
 					}
+					enter.style.width = (enter.value.length + 2) + 'ch';
 				});
 				document.addEventListener("keydown", function(event) {
 					if (input.style.display == "none"){
@@ -183,15 +205,22 @@
 				// Stick the iframe somewhere out of the way
 				document.body.appendChild(iframe);
 			}
-		</script>
-		<script>
-			var socket = new WebSocket("wss://connect.websocket.in/v2/1?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImFjNWVlYjVjZWE2NjRmYzBmNzRjZjIwOWJlMmFjNzVhOGUwN2Q2NDY4MzAzNTU5ZTBhYTA0NWU3ZjU1MDMxMTc4N2RiOWNmOTBlYmEzNDA4In0.eyJhdWQiOiI4IiwianRpIjoiYWM1ZWViNWNlYTY2NGZjMGY3NGNmMjA5YmUyYWM3NWE4ZTA3ZDY0NjgzMDM1NTllMGFhMDQ1ZTdmNTUwMzExNzg3ZGI5Y2Y5MGViYTM0MDgiLCJpYXQiOjE1ODI4ODU4NzcsIm5iZiI6MTU4Mjg4NTg3NywiZXhwIjoxNjE0NTA4Mjc3LCJzdWIiOiI1OTgiLCJzY29wZXMiOltdfQ.CR1tFfVOF_ybMFTaDHX0xsSD99SdcCXN1aB-d9Xxkj8FcghFUan_xubYFmyhflikSjEfVMEK_vq7uolOdBDuHcLKbXgb5KxuSDixPWBVvOElyyzjEL7jQ2-8uIPbFNYye73sx6jgLFxqzxd9XP0zJiYzO_xHRwtp1q0-2Bhz_6Msw9uHAVz1dAX8iOmxhhBWCIudfYy2xx0ZD2WzeA8ZhKLfU_s1PjWSYgF0aQK2IEiYktECicKTmlTUy-2Y42aQief706homz6tYXH1XFhQ9cK3g7YHGt6DDjxTqhRkZSmDhLrZgjAiPhyqCvdrSsByhvNivbNE6seuUhQQ83w-bQjfYDfKsjehTJGOTB4fPBYB2er7Da3-KnfHvY4yqDi9V9ZCQx2tCE4Al4QMJZesXCLbmICJsJ6xhUv-5dDXhiwpBZaLehcxrtGFOlLOoIbkz4djCgFcP94DnIUNtIdiUIIXSSgEJeGhYh4WkykBaADO3x-tqWpPW3BDCxVKZTIhU8EdIQMJC9NLHKlAQpuo5OpUL_U8KIuzC7go7UogyavzC19yQ4nlxUrLDlHdQlhltxmGmQ8FpB11Enevxv7lS1Ildqq8mu3zDPCqc0jFhudYPIoDPq1F-Xv-iB89rb2lGffg1j1LiEhdxFPMUbcGj_GHNcBnaHrCTHScndw5TLM");
+		
+			var socket = new WebSocket("");
 			socket.onclose = function() { 
 				Print("Connection has been closed."); 
+				connected = false;
 			}
 			socket.onmessage = function(e) { 
 				Print(e.data);
 			}
+			socket.onopen = function(e) {
+				var today = new Date();
+				var time = pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds());
+				Command("send "+"%$G"+'['+time+'] '+document.getElementById('ip').innerHTML+" has connected.");
+				console.log("JOINED");
+			}
+			var connected = false;
 			function Define(str){
 				if(str != null){
 					return str;
@@ -212,13 +241,24 @@
 						for (let i=4; i<str.length; i++){
 							prs+=str.charAt(i);
 						}
-						Print(prs);
+						if(!connected){
+							Print(prs);
+						}
+						else{
+							var today = new Date();
+							var time = pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds());
+							var msg = "%$G"+'['+time+'] '+prs;
+							Print(msg);
+							Command("send "+msg);
+						}
 						break;
 						
 					case "cmds":
 						Print("AUDIO [src]        Plays audio from specified URL.");
 						Print("CMDS               Shows all available commands.");
 						Print("CLR                Clears the screen of all text.");
+						Print("CONNECT [address]  Connects to specified address.");
+						Print("DISCONNECT         Disconnects from current connection.");
 						Print("EXIT               Exits S-COM Software.");
 						Print("IMAGE [src]        Displays image from specified URL.");
 						Print("INFO [command]     Shows info about client or specified command.");
@@ -226,9 +266,10 @@
 						Print("PAUSE              Pause the client, hiding the input field.");
 						Print("SAY [string]       Shows specified string.");
 						Print("SCREEN [w] [h] [fs]Sets display mode to w*h and fullscreen fs (0/1).");
+						Print("SEND [string]      Sends a specified message (must be connected) programmatically.")
 						Print("STOP               Stops any currently playing audio.");
 						Print("TEXT [src]         Displays text from specified URL.");
-						Print("USERNAME [name]    Changes username (for changes to apply must not be joined a session).");
+						Print("USERNAME [name]    Changes username.");
 						break;
 						
 					case "info":
@@ -265,9 +306,21 @@
 									Print("Shows all available commands on screen.");
 									break;
 									
+								case "connect":
+									Print("CONNECT [address]");
+									Print("Connects to the specified address. If already connected - disconnects from previous address and connects to the new one.");
+									Print("This switches S-COM into chat mode where to execute a command you need to type / first.");
+									Print("[address] - The specified WebSocket address (e.g. 'ws://scpfoundation.org'), possibly followed by a port number. Leave blank to connect to local.");
+									break;
+									
+								case "disconnect":
+									Print("DISCONNECT");
+									Print("Disconnects from current connection.");
+									break;
+									
 								case "exit":
 									Print("EXIT");
-									Print("Exits S-COM Software, disconnecting and ending all sessions.");
+									Print("Exits S-COM Software, disconnecting from all connections.");
 									break;
 									
 								case "image":
@@ -306,6 +359,12 @@
 									Print("[h] - The specified screen height (e.g. 768).");
 									Print("[fs] - The specified optional boolean fullscreen parameter (0 for windowed mode, 1 for fullscreen).");
 									break;
+									
+								case "send":
+									Print("SEND [string]");
+									Print("Sends a specified message (must be connected) programmatically.");
+									Print("[string] - The specified message string to be sent.");
+									break;
 												
 								case "stop":
 									Print("STOP");
@@ -320,7 +379,7 @@
 									
 								case "username":
 									Print("USERNAME [name]");
-									Print("Changes client's public username. If changed when connected to a session changes will not apply.");
+									Print("Changes client's public username.");
 									Print("[name] - The specified new public username.");
 									break;
 									
@@ -332,11 +391,15 @@
 						break;
 						
 					case "send":
-						for (let i=5; i<str.length; i++){
-							prs+=str.charAt(i);
+						if(connected){
+							for (let i=5; i<str.length; i++){
+								prs+=str.charAt(i);
+							}
+							console.log(prs);
+							socket.send(prs);
+							break;
 						}
-						console.log(prs);
-						socket.send(prs);
+						Print("Must be connected to send message.");
 						break;
 						
 					case "create":
@@ -496,9 +559,55 @@
 						eval(prs);
 						break;
 						
+					case "connect":
+						for (let i=8; i<str.length; i++){
+							prs+=str.charAt(i);
+						}
+						if(connected){
+							socket.close();
+						}
+						if(prs != ""){
+							socket = new WebSocket(prs);
+						}
+						socket = new WebSocket("wss://connect.websocket.in/v2/1?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImFjNWVlYjVjZWE2NjRmYzBmNzRjZjIwOWJlMmFjNzVhOGUwN2Q2NDY4MzAzNTU5ZTBhYTA0NWU3ZjU1MDMxMTc4N2RiOWNmOTBlYmEzNDA4In0.eyJhdWQiOiI4IiwianRpIjoiYWM1ZWViNWNlYTY2NGZjMGY3NGNmMjA5YmUyYWM3NWE4ZTA3ZDY0NjgzMDM1NTllMGFhMDQ1ZTdmNTUwMzExNzg3ZGI5Y2Y5MGViYTM0MDgiLCJpYXQiOjE1ODI4ODU4NzcsIm5iZiI6MTU4Mjg4NTg3NywiZXhwIjoxNjE0NTA4Mjc3LCJzdWIiOiI1OTgiLCJzY29wZXMiOltdfQ.CR1tFfVOF_ybMFTaDHX0xsSD99SdcCXN1aB-d9Xxkj8FcghFUan_xubYFmyhflikSjEfVMEK_vq7uolOdBDuHcLKbXgb5KxuSDixPWBVvOElyyzjEL7jQ2-8uIPbFNYye73sx6jgLFxqzxd9XP0zJiYzO_xHRwtp1q0-2Bhz_6Msw9uHAVz1dAX8iOmxhhBWCIudfYy2xx0ZD2WzeA8ZhKLfU_s1PjWSYgF0aQK2IEiYktECicKTmlTUy-2Y42aQief706homz6tYXH1XFhQ9cK3g7YHGt6DDjxTqhRkZSmDhLrZgjAiPhyqCvdrSsByhvNivbNE6seuUhQQ83w-bQjfYDfKsjehTJGOTB4fPBYB2er7Da3-KnfHvY4yqDi9V9ZCQx2tCE4Al4QMJZesXCLbmICJsJ6xhUv-5dDXhiwpBZaLehcxrtGFOlLOoIbkz4djCgFcP94DnIUNtIdiUIIXSSgEJeGhYh4WkykBaADO3x-tqWpPW3BDCxVKZTIhU8EdIQMJC9NLHKlAQpuo5OpUL_U8KIuzC7go7UogyavzC19yQ4nlxUrLDlHdQlhltxmGmQ8FpB11Enevxv7lS1Ildqq8mu3zDPCqc0jFhudYPIoDPq1F-Xv-iB89rb2lGffg1j1LiEhdxFPMUbcGj_GHNcBnaHrCTHScndw5TLM");
+						connected = true;
+						Command("clr");
+						waitForSocketConnection();
+						Print("%$G****** CONNECTED ******");
+						Print("  ");
+						break;
+						
+					case "disconnect":
+						var today = new Date();
+						var time = pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds());
+						Command("send "+"%$R"+'['+time+'] '+document.getElementById('ip').innerHTML+" has disconnected.");
+						console.log("LEFT");
+						if(connected){
+							socket.close();
+						}
+						connected = false;
+						Command("clr");
+						break;	
+						
 					default:
 						Print("Unknown command")
 				}
+			}
+			
+			function waitForSocketConnection(){
+			setTimeout(
+				function () {
+					if (socket.readyState === 1) {
+						var today = new Date();
+						var time = pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds());
+						Command("send "+"%$G"+'['+time+'] '+document.getElementById('ip').innerHTML+" has connected.");
+						console.log("JOINED");
+					} else {
+						console.log("wait for connection...")
+						waitForSocketConnection();
+					}
+
+				}, 5); // wait 5 milisecond for the connection...
 			}
 		
 			function Print(str){
@@ -511,6 +620,16 @@
 				line.style["white-space"] = "pre";
 				line.style["max-width"] = "60%";
 				line.className = "line_paragraph";
+				if(str.charAt(0) == "%" && str.charAt(1) == "$"){
+					if(str.charAt(2) == "G"){
+						line.style.color = "lime";
+						line.innerHTML = str.substring(3);
+					}
+					if(str.charAt(2) == "R"){
+						line.style.color = "red";
+						line.innerHTML = str.substring(3);
+					}
+				}
 				document.body.appendChild(line);
 				input.style.top = parseInt(input.style.top)+18;
 			}
