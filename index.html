@@ -98,9 +98,7 @@
 				color: #fff;
 			}
 		</style>
-		<script src= 
-"https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
-		</script> 
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
 		<script>
 			var commands = [];
 			var commandIndex = -1;
@@ -187,6 +185,13 @@
 			}
 		</script>
 		<script>
+			var socket = new WebSocket("wss://connect.websocket.in/v2/1?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6ImFjNWVlYjVjZWE2NjRmYzBmNzRjZjIwOWJlMmFjNzVhOGUwN2Q2NDY4MzAzNTU5ZTBhYTA0NWU3ZjU1MDMxMTc4N2RiOWNmOTBlYmEzNDA4In0.eyJhdWQiOiI4IiwianRpIjoiYWM1ZWViNWNlYTY2NGZjMGY3NGNmMjA5YmUyYWM3NWE4ZTA3ZDY0NjgzMDM1NTllMGFhMDQ1ZTdmNTUwMzExNzg3ZGI5Y2Y5MGViYTM0MDgiLCJpYXQiOjE1ODI4ODU4NzcsIm5iZiI6MTU4Mjg4NTg3NywiZXhwIjoxNjE0NTA4Mjc3LCJzdWIiOiI1OTgiLCJzY29wZXMiOltdfQ.CR1tFfVOF_ybMFTaDHX0xsSD99SdcCXN1aB-d9Xxkj8FcghFUan_xubYFmyhflikSjEfVMEK_vq7uolOdBDuHcLKbXgb5KxuSDixPWBVvOElyyzjEL7jQ2-8uIPbFNYye73sx6jgLFxqzxd9XP0zJiYzO_xHRwtp1q0-2Bhz_6Msw9uHAVz1dAX8iOmxhhBWCIudfYy2xx0ZD2WzeA8ZhKLfU_s1PjWSYgF0aQK2IEiYktECicKTmlTUy-2Y42aQief706homz6tYXH1XFhQ9cK3g7YHGt6DDjxTqhRkZSmDhLrZgjAiPhyqCvdrSsByhvNivbNE6seuUhQQ83w-bQjfYDfKsjehTJGOTB4fPBYB2er7Da3-KnfHvY4yqDi9V9ZCQx2tCE4Al4QMJZesXCLbmICJsJ6xhUv-5dDXhiwpBZaLehcxrtGFOlLOoIbkz4djCgFcP94DnIUNtIdiUIIXSSgEJeGhYh4WkykBaADO3x-tqWpPW3BDCxVKZTIhU8EdIQMJC9NLHKlAQpuo5OpUL_U8KIuzC7go7UogyavzC19yQ4nlxUrLDlHdQlhltxmGmQ8FpB11Enevxv7lS1Ildqq8mu3zDPCqc0jFhudYPIoDPq1F-Xv-iB89rb2lGffg1j1LiEhdxFPMUbcGj_GHNcBnaHrCTHScndw5TLM");
+			socket.onclose = function() { 
+				Print("Connection has been closed."); 
+			}
+			socket.onmessage = function(e) { 
+				Print(e.data);
+			}
 			function Define(str){
 				if(str != null){
 					return str;
@@ -331,7 +336,7 @@
 							prs+=str.charAt(i);
 						}
 						console.log(prs);
-						
+						socket.send(prs);
 						break;
 						
 					case "create":
