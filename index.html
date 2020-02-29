@@ -213,10 +213,6 @@
 				Print("Connection has been closed."); 
 				connected = false;
 			}
-			socket.onmessage = function(event){ 
-				Print(event.data);
-				console.log(event.data);
-			}
 			socket.onerror = function() { 
 				Print("Connection error."); 
 				Command("disconnect");
