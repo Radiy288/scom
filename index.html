@@ -205,20 +205,22 @@
 				// Stick the iframe somewhere out of the way
 				document.body.appendChild(iframe);
 			}
+			</script>
+			<script>
 		
 			var socket = new WebSocket("");
 			socket.onclose = function() { 
 				Print("Connection has been closed."); 
 				connected = false;
 			}
-			socket.onmessage = function(e) { 
-				Print(e.data);
+			socket.onmessage = function(event){ 
+				Print(event.data);
+				console.log(event.data);
 			}
-			socket.onopen = function(e) {
-				var today = new Date();
-				var time = pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds());
-				Command("send "+"%$G"+'['+time+'] '+document.getElementById('ip').innerHTML+" has connected.");
-				console.log("JOINED");
+			socket.onerror = function() { 
+				Print("Connection error."); 
+				Command("disconnect");
+				connected = false;
 			}
 			var connected = false;
 			function Define(str){
@@ -602,6 +604,16 @@
 						var time = pad(today.getHours()) + ":" + pad(today.getMinutes()) + ":" + pad(today.getSeconds());
 						Command("send "+"%$G"+'['+time+'] '+document.getElementById('ip').innerHTML+" has connected.");
 						console.log("JOINED");
+						socket.onmessage = function(event){ 
+							Print(event.data);
+							console.log(event.data);
+							if(document.hasFocus()){
+								document.getElementById("audio_message").play();
+							}
+							else{
+								document.getElementById("audio_notification").play();
+							}
+						}
 					} else {
 						console.log("wait for connection...")
 						waitForSocketConnection();
@@ -635,6 +647,9 @@
 			}
 			
 			function Exit(){
+				if(connected){
+					Command("disconnect");
+				}
 				document.write();
 				close();
 			}
@@ -670,6 +685,12 @@
 		<div id="bgimg"></div>
 		<audio id="audio">
 			<source id="audio_source" src="">
+		</audio>
+		<audio id="audio_message">
+			<source src="message.mp3">
+		</audio>
+		<audio id="audio_notification">
+			<source src="message1.mp3">
 		</audio>
 		<p style="position:fixed; left:350px; top:30px; font-size:30px; z-index: 2;">S-COM SOFTWARE 1.3</p>
 		<div align=RIGHT style="margin-right:152px;"><button onclick="Exit()" style="position:fixed; top:36px; font-size:30px; width:129; height:52;">EXIT</button></div>
