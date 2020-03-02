@@ -248,6 +248,12 @@
 				websocket.onmessage = function(event) {
 					var msg = JSON.parse(event.data);
 					Message(msg.sender, msg.text, msg.time);
+					if(document.hasFocus()){
+						document.getElementById("audio_message").play();
+					}
+					else{
+						document.getElementById("audio_notification").play();
+					}
 				}
 			}
 			function End() {
@@ -264,6 +270,12 @@
 		<link rel="shortcut icon" href="favicon.png">
 	</head>
 	<body onload = "Start()" onbeforeunload="End()" >
+		<audio id="audio_message">
+			<source src="message.mp3">
+		</audio>
+		<audio id="audio_notification">
+			<source src="message1.mp3">
+		</audio>
 		<div id="servers" style="opacity: 0; position: absolute; width:100%; top:10%;">
 			<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 2%;" onload="Load()">
 			<h1 align=CENTER>S-Messenger</h1>
