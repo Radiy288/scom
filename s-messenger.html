@@ -224,11 +224,7 @@
 					servers.className = "fade-quick";
 					servers.style.opacity = 0;
 					document.getElementById("chat").style.display = "block";
-					servers.ontransitionend = () => {
-						document.getElementById("chat").style.display = "block";
-						servers.style.display = "none";
-						//servers.parentNode.removeChild(servers);
-					}
+					servers.style.display = "none";
 				};
 				websocket.onclose = function(event){
 					var msg = {
