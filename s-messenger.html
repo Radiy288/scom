@@ -316,6 +316,9 @@
 								document.getElementById("audio_notification").play();
 							}
 							break;
+						case 'check':
+							SendMessage('message', 'server', username);
+							break;
 					}
 				}
 			}
