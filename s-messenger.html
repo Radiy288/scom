@@ -140,6 +140,7 @@
 					msg.style.float = "right";
 					msgBody.style.overflow = "auto";
 					msgSender.innerHTML = "<small>"+username+", "+time+"</small>";
+					msgSender.align = "RIGHT";
 				}
 				else if (sender === 'server'){
 					msg.align = "CENTER";
@@ -155,8 +156,8 @@
 					msg.style.float = "left";
 					msgBody.style.overflow = "auto";
 					msgSender.innerHTML = "<small>"+sender+", "+time+"</small>";
+					msgSender.align = "LEFT";
 				}
-				msgSender.align = "RIGHT";
 				msg.appendChild(msgText);
 				msg.appendChild(msgSender);
 				msgBody.appendChild(msg);
