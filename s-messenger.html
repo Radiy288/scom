@@ -132,6 +132,41 @@
 					};
 				websocket.send(JSON.stringify(msg));
 			}
+			function MessageImage(sender, src, time){
+				var msgBody = document.createElement("div");
+				var msg = document.createElement("div");
+				var msgImg = document.createElement("img");
+				var msgSender = document.createElement("p");
+				if(sender === 'client'){
+					msg.style.background = "#191919";
+					msg.style.padding = 14;
+					msgBody.style["margin-top"] = 5;
+					msgBody.style["margin-bottom"] = 5;
+					msgBody.style["min-width"] = "100%";
+					msg.style["max-width"] = "75%";
+					msg.style.float = "right";
+					msgBody.style.overflow = "auto";
+					msgSender.innerHTML = "<small>"+username+", "+time+"</small>";
+					msgSender.align = "RIGHT";
+				}
+				else{
+					msg.style.background = "#0A0A0A";
+					msg.style.padding = 14;
+					msgBody.style["margin-top"] = 5;
+					msgBody.style["margin-bottom"] = 5;
+					msgBody.style["min-width"] = "100%";
+					msg.style["max-width"] = "75%";
+					msg.style.float = "left";
+					msgBody.style.overflow = "auto";
+					msgSender.innerHTML = "<small>"+sender+", "+time+"</small>";
+					msgSender.align = "LEFT";
+				}
+				msg.appendChild(msgImg);
+				msg.appendChild(msgSender);
+				msgBody.appendChild(msg);
+				document.getElementById("chatbox").appendChild(msgBody);
+				msg.scrollIntoView();
+			}
 			function Message(sender, text, time){
 				var msgBody = document.createElement("div");
 				var msg = document.createElement("div");
@@ -260,6 +295,15 @@
 									SendMessage('message', 'server', username+' has been kicked from the session.');
 									websocket.close();
 								}
+							}
+							break;
+						case 'image':
+							MessageImage(msg.sender, msg.text, msg.time);
+							if(document.hasFocus()){
+								document.getElementById("audio_message").play();
+							}
+							else{
+								document.getElementById("audio_notification").play();
 							}
 							break;
 					}
