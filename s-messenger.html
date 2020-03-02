@@ -230,6 +230,12 @@
 					}
 				};
 				websocket.onclose = function(event){
+					var msg = {
+						sender: 'server',
+						text: username+' has left the session.',
+						time: ''
+					};
+					websocket.send(JSON.stringify(msg));
 					console.log("CLOSING");
 					setTimeout(function(){
 						var servers = document.getElementById("servers");
@@ -244,9 +250,19 @@
 					Message(msg.sender, msg.text, msg.time);
 				}
 			}
+			function End() {
+				if (connected){
+					var msg = {
+						sender: 'server',
+						text: username+' has left the session.',
+						time: ''
+					};
+					websocket.send(JSON.stringify(msg));
+				}
+			}
 		</script>
 	</head>
-	<body onload = Start()>
+	<body onload = "Start()" onbeforeunload="End()" >
 		<div id="servers" style="opacity: 0; position: absolute; width:100%; top:10%;">
 			<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 2%;" onload="Load()">
 			<h1 align=CENTER>S-Messenger</h1>
