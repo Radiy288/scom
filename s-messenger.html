@@ -137,6 +137,7 @@
 					msgBody.style["margin-top"] = 5;
 					msgBody.style["margin-bottom"] = 5;
 					msgBody.style["min-width"] = "100%";
+					msg.style["max-width"] = "75%";
 					msg.style.float = "right";
 					msgBody.style.overflow = "auto";
 					msgSender.innerHTML = "<small>"+username+", "+time+"</small>";
@@ -151,8 +152,10 @@
 				else{
 					msg.style.background = "#0A0A0A";
 					msg.style.padding = 14;
-					msg.style["margin-top"] = 5;
-					msg.style["margin-bottom"] = 5;
+					msgBody.style["margin-top"] = 5;
+					msgBody.style["margin-bottom"] = 5;
+					msgBody.style["min-width"] = "100%";
+					msg.style["max-width"] = "75%";
 					msg.style.float = "left";
 					msgBody.style.overflow = "auto";
 					msgSender.innerHTML = "<small>"+sender+", "+time+"</small>";
