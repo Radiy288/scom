@@ -109,22 +109,28 @@
 			
 			function SendClick(){
 				var input = document.getElementById("chatInput");
-				var today = new Date();
-				var time = pad(today.getHours()) + ":" + pad(today.getMinutes());
 				if(input.value != ""){
+					var today = new Date();
+					var time = pad(today.getHours()) + ":" + pad(today.getMinutes());
 					Message('client', input.value, time);
-					var msg = {
-						sender: username,
-						text: input.value,
-						time: time
-					};
-					websocket.send(JSON.stringify(msg));
+					SendMessage('message', username, input.value);
 					input.value = "";
 					input.focus();
 				}
 			}
 			function pad(d) {
 				return (d < 10) ? '0' + d.toString() : d.toString();
+			}
+			function SendMessage(msgid, msgsender, msgtext){
+				var today = new Date();
+				var time = pad(today.getHours()) + ":" + pad(today.getMinutes());
+				var msg = {
+						id: msgid,
+						sender: msgsender,
+						text: msgtext,
+						time: time
+					};
+				websocket.send(JSON.stringify(msg));
 			}
 			function Message(sender, text, time){
 				var msgBody = document.createElement("div");
@@ -217,12 +223,7 @@
 				};
 				websocket.onopen = function(event){
 					console.log("OPENING");
-					var msg = {
-						sender: 'server',
-						text: username+' has joined the session.',
-						time: ''
-					};
-					websocket.send(JSON.stringify(msg));
+					SendMessage('message', 'server', username+' has joined the session.');
 					var servers = document.getElementById("servers");
 					connected = true;
 					servers.className = "fade-quick";
@@ -231,12 +232,7 @@
 					servers.style.display = "none";
 				};
 				websocket.onclose = function(event){
-					var msg = {
-						sender: 'server',
-						text: username+' has left the session.',
-						time: ''
-					};
-					websocket.send(JSON.stringify(msg));
+					//SendMessage('message', 'server', username+' has left the session.');
 					console.log("CLOSING");
 					setTimeout(function(){
 						var servers = document.getElementById("servers");
@@ -248,23 +244,31 @@
 				};
 				websocket.onmessage = function(event) {
 					var msg = JSON.parse(event.data);
-					Message(msg.sender, msg.text, msg.time);
-					if(document.hasFocus()){
-						document.getElementById("audio_message").play();
-					}
-					else{
-						document.getElementById("audio_notification").play();
+					switch (msg.id){
+						case 'message':
+							Message(msg.sender, msg.text, msg.time);
+							if(document.hasFocus()){
+								document.getElementById("audio_message").play();
+							}
+							else{
+								document.getElementById("audio_notification").play();
+							}
+							break;
+						case 'kick':
+							if(msg.sender == 'server'){
+								if(msg.text == username){
+									SendMessage('message', 'server', username+' has been kicked from the session.');
+									websocket.close();
+								}
+							}
+							break;
 					}
 				}
 			}
 			function End() {
 				if (connected){
-					var msg = {
-						sender: 'server',
-						text: username+' has left the session.',
-						time: ''
-					};
-					websocket.send(JSON.stringify(msg));
+					SendMessage('message', 'server', username+' has left the session.');
+					websocket.close();
 				}
 			}
 		</script>
