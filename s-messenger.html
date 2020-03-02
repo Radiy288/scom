@@ -1,0 +1,267 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>S-Messenger</title>
+		<style>
+			body {
+				font-family: "Courier";
+				font-size: 16px;
+				font-weight: bold;
+				color: #fff;
+				background: #000000;
+				margin: 0;
+				padding: 0;
+			}
+			
+			p {
+				margin-bottom: 0;
+				margin-top: 0;
+			}
+			
+			::-webkit-scrollbar {
+				width: 11px;
+			}
+
+			::-webkit-scrollbar-track {
+				background: #000; 
+				border: 1px;
+				border-style: solid;
+				border-color: #898989;
+			}
+
+			::-webkit-scrollbar-thumb {
+				background: #474747; 
+			}
+
+			::-webkit-scrollbar-thumb:hover {
+				background: #555; 
+			}
+			
+			.bottomui {
+				position:fixed;
+				bottom:0;
+				left:0;
+				width: 100%;
+			}
+			
+			.inputbox {
+				background: #292929;
+				color: #fff;
+				border: none;
+				outline: none;
+				font-family: "Courier";
+				font-size: 16px;
+				font-weight: bold;
+				height: 25px;
+				width: calc(100% - 106px);
+			}
+			
+			.uibutton {
+				background: #191919;
+				border: 1px solid #424242;
+				font-family: "Courier";
+				font-size: 16px;
+				font-weight: bold;
+				color: #fff;
+				height: 25px;
+				width: 106px;
+				outline: none;
+			}
+			.uibutton:hover {
+				background-color: #202020;
+			}
+			.uibutton:active {
+				background: #404040;
+			}
+			.fade {
+				opacity: 1;
+				-webkit-transition: opacity 1s linear;
+			}
+			
+			.fade-quick {
+				opacity: 0;
+				-webkit-transition: opacity 0.1s linear;
+			}
+		</style>
+		<script>
+			//GLOBALVARS
+			var username = "";
+			var websocket;
+			var connected = false;
+			
+			function Start(){
+				var input = document.getElementById("chatInput");
+				
+				input.addEventListener("keyup", function(event) {
+					if (event.keyCode === 13) {
+						document.getElementById("sendButton").click();
+					}
+				});
+			}
+			
+			function Load(){
+				var servers = document.getElementById('servers');
+				servers.className='fade';
+				servers.style.opacity=1;
+				document.getElementById('ws').value = "wss://connect.websocket.in/v2/1?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjY0NWJkYzI2OGQ2NjkxMmY3MzI5MWM1YWE4YmY3YmI5YTkzMzEwOGUwYjRiYjA4NDgyOGI4YzliMzczMGVkNjhmMGI1MGQ2NGM5ODZhNmE4In0.eyJhdWQiOiI4IiwianRpIjoiNjQ1YmRjMjY4ZDY2OTEyZjczMjkxYzVhYThiZjdiYjlhOTMzMTA4ZTBiNGJiMDg0ODI4YjhjOWIzNzMwZWQ2OGYwYjUwZDY0Yzk4NmE2YTgiLCJpYXQiOjE1ODMxNzE1OTcsIm5iZiI6MTU4MzE3MTU5NywiZXhwIjoxNjE0NzA3NTk3LCJzdWIiOiI1OTgiLCJzY29wZXMiOltdfQ.KJGvQbVglNPlFE9S0ScLTdaLARCRwTvv8YzeL-HyUYMVX37YDU0fQy88iUH1uDhKf3sSq-ljdyplhn9ukMcY4pHGYneEPXnVJzRMM0O3NF-U97JL4FPcHjUmNkXwYV-o1AWo-B5h3NcGAeuhVDoJGDXbjP7pQt0YhtPzfU4rhGw-9JrKwvXNLmq5J3qHV-m3BkpE4QdXfR2KIHO_Rr78x_ufGkneRGCxkE5nyW2vVLrP-_BDCKIvaP7dS6oob_gRvjmVMJaRITNKsbJqpyZBnkDvdKzXjxlgcvDQh2ZXMFT63RCIBh3o29lr7BlmOQs5CXCz7Tq0EFp8o4iHyWdnXAqoBIzadT1_0hkRo6KojYhMtLNpXDuba-7QvPBO556Bp8VzT0QLPSBdl6_N--LcqrQ90UtJpkiJIVf4dQLfST8TIitTHiqGg6cJSUkqhDwIACSMG7Ah_b09zzciJ8n_ILCEhclGH66L81jvvpGtHfnCsocBPJ_coIECAuyxC074T2s4gdj0Jral9GYtjeb4JGCmgtgMul1-vwk8wjWK4tT2LGsdiUqbnovhK-wNLa2V4gQnzb2H1YgKmf1LKcmUOxZMpnJFfXm6rBw-N6HzKLfq0O8QztGOsseU9f7nzQZQZLeixXIWd9MLI9tDzvzxsxhZHMl9cVa1jyU_9lVkOlw";
+				document.getElementById('un').value = makeid(8);
+			}
+			
+			function SendClick(){
+				var input = document.getElementById("chatInput");
+				var today = new Date();
+				var time = pad(today.getHours()) + ":" + pad(today.getMinutes());
+				if(input.value != ""){
+					Message('client', input.value, time);
+					var msg = {
+						sender: username,
+						text: input.value,
+						time: time
+					};
+					websocket.send(JSON.stringify(msg));
+					input.value = "";
+					input.focus();
+				}
+			}
+			function pad(d) {
+				return (d < 10) ? '0' + d.toString() : d.toString();
+			}
+			function Message(sender, text, time){
+				var msgBody = document.createElement("div");
+				var msg = document.createElement("div");
+				var msgText = document.createTextNode(text);
+				var msgSender = document.createElement("p");
+				if(sender === 'client'){
+					msg.style.background = "#191919";
+					msg.style.padding = 14;
+					msgBody.style["margin-top"] = 5;
+					msgBody.style["margin-bottom"] = 5;
+					msgBody.style["min-width"] = "100%";
+					msg.style.float = "right";
+					msgBody.style.overflow = "auto";
+					msgSender.innerHTML = "<small>"+username+", "+time+"</small>";
+				}
+				else if (sender === 'server'){
+					msg.align = "CENTER";
+					msg.style["margin-top"] = 5;
+					msg.style["margin-bottom"] = 5;
+					msg.style.color = "#666"
+				}
+				else{
+					msg.style.background = "#0A0A0A";
+					msg.style.padding = 14;
+					msg.style["margin-top"] = 5;
+					msg.style["margin-bottom"] = 5;
+					msg.style.float = "left";
+					msgBody.style.overflow = "auto";
+					msgSender.innerHTML = "<small>"+sender+", "+time+"</small>";
+				}
+				msgSender.align = "RIGHT";
+				msg.appendChild(msgText);
+				msg.appendChild(msgSender);
+				msgBody.appendChild(msg);
+				document.getElementById("chatbox").appendChild(msgBody);
+				msg.scrollIntoView();
+			}
+			function makeid(length) {
+				var result           = '';
+				var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+				var charactersLength = characters.length;
+				for ( var i = 0; i < length; i++ ) {
+					result += characters.charAt(Math.floor(Math.random() * charactersLength));
+				}
+				return result;
+			}
+			function Connect(){
+				var ws = document.getElementById("ws");
+				var un = document.getElementById("un");
+				var error = document.getElementById("error");
+				if(ws.value == ""){
+					error.innerHTML = "WEBSOCKET URL BLANK";
+					error.className = "";
+					error.style.opacity = 1;
+					setTimeout(function(){
+						error.className = "fade";
+						error.style.opacity = 0;
+					}, 10);
+					return;
+				}
+				if(un.value == ""){
+					error.innerHTML = "USERNAME BLANK";
+					error.className = "";
+					error.style.opacity = 1;
+					setTimeout(function(){
+						error.className = "fade";
+						error.style.opacity = 0;
+					}, 10);
+					return;
+				}
+				document.getElementById("connectbutton").disabled = true;
+				username = un.value;
+				websocket = new WebSocket(ws.value);
+				websocket.onerror = function(event){
+					error.innerHTML = "CONNECTION ERROR";
+					error.className = "";
+					error.style.opacity = 1;
+					setTimeout(function(){
+						error.className = "fade";
+						error.style.opacity = 0;
+					}, 10);
+					websocket.close();
+					document.getElementById("connectbutton").disabled = false;
+					return;
+				};
+				websocket.onopen = function(event){
+					console.log("OPENING");
+					var msg = {
+						sender: 'server',
+						text: username+' has joined the session.',
+						time: ''
+					};
+					websocket.send(JSON.stringify(msg));
+					var servers = document.getElementById("servers");
+					connected = true;
+					servers.className = "fade-quick";
+					servers.style.opacity = 0;
+					servers.ontransitionend = () => {
+						document.getElementById("chat").style.display = "block";
+						servers.style.display = "none";
+						//servers.parentNode.removeChild(servers);
+					}
+				};
+				websocket.onclose = function(event){
+					console.log("CLOSING");
+					setTimeout(function(){
+						var servers = document.getElementById("servers");
+						document.getElementById("chat").style.display = "none";
+						servers.style.display = "block";
+						servers.style.opacity = 1;
+						document.getElementById("connectbutton").disabled = false;
+					}, 1000);
+				};
+				websocket.onmessage = function(event) {
+					var msg = JSON.parse(event.data);
+					Message(msg.sender, msg.text, msg.time);
+				}
+			}
+		</script>
+	</head>
+	<body onload = Start()>
+		<div id="servers" style="opacity: 0; position: absolute; width:100%; top:10%;">
+			<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 2%;" onload="Load()">
+			<h1 align=CENTER>S-Messenger</h1>
+			<p align=CENTER>Websocket URL</p>
+			<input id="ws" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 75%; margin-bottom:8px;" placeholder="Enter websocket URL">
+			<p align=CENTER>Username</p>
+			<input id="un" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 50%; margin-bottom:8px;" placeholder="Enter username">
+			<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
+			<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</p>
+		</div>
+		<div id="chat" style="display: none;">
+			<div id="chatbox" style="overflow-y: auto; max-height: calc(100% - 25px);"></div>
+			<div class=bottomui>
+				<input id="chatInput" class=inputbox><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
+			</div>
+		</div>
+	</body>
+</html>
