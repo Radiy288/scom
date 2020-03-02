@@ -297,6 +297,11 @@
 								}
 							}
 							break;
+						case 'end':
+							if(msg.sender == 'server'){
+								websocket.close();
+							}
+							break;
 						case 'image':
 							MessageImage(msg.sender, msg.text, msg.time);
 							if(document.hasFocus()){
