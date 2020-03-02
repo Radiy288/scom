@@ -223,6 +223,7 @@
 					connected = true;
 					servers.className = "fade-quick";
 					servers.style.opacity = 0;
+					document.getElementById("chat").style.display = "block";
 					servers.ontransitionend = () => {
 						document.getElementById("chat").style.display = "block";
 						servers.style.display = "none";
