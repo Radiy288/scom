@@ -45,6 +45,7 @@
 			}
 			
 			.inputbox {
+				padding-left: 4px;
 				background: #292929;
 				color: #fff;
 				border: none;
@@ -390,9 +391,9 @@
 				msg.appendChild(msgText);
 				msgText.innerText = msgText.innerText.replace(/(\[img\])/g, "<img style='max-width: 100%' src='");
 				msgText.innerText = msgText.innerText.replace(/(\[\/img\])/g, "'>");
-				msgText.innerText = msgText.innerText.replace(/(\[vid\])/g, "<video controls autoplay style='max-width: 100%'><source src='");
+				msgText.innerText = msgText.innerText.replace(/(\[vid\])/g, "<video controls style='max-width: 100%'><source src='");
 				msgText.innerText = msgText.innerText.replace(/(\[\/vid\])/g, "'></video>");
-				msgText.innerText = msgText.innerText.replace(/(\[aud\])/g, "<audio controls autoplay style='max-width: 100%'><source src='");
+				msgText.innerText = msgText.innerText.replace(/(\[aud\])/g, "<audio controls style='max-width: 100%'><source src='");
 				msgText.innerText = msgText.innerText.replace(/(\[\/aud\])/g, "'></audio>");
 				msgText.innerHTML = msgText.innerText;
 				//<button style='font-size: 48px; color: #fff; background: #000;' onclick='ClearDropDowns();'>▶</button>
