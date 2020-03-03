@@ -270,8 +270,10 @@
 			}
 			function Message(sender, text, time){
 				var msgBody = document.createElement("div");
+				msgBody.className = "chatMessage";
 				var msg = document.createElement("div");
 				var msgText = document.createElement("p");
+				msgText.className = "messageText";
 				msgText.innerText = text;
 				var msgSender = document.createElement("p");
 				msg.style["overflow-wrap"] = "break-word";
@@ -307,21 +309,40 @@
 					msgSender.innerHTML = "<small>"+sender+", "+time+"</small>";
 					msgSender.align = "LEFT";
 				}
-				msgBody.className = "chatMessage";
 				msg.onclick = function(){
 					lastElement = this;
 					ClearDropDowns();
 					var dropdown = document.createElement("div");
 					dropdown.className = "dropdown";
+					var rect = this.getBoundingClientRect();
 					dropdown.style.position = "absolute";
-					dropdown.style.top = this.offsetTop;
-					dropdown.style.left = this.children[0].offsetLeft;
+					if(rect.top>document.body.getBoundingClientRect().height-169){
+						dropdown.style.top = document.body.getBoundingClientRect().height-169;
+					}
+					else{
+						dropdown.style.top = rect.top;
+					}
+					if(rect.left>document.body.getBoundingClientRect().width-165){
+						dropdown.style.left = document.body.getBoundingClientRect().width-165;
+					}
+					else{
+						dropdown.style.left = rect.left;
+					}
 					
 					var optionQuote = document.createElement("p");
-					optionQuote.innerHTML = "Quote";
-					optionQuote.onclick = function(){document.getElementById("chatInput").value = '[quote]'+lastElement.children[0].textContent+'[/quote]'; document.getElementById("chatInput").focus(); ClearDropDowns();};
+					optionQuote.innerHTML = "Quote text";
+					optionQuote.onclick = function(){
+						for(let i=0; i<lastElement.children.length; i++){
+							if(lastElement.children[i].className == "messageText"){
+								document.getElementById("chatInput").value = '[quote]'+lastElement.children[i].textContent+'[/quote]';
+								document.getElementById("chatInput").focus();
+								ClearDropDowns();
+								break;
+							}
+						}
+					};
 					var optionDelete = document.createElement("p");
-					optionDelete.innerHTML = "Delete";
+					optionDelete.innerHTML = "Delete message";
 					optionDelete.onclick = function(){lastElement.parentNode.removeChild(lastElement); ClearDropDowns();};
 					var optionCancel = document.createElement("p");
 					optionCancel.innerHTML = "Cancel";
@@ -335,13 +356,10 @@
 					dropdown.appendChild(optionDelete);
 					dropdown.appendChild(optionCancel);
 					
-					document.getElementById("chatbox").appendChild(dropdown);
+					msgBody.appendChild(dropdown);
 				};
-				msg.appendChild(msgText);
-				msg.appendChild(msgSender);
-				msgBody.appendChild(msg);
-				console.log(msg.innerHTML);
 				//BB CODE
+				msg.appendChild(msgText);
 				msg.innerHTML = msg.innerHTML.replace(/(\[img\])/g, '<img style="max-width: 100%" src="');
 				msg.innerHTML = msg.innerHTML.replace(/(\[\/img\])/g, '">');
 				msg.innerHTML = msg.innerHTML.replace(/(\[i\])/g, '<i>');
@@ -350,6 +368,9 @@
 				msg.innerHTML = msg.innerHTML.replace(/(\[\/u\])/g, '</u>');
 				msg.innerHTML = msg.innerHTML.replace(/(\[quote\])/g, '<blockquote style="background: #444; padding: 8px; margin: 4px; border-left-style: solid; ">');
 				msg.innerHTML = msg.innerHTML.replace(/(\[\/quote\])/g, '</blockquote>');
+				msgSender.innerHTML = "<small>"+msgSender.innerText+"<small>";
+				msg.appendChild(msgSender);
+				msgBody.appendChild(msg);
 				document.getElementById("chatbox").appendChild(msgBody);
 				msg.scrollIntoView();
 			}
