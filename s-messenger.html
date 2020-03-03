@@ -286,7 +286,7 @@
 				msgBody.appendChild(msg);
 				console.log(msg.innerHTML);
 				//BB CODE
-				msg.innerHTML = msg.innerHTML.replace(/(\[img\])/g, '<img src="');
+				msg.innerHTML = msg.innerHTML.replace(/(\[img\])/g, '<img style="max-width: 100%" src="');
 				msg.innerHTML = msg.innerHTML.replace(/(\[\/img\])/g, '">');
 				document.getElementById("chatbox").appendChild(msgBody);
 				msg.scrollIntoView();
