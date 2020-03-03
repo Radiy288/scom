@@ -5,9 +5,10 @@
 	{
 		"src": "favicon.png",
 		"type": "image/png",
-		"sizes": "128x128"
+		"sizes": "512x512"
 	}
 	],
+	"start_url": "/scom/s-messenger.html",
 	"background_color": "#000",
 	"display": "standalone",
 	"theme_color": "#898989"
