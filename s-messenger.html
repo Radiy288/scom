@@ -68,10 +68,10 @@
 				width: 106px;
 				outline: none;
 			}
-			.uibutton:hover, .option:hover {
+			.uibutton:hover, .option:hover, .suggest:hover {
 				background-color: #202020;
 			}
-			.uibutton:active, .option:active {
+			.uibutton:active, .option:active, .suggest:active {
 				background: #404040;
 			}
 			.fade {
@@ -92,6 +92,15 @@
 				color: #fff;
 				border: 1px solid #424242;
 			}
+			
+			.suggest {
+				cursor:pointer;
+				padding: 4px;
+				display: block;
+				background: #191919;
+				color: #fff;
+				border: 1px solid #424242;
+			}
 		</style>
 		<script>
 			//GLOBALVARS
@@ -99,6 +108,11 @@
 			var websocket;
 			var connected = false;
 			var lastElement;
+			var suggestcur = -1;
+			var cmds = ["/clr", "/check", "/disconnect", "/username (str)/ch"];
+			var cmdsEl = [];
+			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]"];
+			var bbsEl = [];
 			let deferredPrompt;
 
 			//APPLICATION
@@ -146,9 +160,63 @@
 				input.addEventListener("keyup", function(event) {
 					if (event.keyCode === 13) {
 						document.getElementById("sendButton").click();
+						suggestcur = -1;
+						CheckCommand();
+					}
+					var suggestions = document.getElementsByClassName("suggest");
+					var available = [];
+					for (let i=0; i<suggestions.length; i++){
+						if(suggestions[i].style.display == "block"){
+							available.push(suggestions[i]);
+						}
+					}
+					if (event.keyCode === 38) {
+						if(suggestcur == -1){
+							suggestcur = available.length;
+						}
+						if(input.value.charAt(0) == '/' || input.value.charAt(0) == '['){
+							if(suggestcur > 0){
+								suggestcur--;
+							}
+							input.value = available[suggestcur].innerText;
+						}
+					}
+					if (event.keyCode === 40) {
+						if(suggestcur == -1){
+							suggestcur = 0;
+						}
+						if(input.value.charAt(0) == '/' || input.value.charAt(0) == '['){
+							if(suggestcur < available.length-1){
+								suggestcur++;
+							}
+							input.value = available[suggestcur].innerText;
+						}
 					}
 				});
 				Notification.requestPermission();
+				for (let i=0; i<cmds.length; i++){
+					var el = document.createElement("p");
+					el.className = "suggest";
+					el.innerText = cmds[i];
+					el.onclick = function (){
+						input.value = this.innerText;
+						CheckCommand();
+					}
+					document.getElementById("suggestbox").appendChild(el);
+					cmdsEl.push(el);
+				}
+				
+				for (let i=0; i<bbs.length; i++){
+					var el = document.createElement("p");
+					el.className = "suggest";
+					el.innerText = bbs[i];
+					el.onclick = function (){
+						input.value = this.innerText+this.innerText.slice(0, 1)+'/'+this.innerText.slice(1);
+						CheckCommand();
+					}
+					document.getElementById("suggestbox").appendChild(el);
+					bbsEl.push(el);
+				}
 			}
 			
 			function Load(){
@@ -400,6 +468,7 @@
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[i\])/g, '<i>');
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/i\])/g, '</i>');
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[n\])/g, '<br>');
+				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/n\])/g, '</>');
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[u\])/g, '<u>');
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/u\])/g, '</u>');
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[quote\])/g, '<blockquote style="background: #444; padding: 8px; margin: 4px; border-left-style: solid; ">');
@@ -537,6 +606,32 @@
 					websocket.close();
 				}
 			}
+			function CheckCommand(){
+				suggestcur = -1;
+				var input = document.getElementById("chatInput").value;
+				if(input.charAt(0) == "/" || input.charAt(0) == "["){
+					document.getElementById("suggestbox").style.display = "block";
+					for (let i=0; i<cmds.length; i++){
+						if(cmds[i].includes(input)){
+							cmdsEl[i].style.display = "block";
+						}
+						else{
+							cmdsEl[i].style.display = "none";
+						}
+					}
+					for (let i=0; i<bbs.length; i++){
+						if(bbs[i].includes(input)){
+							bbsEl[i].style.display = "block";
+						}
+						else{
+							bbsEl[i].style.display = "none";
+						}
+					}
+				}
+				else{
+					document.getElementById("suggestbox").style.display = "none";
+				}
+			}
 		</script>
 		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
@@ -559,9 +654,13 @@
 			<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</p>
 		</div>
 		<div id="chat" style="display: none;">
-			<div id="chatbox" style="overflow-y: auto; max-height: calc(100% - 25px);"></div>
+			<div id="chatbox" style="overflow-y: auto; max-height: calc(100% - 25px);">
+				<div id="suggestbox" style="display: none; position: absolute; bottom: 25px; overflow: auto;">
+					
+				</div>
+			</div>
 			<div class=bottomui>
-				<input id="chatInput" class=inputbox><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
+				<input id="chatInput" class=inputbox oninput="CheckCommand()"><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
 			</div>
 		</div>
 	</body>
