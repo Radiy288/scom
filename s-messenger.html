@@ -202,6 +202,10 @@
 								username = prs;
 								break;
 								
+							case "disconnect":
+								End();
+								break;
+								
 							default:
 								Message("server", "Unknown command.", "");
 								break;
@@ -314,20 +318,7 @@
 					ClearDropDowns();
 					var dropdown = document.createElement("div");
 					dropdown.className = "dropdown";
-					var rect = this.getBoundingClientRect();
 					dropdown.style.position = "absolute";
-					if(rect.top>document.body.getBoundingClientRect().height-169){
-						dropdown.style.top = document.body.getBoundingClientRect().height-169;
-					}
-					else{
-						dropdown.style.top = rect.top;
-					}
-					if(rect.left>document.body.getBoundingClientRect().width-165){
-						dropdown.style.left = document.body.getBoundingClientRect().width-165;
-					}
-					else{
-						dropdown.style.left = rect.left;
-					}
 					
 					var optionQuote = document.createElement("p");
 					optionQuote.innerHTML = "Quote text";
@@ -344,19 +335,56 @@
 					var optionDelete = document.createElement("p");
 					optionDelete.innerHTML = "Delete message";
 					optionDelete.onclick = function(){lastElement.parentNode.removeChild(lastElement); ClearDropDowns();};
+					var optionCopy = document.createElement("p");
+					optionCopy.innerHTML = "Copy text";
+					optionCopy.onclick = function(){
+						for(let i=0; i<lastElement.children.length; i++){
+							if(lastElement.children[i].className == "messageText"){
+								var txtarea = document.createElement('textarea');
+								txtarea.value = lastElement.children[i].innerText;
+								document.body.appendChild(txtarea);
+								txtarea.select();
+								document.execCommand('copy');
+								txtarea.parentNode.removeChild(txtarea);
+								ClearDropDowns();
+								break;
+							}
+						}
+					};
 					var optionCancel = document.createElement("p");
 					optionCancel.innerHTML = "Cancel";
 					optionCancel.onclick = function(){ClearDropDowns();};
 					
 					optionQuote.className = "option";
 					optionDelete.className = "option";
+					optionCopy.className = "option";
 					optionCancel.className = "option";
 					
 					dropdown.appendChild(optionQuote);
 					dropdown.appendChild(optionDelete);
+					dropdown.appendChild(optionCopy);
 					dropdown.appendChild(optionCancel);
 					
 					msgBody.appendChild(dropdown);
+					
+					var rect = this.getBoundingClientRect();
+					var droprect = dropdown.getBoundingClientRect();
+					console.log(droprect);
+					if(rect.top>document.body.getBoundingClientRect().height-droprect.height-25){
+						dropdown.style.top = document.body.getBoundingClientRect().height-droprect.height-25;
+					}
+					else if(rect.top<0){
+						dropdown.style.top = 0;
+					}
+					else{
+						dropdown.style.top = rect.top;
+					}
+					if(rect.left>document.body.getBoundingClientRect().width-droprect.width-25){
+						dropdown.style.left = document.body.getBoundingClientRect().width-droprect.width-25;
+					}
+					else{
+						dropdown.style.left = rect.left;
+					}
 				};
 				//BB CODE
 				msg.appendChild(msgText);
