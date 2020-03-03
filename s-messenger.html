@@ -151,13 +151,45 @@
 			function SendClick(){
 				var input = document.getElementById("chatInput");
 				if(input.value != ""){
-					var today = new Date();
-					var time = pad(today.getHours()) + ":" + pad(today.getMinutes());
-					Message('client', input.value, time);
-					SendMessage('message', username, input.value);
-					input.value = "";
-					input.focus();
+					if(input.value.charAt(0) == '/'){
+						var read="";
+						for(let i=1; i<input.value.length; i++){
+							if (input.value.charAt(i) == " "){
+								break;
+							}
+							read += input.value.charAt(i);
+						}
+						console.log(read);
+						switch (read){
+							case "clr":
+								var msgs = document.getElementsByClassName("chatMessage");
+								while (msgs[0]) {
+									msgs[0].parentNode.removeChild(msgs[0]);
+								}
+								break;
+							case "check":
+								Message('server', 'Online users:', '0');
+								SendMessage('message', 'server', 'Online users:');
+								
+								SendMessage('check', 'server', '');
+								
+								Message('server', username, '0');
+								SendMessage('message', 'server', username);
+								break;
+							default:
+								Message("server", "Unknown command", "");
+								break;
+						}
+					}
+					else{
+						var today = new Date();
+						var time = pad(today.getHours()) + ":" + pad(today.getMinutes());
+						Message('client', input.value, time);
+						SendMessage('message', username, input.value);
+					}
 				}
+				input.value = "";
+				input.focus();
 			}
 			function pad(d) {
 				return (d < 10) ? '0' + d.toString() : d.toString();
@@ -248,9 +280,14 @@
 					msgSender.innerHTML = "<small>"+sender+", "+time+"</small>";
 					msgSender.align = "LEFT";
 				}
+				msgBody.className = "chatMessage";
 				msg.appendChild(msgText);
 				msg.appendChild(msgSender);
 				msgBody.appendChild(msg);
+				console.log(msg.innerHTML);
+				//BB CODE
+				msg.innerHTML = msg.innerHTML.replace(/(\[img\])/g, '<img src="');
+				msg.innerHTML = msg.innerHTML.replace(/(\[\/img\])/g, '">');
 				document.getElementById("chatbox").appendChild(msgBody);
 				msg.scrollIntoView();
 			}
