@@ -318,7 +318,7 @@
 					var optionQuote = document.createElement("a");
 					optionQuote.innerHTML = "Quote";
 					optionQuote.href = "#";
-					optionQuote.onclick = function(){document.getElementById("chatInput").value = '[quote]'+lastElement.children[0].children[0].textContent+'[/quote]'; ClearDropDowns();};
+					optionQuote.onclick = function(){document.getElementById("chatInput").value = '[quote]'+lastElement.children[0].children[0].textContent+'[/quote]'; document.getElementById("chatInput").focus(); ClearDropDowns();};
 					var optionDelete = document.createElement("a");
 					optionDelete.innerHTML = "Delete";
 					optionDelete.href = "#";
