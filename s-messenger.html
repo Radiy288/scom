@@ -82,12 +82,21 @@
 				opacity: 0;
 				-webkit-transition: opacity 0.1s linear;
 			}
+			
+			.option {
+				padding: 14px;
+				display: block;
+				background: #292929;
+				color: #fff;
+				border: 1px solid #424242;
+			}
 		</style>
 		<script>
 			//GLOBALVARS
 			var username = "";
 			var websocket;
 			var connected = false;
+			var lastElement;
 			let deferredPrompt;
 
 			//APPLICATION
@@ -167,6 +176,7 @@
 									msgs[0].parentNode.removeChild(msgs[0]);
 								}
 								break;
+								
 							case "check":
 								Message('server', 'Online users:', '0');
 								SendMessage('message', 'server', 'Online users:');
@@ -176,8 +186,23 @@
 								Message('server', username, '0');
 								SendMessage('message', 'server', username);
 								break;
+								
+							case "username":
+								var prs = "";
+								for(let i=10; i<input.value.length; i++){
+									prs+=input.value.charAt(i);
+								}
+								if(prs == ""){
+									Message("server", "Invalid username.", "");
+									return;
+								}
+								Message("server", username+" changed username to "+prs+".", "");
+								SendMessage('message', 'server', username+" changed username to "+prs+".");
+								username = prs;
+								break;
+								
 							default:
-								Message("server", "Unknown command", "");
+								Message("server", "Unknown command.", "");
 								break;
 						}
 					}
@@ -245,7 +270,8 @@
 			function Message(sender, text, time){
 				var msgBody = document.createElement("div");
 				var msg = document.createElement("div");
-				var msgText = document.createTextNode(text);
+				var msgText = document.createElement("p");
+				msgText.innerText = text;
 				var msgSender = document.createElement("p");
 				msg.style["overflow-wrap"] = "break-word";
 				msg.style["word-wrap"] = "break-word";
@@ -281,6 +307,37 @@
 					msgSender.align = "LEFT";
 				}
 				msgBody.className = "chatMessage";
+				msgBody.onclick = function(){
+					lastElement = this;
+					ClearDropDowns();
+					var dropdown = document.createElement("div");
+					dropdown.className = "dropdown";
+					dropdown.style.position = "absolute";
+					dropdown.style.top = this.offsetTop;
+					dropdown.style.left = this.children[0].offsetLeft;
+					var optionQuote = document.createElement("a");
+					optionQuote.innerHTML = "Quote";
+					optionQuote.href = "#";
+					optionQuote.onclick = function(){document.getElementById("chatInput").value = '[quote]'+lastElement.children[0].children[0].textContent+'[/quote]'; ClearDropDowns();};
+					var optionDelete = document.createElement("a");
+					optionDelete.innerHTML = "Delete";
+					optionDelete.href = "#";
+					optionDelete.onclick = function(){lastElement.parentNode.removeChild(lastElement); ClearDropDowns();};
+					var optionCancel = document.createElement("a");
+					optionCancel.innerHTML = "Cancel";
+					optionCancel.href = "#";
+					optionCancel.onclick = function(){ClearDropDowns();};
+					
+					optionQuote.className = "option";
+					optionDelete.className = "option";
+					optionCancel.className = "option";
+					
+					dropdown.appendChild(optionQuote);
+					dropdown.appendChild(optionDelete);
+					dropdown.appendChild(optionCancel);
+					
+					document.getElementById("chatbox").appendChild(dropdown);
+				};
 				msg.appendChild(msgText);
 				msg.appendChild(msgSender);
 				msgBody.appendChild(msg);
@@ -288,8 +345,20 @@
 				//BB CODE
 				msg.innerHTML = msg.innerHTML.replace(/(\[img\])/g, '<img style="max-width: 100%" src="');
 				msg.innerHTML = msg.innerHTML.replace(/(\[\/img\])/g, '">');
+				msg.innerHTML = msg.innerHTML.replace(/(\[i\])/g, '<i>');
+				msg.innerHTML = msg.innerHTML.replace(/(\[\/i\])/g, '</i>');
+				msg.innerHTML = msg.innerHTML.replace(/(\[u\])/g, '<u>');
+				msg.innerHTML = msg.innerHTML.replace(/(\[\/u\])/g, '</u>');
+				msg.innerHTML = msg.innerHTML.replace(/(\[quote\])/g, '<blockquote style="background: #444; padding: 8px; margin: 4px; border-left-style: solid; ">');
+				msg.innerHTML = msg.innerHTML.replace(/(\[\/quote\])/g, '</blockquote>');
 				document.getElementById("chatbox").appendChild(msgBody);
 				msg.scrollIntoView();
+			}
+			function ClearDropDowns(){
+				var dropdowns = document.getElementsByClassName("dropdown");
+				while (dropdowns[0]) {
+					dropdowns[0].parentNode.removeChild(dropdowns[0]);
+				}
 			}
 			function makeid(length) {
 				var result           = '';
@@ -416,7 +485,7 @@
 		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	</head>
-	<body onload = "Start()" onbeforeunload="End()" >
+	<body onload = "Start()" onbeforeunload="End()">
 		<audio id="audio_message">
 			<source src="message.mp3">
 		</audio>
