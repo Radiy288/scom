@@ -67,10 +67,10 @@
 				width: 106px;
 				outline: none;
 			}
-			.uibutton:hover {
+			.uibutton:hover, .option:hover {
 				background-color: #202020;
 			}
-			.uibutton:active {
+			.uibutton:active, .option:active {
 				background: #404040;
 			}
 			.fade {
@@ -84,6 +84,7 @@
 			}
 			
 			.option {
+				cursor:pointer;
 				padding: 14px;
 				display: block;
 				background: #292929;
@@ -315,17 +316,15 @@
 					dropdown.style.position = "absolute";
 					dropdown.style.top = this.offsetTop;
 					dropdown.style.left = this.children[0].offsetLeft;
-					var optionQuote = document.createElement("a");
+					
+					var optionQuote = document.createElement("p");
 					optionQuote.innerHTML = "Quote";
-					optionQuote.href = "#";
-					optionQuote.onclick = function(){document.getElementById("chatInput").value = '[quote]'+lastElement.children[0].children[0].textContent+'[/quote]'; document.getElementById("chatInput").focus(); ClearDropDowns();};
-					var optionDelete = document.createElement("a");
+					optionQuote.onclick = function(){document.getElementById("chatInput").value = '[quote]'+lastElement.children[0].textContent+'[/quote]'; document.getElementById("chatInput").focus(); ClearDropDowns();};
+					var optionDelete = document.createElement("p");
 					optionDelete.innerHTML = "Delete";
-					optionDelete.href = "#";
 					optionDelete.onclick = function(){lastElement.parentNode.removeChild(lastElement); ClearDropDowns();};
-					var optionCancel = document.createElement("a");
+					var optionCancel = document.createElement("p");
 					optionCancel.innerHTML = "Cancel";
-					optionCancel.href = "#";
 					optionCancel.onclick = function(){ClearDropDowns();};
 					
 					optionQuote.className = "option";
