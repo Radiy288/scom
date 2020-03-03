@@ -360,14 +360,16 @@
 				};
 				//BB CODE
 				msg.appendChild(msgText);
-				msg.innerHTML = msg.innerHTML.replace(/(\[img\])/g, '<img style="max-width: 100%" src="');
-				msg.innerHTML = msg.innerHTML.replace(/(\[\/img\])/g, '">');
-				msg.innerHTML = msg.innerHTML.replace(/(\[i\])/g, '<i>');
-				msg.innerHTML = msg.innerHTML.replace(/(\[\/i\])/g, '</i>');
-				msg.innerHTML = msg.innerHTML.replace(/(\[u\])/g, '<u>');
-				msg.innerHTML = msg.innerHTML.replace(/(\[\/u\])/g, '</u>');
-				msg.innerHTML = msg.innerHTML.replace(/(\[quote\])/g, '<blockquote style="background: #444; padding: 8px; margin: 4px; border-left-style: solid; ">');
-				msg.innerHTML = msg.innerHTML.replace(/(\[\/quote\])/g, '</blockquote>');
+				msgText.innerText = msgText.innerText.replace(/(\[img\])/g, "<img style='max-width: 100%' src='");
+				msgText.innerText = msgText.innerText.replace(/(\[\/img\])/g, "'>");
+				msgText.innerHTML = msgText.innerText;
+				
+				msgText.innerHTML = msgText.innerHTML.replace(/(\[i\])/g, '<i>');
+				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/i\])/g, '</i>');
+				msgText.innerHTML = msgText.innerHTML.replace(/(\[u\])/g, '<u>');
+				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/u\])/g, '</u>');
+				msgText.innerHTML = msgText.innerHTML.replace(/(\[quote\])/g, '<blockquote style="background: #444; padding: 8px; margin: 4px; border-left-style: solid; ">');
+				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/quote\])/g, '</blockquote>');
 				msgSender.innerHTML = "<small>"+msgSender.innerText+"<small>";
 				msg.appendChild(msgSender);
 				msgBody.appendChild(msg);
