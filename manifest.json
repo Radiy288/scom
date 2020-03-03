@@ -1,0 +1,14 @@
+{
+	"short_name": "S-Messenger",
+	"name": "S-Messenger",
+	"icons": [
+	{
+		"src": "favicon.png",
+		"type": "image/png",
+		"sizes": "128x128"
+	}
+	],
+	"background_color": "#000",
+	"display": "standalone",
+	"theme_color": "#898989"
+}

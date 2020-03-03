@@ -88,6 +88,46 @@
 			var username = "";
 			var websocket;
 			var connected = false;
+			let deferredPrompt;
+
+			//APPLICATION
+			window.addEventListener('beforeinstallprompt', (e) => {
+			  // Stash the event so it can be triggered later.
+			  deferredPrompt = e;
+			});
+			if ('serviceWorker' in navigator) {
+			  window.addEventListener('load', function() {
+				navigator.serviceWorker.register('sw.js', {scope: '.'}).then(function(registration) {
+				  // Registration was successful
+				  console.log('ServiceWorker registration successful with scope: ', registration.scope);
+				}, function(err) {
+				  // registration failed :(
+				  console.log('ServiceWorker registration failed: ', err);
+				});
+			  });
+			}
+			var CACHE_NAME = 'my-site-cache-v1';
+			var urlsToCache = [
+				'/',
+				'/favicon.png',
+				'/scpf.png',
+				'/message.mp3',
+				'/message1.mp3',
+				'/manifest.json'
+			];
+
+			self.addEventListener('install', function(event) {
+			  // Perform install steps
+			  event.waitUntil(
+				caches.open(CACHE_NAME)
+				  .then(function(cache) {
+					console.log('Opened cache');
+					return cache.addAll(urlsToCache);
+				  })
+			  );
+			});
+			
+			
 			
 			function Start(){
 				var input = document.getElementById("chatInput");
@@ -295,7 +335,7 @@
 								document.getElementById("audio_notification").play();
 								var options = {
 									body: msg.text,
-									icon: favicon.png
+									icon: "favicon.png"
 								}
 								var msgNotify = new Notification(msg.sender, options);
 							}
@@ -337,6 +377,7 @@
 			}
 		</script>
 		<link rel="shortcut icon" href="favicon.png">
+		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	</head>
 	<body onload = "Start()" onbeforeunload="End()" >
 		<audio id="audio_message">
