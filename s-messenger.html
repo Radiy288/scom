@@ -97,6 +97,7 @@
 						document.getElementById("sendButton").click();
 					}
 				});
+				Notification.requestPermission();
 			}
 			
 			function Load(){
@@ -292,6 +293,11 @@
 							}
 							else{
 								document.getElementById("audio_notification").play();
+								var options = {
+									body: msg.text,
+									icon: favicon.png
+								}
+								var msgNotify = new Notification(msg.sender, options);
 							}
 							break;
 						case 'kick':
