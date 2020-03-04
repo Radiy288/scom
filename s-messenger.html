@@ -125,9 +125,9 @@
 			var connected = false;
 			var lastElement;
 			var suggestcur = -1;
-			var cmds = ["/clr", "/check", "/disconnect", "/username (str)"];
+			var cmds = ["/clr", "/check", "/disconnect", "/info (str)", "/username {str}"];
 			var cmdsEl = [];
-			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[nobb]", "[color]", "[url]"];
+			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]"];
 			bbs.sort();
 			var bbsEl = [];
 			let deferredPrompt;
@@ -283,16 +283,142 @@
 									prs+=input.value.charAt(i);
 								}
 								if(prs == ""){
-									Message("server", "Invalid username.", "");
+									Message("server", "Invalid username.");
 									return;
 								}
-								Message("server", username+" changed username to "+prs+".", "");
+								Message("server", username+" changed username to "+prs+".");
 								SendMessage('message', 'server', username+" changed username to "+prs+".");
 								username = prs;
 								break;
 								
 							case "disconnect":
 								End();
+								break;
+								
+							case "info":
+								var prs = "";
+								for (let i=6; i<input.value.length; i++){
+									prs+=input.value.charAt(i);
+								}
+								if(prs == ""){
+									Message('server', "S-Messenger 1.1.2");
+									Message('server', navigator.platform+Define(navigator.oscpu)+" "+navigator.language+". "+Define(navigator.vendor));
+									Message('server', Define(navigator.userAgent));
+								}
+								else{
+									switch (prs){
+										case "clr":
+											Message('server', "/clr");
+											Message('server', "Clears the screen of all client text.");
+											break;
+											
+										case "check":
+											Message('server', "/check");
+											Message('server', "Publicly displays all online clients.");
+											break;
+											
+										case "disconnect":
+											Message('server', "/disconnects");
+											Message('server', "Disconnects client from the currently connected server and returns to the menu screen.");
+											break;
+											
+										case "info":
+											Message('server', "/info (str)");
+											Message('server', "Privately displays info about the client, specified command or tag.");
+											Message('server', "(str) - the specified command or tag. To display client info leave blank.");
+											Message('server', "Example of usage: /info clr shows info about /clr command.");
+											Message('server', "[notag]/info [img] shows info about [img] tag.");
+											break;
+											
+										case "username":
+											Message('server', "/username {str}");
+											Message('server', "Publicly changes client's displayed username to specified.");
+											Message('server', "{str} - the specified username. This is required to execute the command.");
+											Message('server', "Example of usage: [i]/username CONT_999[/i]");
+											break;
+											
+										case "[aud]":
+											Message('server', "[notag][aud]{link}[/aud]");
+											Message('server', "Allows embedding direct audio links as playable audio. End tag required.");
+											Message('server', "{link} - the specified direct audio link.");
+											Message('server', "Example: [aud]message.mp3[/aud]");
+											break;
+											
+										case "[big]":
+											Message('server', "[notag][big][/big]");
+											Message('server', "Makes inner text relatively bigger. End tag required.");
+											Message('server', "Example: [big]This text is big.[/big]");
+											break;
+											
+										case "[color]":
+											Message('server', "[notag][color={color}][/color]");
+											Message('server', "Makes inner text colored in the specified color. End tag required.");
+											Message('server', "{color} - the specified color. Can be a CSS constant or a hex value.");
+											Message('server', "Example: [color=blue]This text is colored blue.[/color]");
+											break;
+											
+										case "[i]":
+											Message('server', "[notag][i][/i]");
+											Message('server', "Makes inner text italic. End tag required.");
+											Message('server', "Example: [i]This text is italic.[/i]");
+											break;
+											
+										case "[img]":
+											Message('server', "[notag][img]{link}[/img]");
+											Message('server', "Allows embedding direct image links as displayed images. End tag required.");
+											Message('server', "{link} - the specified direct image link.");
+											Message('server', "Example: [img]scpf.png[/img]");
+											break;
+											
+										case "[n]":
+											Message('server', "[⁣n]");
+											Message('server', "Adds newline to text. End tag not required.");
+											Message('server', "Example: New[n]line.");
+											
+										case "[notag]":
+											Message('server', "[⁣notag]");
+											Message('server', "Disables tags in message. End tag not required.");
+											Message('server', "Example: [notag][i]This text is not italic.[/i]");
+											break;
+											
+										case "[quote]":
+											Message('server', "[notag][quote][/quote]");
+											Message('server', "Makes inner text quoted. End tag required.");
+											Message('server', "Example: [quote]This text is quoted.[/quote]");
+											break;
+											
+										case "[small]":
+											Message('server', "[notag][small][/small]");
+											Message('server', "Makes inner text relatively smaller. End tag required.");
+											Message('server', "Example: [small]This text is small.[/small]");
+											break;
+											
+										case "[tt]":
+											Message('server', "[notag][tt][/tt]");
+											Message('server', "Makes inner text in a fixed-size font. End tag required.");
+											Message('server', "Example: [tt]This text is in a fixed-size font.[/tt]");
+											break;
+											
+										case "[u]":
+											Message('server', "[notag][u][/u]");
+											Message('server', "Makes inner text underlined. End tag required.");
+											Message('server', "Example: [u]This text is underlined.[/u]");
+											break;
+											
+										case "[url]":
+											Message('server', "[notag][url={link}][/url]");
+											Message('server', "[notag][url]{link}[/url]");
+											Message('server', "Allows embedding clickable URL links. End tag required.");
+											Message('server', "{link} - the specified URL link.");
+											Message('server', "Example: [url=favicon.png]Logo of the SCP Foundation.[/url]");
+											break;
+											
+										default:
+											Message('server', 'No info found about "'+prs+'" command.');
+											break;
+										
+									}
+								}
 								break;
 								
 							default:
@@ -310,6 +436,12 @@
 				input.value = "";
 				CheckCommand();
 				input.focus();
+			}
+			function Define(str){
+				if(str != null){
+					return str;
+				}
+				return "";
 			}
 			function pad(d) {
 				return (d < 10) ? '0' + d.toString() : d.toString();
@@ -489,7 +621,7 @@
 				};
 				msg.appendChild(msgText);
 				//BB CODE
-				if(!msgText.innerText.includes("[nobb]")){
+				if(!msgText.innerText.includes("[notag]")){
 					msgText.innerText = msgText.innerText.replace(/(\[img\])/g, "<img style='max-width: 100%' src='");
 					msgText.innerText = msgText.innerText.replace(/(\[\/img\])/g, "'>");
 					msgText.innerText = msgText.innerText.replace(/(\[vid\])/g, "<video controls style='max-width: 100%'><source src='");
@@ -555,8 +687,8 @@
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/quote\])/g, '</blockquote>');
 				}
 				else{
-					msgText.innerText = msgText.innerHTML.replace(/(\[nobb\])/g, "");
-					msgText.innerText = msgText.innerHTML.replace(/(\[\/nobb\])/g, "");
+					msgText.innerText = msgText.innerHTML.replace(/(\[notag\])/g, "");
+					msgText.innerText = msgText.innerHTML.replace(/(\[\/notag\])/g, "");
 				}
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[n\])/g, '<br>');
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/n\])/g, '</>');
