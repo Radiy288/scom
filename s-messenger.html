@@ -3,6 +3,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>S-Messenger</title>
 		<style>
+			.wrapper {
+				overscroll-behavior: none
+			}
+			
 			body {
 				font-family: "Courier";
 				font-size: 16px;
@@ -125,7 +129,7 @@
 			var connected = false;
 			var lastElement;
 			var suggestcur = -1;
-			var cmds = ["/clr", "/check", "/disconnect", "/info (str)", "/username {str}"];
+			var cmds = ["/clr", "/check", "/disconnect", "/info (str)", "/update", "/username {str}"];
 			var cmdsEl = [];
 			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]", "[vid]"];
 			bbs.sort();
@@ -354,6 +358,11 @@
 											Message('server', "Example of usage: [i]/username CONT_999[/i]");
 											break;
 											
+										case "update":
+											Message('server', "/update");
+											Message('server', "Updates the S-Messenger. This will disconnect the client from the currently connected server.");
+											break;
+											
 										case "[aud]":
 											Message('server', "[notag][aud]{link}[/aud]");
 											Message('server', "Allows embedding direct audio links as playable audio. End tag required.");
@@ -443,6 +452,10 @@
 										
 									}
 								}
+								break;
+								
+							case "update":
+								location.reload();
 								break;
 								
 							default:
@@ -890,6 +903,10 @@
 							break;
 						case 'pinrequest':
 							SendMessage('pin', 'server', document.getElementById("pin").innerText);
+							break;
+							
+						case 'update':
+							location.reload();
 							break;
 					}
 				}
