@@ -6,15 +6,22 @@
 			var kickName;
 			var serverMsg;
 			var imageLink;
+			var report;
 			function Load(){
 				wsurl = document.getElementById("url");
 				kickName = document.getElementById("kickName");
 				serverMsg = document.getElementById("serverMsg");
 				imageLink = document.getElementById("imageLink");
+				report = document.getElementById("report");
 				wsurl.value = "wss://connect.websocket.in/v2/1?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjY0NWJkYzI2OGQ2NjkxMmY3MzI5MWM1YWE4YmY3YmI5YTkzMzEwOGUwYjRiYjA4NDgyOGI4YzliMzczMGVkNjhmMGI1MGQ2NGM5ODZhNmE4In0.eyJhdWQiOiI4IiwianRpIjoiNjQ1YmRjMjY4ZDY2OTEyZjczMjkxYzVhYThiZjdiYjlhOTMzMTA4ZTBiNGJiMDg0ODI4YjhjOWIzNzMwZWQ2OGYwYjUwZDY0Yzk4NmE2YTgiLCJpYXQiOjE1ODMxNzE1OTcsIm5iZiI6MTU4MzE3MTU5NywiZXhwIjoxNjE0NzA3NTk3LCJzdWIiOiI1OTgiLCJzY29wZXMiOltdfQ.KJGvQbVglNPlFE9S0ScLTdaLARCRwTvv8YzeL-HyUYMVX37YDU0fQy88iUH1uDhKf3sSq-ljdyplhn9ukMcY4pHGYneEPXnVJzRMM0O3NF-U97JL4FPcHjUmNkXwYV-o1AWo-B5h3NcGAeuhVDoJGDXbjP7pQt0YhtPzfU4rhGw-9JrKwvXNLmq5J3qHV-m3BkpE4QdXfR2KIHO_Rr78x_ufGkneRGCxkE5nyW2vVLrP-_BDCKIvaP7dS6oob_gRvjmVMJaRITNKsbJqpyZBnkDvdKzXjxlgcvDQh2ZXMFT63RCIBh3o29lr7BlmOQs5CXCz7Tq0EFp8o4iHyWdnXAqoBIzadT1_0hkRo6KojYhMtLNpXDuba-7QvPBO556Bp8VzT0QLPSBdl6_N--LcqrQ90UtJpkiJIVf4dQLfST8TIitTHiqGg6cJSUkqhDwIACSMG7Ah_b09zzciJ8n_ILCEhclGH66L81jvvpGtHfnCsocBPJ_coIECAuyxC074T2s4gdj0Jral9GYtjeb4JGCmgtgMul1-vwk8wjWK4tT2LGsdiUqbnovhK-wNLa2V4gQnzb2H1YgKmf1LKcmUOxZMpnJFfXm6rBw-N6HzKLfq0O8QztGOsseU9f7nzQZQZLeixXIWd9MLI9tDzvzxsxhZHMl9cVa1jyU_9lVkOlw"
 			}
 			function Connect(){
 				websocket = new WebSocket(wsurl.value);
+				websocket.onmessage = function(event){
+					var msg = JSON.parse(event.data);
+					report.value += msg.id+' '+msg.time+' '+msg.sender+' '+msg.text+'\n';
+					//KickAll();
+				};
 			}
 			function Disconnect(){
 				websocket.close();
@@ -57,6 +64,12 @@
 				};
 				websocket.send(JSON.stringify(msg));
 			}
+			function Update(){
+				var msg = {
+					id: 'update'
+				};
+				websocket.send(JSON.stringify(msg));
+			}
 		</script>
 	</head>
 	<body onload="Load()">
@@ -73,6 +86,8 @@
 		<input id="imageLink" placeholder="Enter image link to send" style="width: 50%">
 		<button onclick="Image()">Send</button>
 		<hr>
-		<button onclick="Check()">Check all users</button>
+		<button onclick="Check()">Check all users</button><button onclick="Update()">Update all users</button>
+		<hr>
+		<textarea id="report" readonly=true></textarea>
 	</body>
 </html>

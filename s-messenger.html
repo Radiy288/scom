@@ -134,6 +134,7 @@
 			var ddon = false;
 			let deferredPrompt;
 			var pinnedMessage;
+			const version = "1.1.6";
 
 			//APPLICATION
 			window.addEventListener('beforeinstallprompt', (e) => {
@@ -178,7 +179,7 @@
 			
 			function Start(){
 				var input = document.getElementById("chatInput");
-				
+				document.getElementById("versionShow").innerText = "Version "+version;
 				document.body.parentNode.addEventListener('click', function(event){
 					var dropdowns = document.getElementsByClassName("dropdown");
 					event.preventDefault();
@@ -319,7 +320,7 @@
 									prs+=input.value.charAt(i);
 								}
 								if(prs == ""){
-									Message('server', "S-Messenger 1.1.5");
+									Message('server', "S-Messenger "+version);
 									Message('server', navigator.platform+Define(navigator.oscpu)+" "+navigator.language+". "+Define(navigator.vendor));
 									Message('server', Define(navigator.userAgent));
 								}
@@ -964,15 +965,19 @@
 		<audio id="audio_notification">
 			<source src="message1.mp3">
 		</audio>
-		<div id="servers" style="opacity: 0; position: absolute; width:100%; top:10%;">
-			<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 2%;" onload="Load()">
+		<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%">
+			<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 12%;" onload="Load()">
 			<h1 align=CENTER>S-Messenger</h1>
 			<p align=CENTER>Websocket URL</p>
 			<input id="ws" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 75%; margin-bottom:8px;" placeholder="Enter websocket URL">
 			<p align=CENTER>Username</p>
 			<input id="un" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 50%; margin-bottom:8px;" placeholder="Enter username">
 			<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
-			<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</p>
+			<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</h3>
+			<div style="position: absolute; bottom: 0; width: 100%;">
+				<span align=CENTER id="versionShow" style="display: block;"></span>
+				<button id="updatebutton" class=uibutton style="display: block;margin-left: auto; margin-right: auto; margin-bottom: 4px;" onclick="location.reload()">Update</button>
+			</div>
 		</div>
 		<div id="chat" style="display: none; overflow-y: auto;">
 			<div id="chatbox" style="overflow-y: auto; max-height: calc(100% - 25px);">
