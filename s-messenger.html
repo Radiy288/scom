@@ -156,7 +156,8 @@
 				'/scpf.png',
 				'/message.mp3',
 				'/message1.mp3',
-				'/manifest.json'
+				'/manifest.json',
+				'/pushpin.png'
 			];
 
 			self.addEventListener('install', function(event) {
@@ -573,6 +574,7 @@
 				}
 			}
 			function PinMessage(text){
+				/*
 				var lastpin = document.getElementById('pin');
 				if(lastpin != null){
 					lastpin.parentNode.removeChild(lastpin);
@@ -589,6 +591,13 @@
 				pin.innerHTML = "<img style='height: 1em; margin-right: 0.5em; margin-left: 0.2em;' src='pushpin.png'>"+text;
 				pin.onclick = function(){pinnedMessage.scrollIntoView();}
 				document.getElementById("chat").insertBefore(pin, document.getElementById("chatbox"));
+				setTimeout(function(){
+					const mhstr = `calc(100% - ${25 + pin.getBoundingClientRect().height}px);`;
+					console.log(pin.getBoundingClientRect().height);
+					console.log(mhstr);
+					document.getElementById("chatbox").style.maxHeight = mhstr;
+				}, 10);
+				*/
 			}
 			function makeid(length) {
 				var result           = '';
@@ -716,6 +725,12 @@
 						case 'pin':
 							PinMessage(msg.text);
 							break;
+						case 'unpin':
+							var lastpin = document.getElementById('pin');
+							if(lastpin != null){
+								lastpin.parentNode.removeChild(lastpin);
+							}
+							break;
 						case 'pinrequest':
 							SendMessage('pin', 'server', document.getElementById("pin").innerText);
 							break;
@@ -788,7 +803,7 @@
 			<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
 			<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</p>
 		</div>
-		<div id="chat" style="display: none;">
+		<div id="chat" style="display: none; overflow-y: auto;">
 			<div id="chatbox" style="overflow-y: auto; max-height: calc(100% - 25px);">
 				<div id="suggestbox" style="display: none; position: absolute; bottom: 25px; overflow: auto;">
 					
