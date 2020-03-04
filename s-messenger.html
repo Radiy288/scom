@@ -130,6 +130,7 @@
 			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]", "[vid]"];
 			bbs.sort();
 			var bbsEl = [];
+			var ddon = false;
 			let deferredPrompt;
 			var pinnedMessage;
 
@@ -149,6 +150,7 @@
 				});
 			  });
 			}
+			
 			var CACHE_NAME = 'my-site-cache-v1';
 			var urlsToCache = [
 				'/',
@@ -175,6 +177,21 @@
 			
 			function Start(){
 				var input = document.getElementById("chatInput");
+				
+				document.body.parentNode.addEventListener('click', function(event){
+					var dropdowns = document.getElementsByClassName("dropdown");
+					event.preventDefault();
+					if(ddon){
+						if (!dropdowns[0].contains(event.target)) {
+							ClearDropDowns();
+						}
+					}
+					if(!ddon){
+						if(dropdowns.length > 0){
+							ddon = true;
+						}
+					}
+				});
 				
 				input.addEventListener("keyup", function(event) {
 					if (event.keyCode === 13) {
@@ -301,7 +318,7 @@
 									prs+=input.value.charAt(i);
 								}
 								if(prs == ""){
-									Message('server', "S-Messenger 1.1.3");
+									Message('server', "S-Messenger 1.1.5");
 									Message('server', navigator.platform+Define(navigator.oscpu)+" "+navigator.language+". "+Define(navigator.vendor));
 									Message('server', Define(navigator.userAgent));
 								}
@@ -629,11 +646,11 @@
 				msg.appendChild(msgText);
 				//BB CODE
 				if(!msgText.innerText.includes("[notag]")){
-					msgText.innerText = msgText.innerText.replace(/(\[img\])/g, "<img style='max-width: 100%' src='");
+					msgText.innerText = msgText.innerText.replace(/(\[img\])/g, "<img style='max-width: 100%; outline: none;' src='");
 					msgText.innerText = msgText.innerText.replace(/(\[\/img\])/g, "'>");
-					msgText.innerText = msgText.innerText.replace(/(\[vid\])/g, "<video controls style='max-width: 100%'><source src='");
+					msgText.innerText = msgText.innerText.replace(/(\[vid\])/g, "<video controls style='max-width: 100%; outline: none;'><source src='");
 					msgText.innerText = msgText.innerText.replace(/(\[\/vid\])/g, "'></video>");
-					msgText.innerText = msgText.innerText.replace(/(\[aud\])/g, "<audio controls style='max-width: 100%'><source src='");
+					msgText.innerText = msgText.innerText.replace(/(\[aud\])/g, "<audio controls style='max-width: 100%; outline: none;'><source src='");
 					msgText.innerText = msgText.innerText.replace(/(\[\/aud\])/g, "'></audio>");
 					//[COLOR]
 					var colorCount = (msgText.innerText.match(/(\[color=)/g) || []).length;
@@ -707,6 +724,7 @@
 				msg.scrollIntoView();
 			}
 			function ClearDropDowns(){
+				ddon = false;
 				var dropdowns = document.getElementsByClassName("dropdown");
 				while (dropdowns[0]) {
 					dropdowns[0].parentNode.removeChild(dropdowns[0]);
