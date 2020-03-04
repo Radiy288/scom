@@ -101,6 +101,22 @@
 				color: #fff;
 				border: 1px solid #424242;
 			}
+			
+			a:link {
+				color:SteelBlue;
+			}
+			
+			a:visited {
+				color:RoyalBlue;
+			}
+			
+			a:hover {
+				color:SkyBlue;
+			}
+			
+			a:active {
+				color:SlateGray;
+			}
 		</style>
 		<script>
 			//GLOBALVARS
@@ -111,9 +127,11 @@
 			var suggestcur = -1;
 			var cmds = ["/clr", "/check", "/disconnect", "/username (str)"];
 			var cmdsEl = [];
-			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]"];
+			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[nobb]", "[color]", "[url]"];
+			bbs.sort();
 			var bbsEl = [];
 			let deferredPrompt;
+			var pinnedMessage;
 
 			//APPLICATION
 			window.addEventListener('beforeinstallprompt', (e) => {
@@ -160,8 +178,6 @@
 				input.addEventListener("keyup", function(event) {
 					if (event.keyCode === 13) {
 						document.getElementById("sendButton").click();
-						suggestcur = -1;
-						CheckCommand();
 					}
 					var suggestions = document.getElementsByClassName("suggest");
 					var available = [];
@@ -200,6 +216,7 @@
 					el.innerText = cmds[i];
 					el.onclick = function (){
 						input.value = this.innerText;
+						input.focus();
 						CheckCommand();
 					}
 					document.getElementById("suggestbox").appendChild(el);
@@ -212,6 +229,7 @@
 					el.innerText = bbs[i];
 					el.onclick = function (){
 						input.value = this.innerText+this.innerText.slice(0, 1)+'/'+this.innerText.slice(1);
+						input.focus();
 						CheckCommand();
 					}
 					document.getElementById("suggestbox").appendChild(el);
@@ -228,6 +246,7 @@
 			}
 			
 			function SendClick(){
+				suggestcur = -1;
 				var input = document.getElementById("chatInput");
 				if(input.value != ""){
 					if(input.value.charAt(0) == '/'){
@@ -288,6 +307,7 @@
 					}
 				}
 				input.value = "";
+				CheckCommand();
 				input.focus();
 			}
 			function pad(d) {
@@ -420,18 +440,29 @@
 							}
 						}
 					};
+					var optionPin = document.createElement("p");
+					optionPin.innerHTML = "Pin message";
+					optionPin.onclick = function(){
+						pinnedMessage = lastElement;
+						SendMessage('pin', 'server', pinnedMessage.children[0].innerText);
+						PinMessage(pinnedMessage.children[0].innerText);
+						ClearDropDowns();
+					};
 					var optionCancel = document.createElement("p");
 					optionCancel.innerHTML = "Cancel";
 					optionCancel.onclick = function(){ClearDropDowns();};
+
 					
 					optionQuote.className = "option";
 					optionDelete.className = "option";
 					optionCopy.className = "option";
+					optionPin.className = "option";
 					optionCancel.className = "option";
 					
 					dropdown.appendChild(optionQuote);
 					dropdown.appendChild(optionDelete);
 					dropdown.appendChild(optionCopy);
+					dropdown.appendChild(optionPin);
 					dropdown.appendChild(optionCancel);
 					
 					msgBody.appendChild(dropdown);
@@ -455,24 +486,80 @@
 						dropdown.style.left = rect.left;
 					}
 				};
-				//BB CODE
 				msg.appendChild(msgText);
-				msgText.innerText = msgText.innerText.replace(/(\[img\])/g, "<img style='max-width: 100%' src='");
-				msgText.innerText = msgText.innerText.replace(/(\[\/img\])/g, "'>");
-				msgText.innerText = msgText.innerText.replace(/(\[vid\])/g, "<video controls style='max-width: 100%'><source src='");
-				msgText.innerText = msgText.innerText.replace(/(\[\/vid\])/g, "'></video>");
-				msgText.innerText = msgText.innerText.replace(/(\[aud\])/g, "<audio controls style='max-width: 100%'><source src='");
-				msgText.innerText = msgText.innerText.replace(/(\[\/aud\])/g, "'></audio>");
-				msgText.innerHTML = msgText.innerText;
-				//<button style='font-size: 48px; color: #fff; background: #000;' onclick='ClearDropDowns();'>▶</button>
-				msgText.innerHTML = msgText.innerHTML.replace(/(\[i\])/g, '<i>');
-				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/i\])/g, '</i>');
+				//BB CODE
+				if(!msgText.innerText.includes("[nobb]")){
+					msgText.innerText = msgText.innerText.replace(/(\[img\])/g, "<img style='max-width: 100%' src='");
+					msgText.innerText = msgText.innerText.replace(/(\[\/img\])/g, "'>");
+					msgText.innerText = msgText.innerText.replace(/(\[vid\])/g, "<video controls style='max-width: 100%'><source src='");
+					msgText.innerText = msgText.innerText.replace(/(\[\/vid\])/g, "'></video>");
+					msgText.innerText = msgText.innerText.replace(/(\[aud\])/g, "<audio controls style='max-width: 100%'><source src='");
+					msgText.innerText = msgText.innerText.replace(/(\[\/aud\])/g, "'></audio>");
+					//[COLOR]
+					var colorCount = (msgText.innerText.match(/(\[color=)/g) || []).length;
+					for(let i=0; i<colorCount; i++){
+						var prs="";
+						for(let j=msgText.innerText.indexOf("[color=")+7; j<msgText.innerText.length; j++){
+							if(msgText.innerText.charAt(j) == "]"){
+								break;
+							}
+							prs+=msgText.innerText.charAt(j);
+						}
+						console.log(prs);
+						msgText.innerText = msgText.innerText.replace("[color="+prs+"]", "<span style='color: "+prs+"'>");
+					}
+					msgText.innerText = msgText.innerText.replace(/(\[\/color\])/g, "</span>");
+					//[URL=]
+					var urlCount = (msgText.innerText.match(/(\[url=)/g) || []).length;
+					for(let i=0; i<urlCount; i++){
+						var prs="";
+						for(let j=msgText.innerText.indexOf("[url=")+5; j<msgText.innerText.length; j++){
+							if(msgText.innerText.charAt(j) == "]"){
+								break;
+							}
+							prs+=msgText.innerText.charAt(j);
+						}
+						console.log(prs);
+						msgText.innerText = msgText.innerText.replace("[url="+prs+"]", "<a href="+prs+">");
+					}
+					//[URL]
+					var urlCount = (msgText.innerText.match(/(\[url\])/g) || []).length;
+					for(let i=0; i<urlCount; i++){
+						var prs="";
+						for(let j=msgText.innerText.indexOf("[url]")+5; j<msgText.innerText.length; j++){
+							if(msgText.innerText.charAt(j) == "["){
+								if(msgText.innerText.charAt(j+1) == "/"){
+									break;
+								}
+							}
+							prs+=msgText.innerText.charAt(j);
+						}
+						console.log(prs);
+						msgText.innerText = msgText.innerText.replace("[url]"+prs+"[/url]", "<a href="+prs+">"+prs+"</a>");
+					}
+					msgText.innerText = msgText.innerText.replace(/(\[\/url\])/g, "</a>");
+					msgText.innerHTML = msgText.innerText;
+					//<button style='font-size: 48px; color: #fff; background: #000;' onclick='ClearDropDowns();'>▶</button>
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[i\])/g, '<i>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/i\])/g, '</i>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[u\])/g, '<u>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/u\])/g, '</u>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[small\])/g, '<small>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/small\])/g, '</small>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[tt\])/g, '<tt>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/tt\])/g, '</tt>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[big\])/g, '<big>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/big\])/g, '</big>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[quote\])/g, '<blockquote style="background: #444; padding: 8px; margin: 4px; border-left-style: solid; ">');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/quote\])/g, '</blockquote>');
+				}
+				else{
+					msgText.innerText = msgText.innerHTML.replace(/(\[nobb\])/g, "");
+					msgText.innerText = msgText.innerHTML.replace(/(\[\/nobb\])/g, "");
+				}
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[n\])/g, '<br>');
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/n\])/g, '</>');
-				msgText.innerHTML = msgText.innerHTML.replace(/(\[u\])/g, '<u>');
-				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/u\])/g, '</u>');
-				msgText.innerHTML = msgText.innerHTML.replace(/(\[quote\])/g, '<blockquote style="background: #444; padding: 8px; margin: 4px; border-left-style: solid; ">');
-				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/quote\])/g, '</blockquote>');
+				
 				msgSender.innerHTML = "<small>"+msgSender.innerText+"<small>";
 				msg.appendChild(msgSender);
 				msgBody.appendChild(msg);
@@ -484,6 +571,24 @@
 				while (dropdowns[0]) {
 					dropdowns[0].parentNode.removeChild(dropdowns[0]);
 				}
+			}
+			function PinMessage(text){
+				var lastpin = document.getElementById('pin');
+				if(lastpin != null){
+					lastpin.parentNode.removeChild(lastpin);
+				}
+				var pin = document.createElement('p');
+				pin.id = "pin";
+				pin.style.background = "#292929";
+				//pin.style.position = "absolute";
+				pin.style["min-width"] = "100%";
+				pin.style.overflow = "auto";
+				pin.style.top = "0px";
+				pin.style["box-sizing"] = "border-box";
+				pin.style.padding = 4;
+				pin.innerHTML = "<img style='height: 1em; margin-right: 0.5em; margin-left: 0.2em;' src='pushpin.png'>"+text;
+				pin.onclick = function(){pinnedMessage.scrollIntoView();}
+				document.getElementById("chat").insertBefore(pin, document.getElementById("chatbox"));
 			}
 			function makeid(length) {
 				var result           = '';
@@ -536,6 +641,7 @@
 				websocket.onopen = function(event){
 					console.log("OPENING");
 					SendMessage('message', 'server', username+' has joined the session.');
+					SendMessage('pinrequest', username, '');
 					var servers = document.getElementById("servers");
 					connected = true;
 					servers.className = "fade-quick";
@@ -545,6 +651,15 @@
 				};
 				websocket.onclose = function(event){
 					//SendMessage('message', 'server', username+' has left the session.');
+					ClearDropDowns();
+					var lastpin = document.getElementById('pin');
+					if(lastpin != null){
+						lastpin.parentNode.removeChild(lastpin);
+					}
+					var msgs = document.getElementsByClassName("chatMessage");
+					while (msgs[0]) {
+						msgs[0].parentNode.removeChild(msgs[0]);
+					}
 					console.log("CLOSING");
 					setTimeout(function(){
 						var servers = document.getElementById("servers");
@@ -597,6 +712,13 @@
 							Message('server', username, '0');
 							SendMessage('message', 'server', username);
 							break;
+							
+						case 'pin':
+							PinMessage(msg.text);
+							break;
+						case 'pinrequest':
+							SendMessage('pin', 'server', document.getElementById("pin").innerText);
+							break;
 					}
 				}
 			}
@@ -609,8 +731,16 @@
 			function CheckCommand(){
 				suggestcur = -1;
 				var input = document.getElementById("chatInput").value;
-				if(input.charAt(0) == "/" || input.charAt(0) == "["){
-					document.getElementById("suggestbox").style.display = "block";
+				if (input.length > 0){
+					if(input.charAt(0) == "/"){
+						document.getElementById("suggestbox").style.display = "block";
+					}
+					else if(input.charAt(input.length-1) == "["){
+						document.getElementById("suggestbox").style.display = "block";
+					}
+					else if(input.charAt(input.length-1) == "]"){
+						document.getElementById("suggestbox").style.display = "none";
+					}
 					for (let i=0; i<cmds.length; i++){
 						if(cmds[i].includes(input)){
 							cmdsEl[i].style.display = "block";
@@ -620,8 +750,13 @@
 						}
 					}
 					for (let i=0; i<bbs.length; i++){
-						if(bbs[i].includes(input)){
-							bbsEl[i].style.display = "block";
+						if(input.includes("[")){
+							if(bbs[i].includes(input.slice(input.lastIndexOf("[")))){
+								bbsEl[i].style.display = "block";
+							}
+							else{
+								bbsEl[i].style.display = "none";
+							}
 						}
 						else{
 							bbsEl[i].style.display = "none";
