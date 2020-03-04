@@ -127,7 +127,7 @@
 			var suggestcur = -1;
 			var cmds = ["/clr", "/check", "/disconnect", "/info (str)", "/username {str}"];
 			var cmdsEl = [];
-			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]"];
+			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]", "[vid]"];
 			bbs.sort();
 			var bbsEl = [];
 			let deferredPrompt;
@@ -301,7 +301,7 @@
 									prs+=input.value.charAt(i);
 								}
 								if(prs == ""){
-									Message('server', "S-Messenger 1.1.2");
+									Message('server', "S-Messenger 1.1.3");
 									Message('server', navigator.platform+Define(navigator.oscpu)+" "+navigator.language+". "+Define(navigator.vendor));
 									Message('server', Define(navigator.userAgent));
 								}
@@ -411,6 +411,13 @@
 											Message('server', "Allows embedding clickable URL links. End tag required.");
 											Message('server', "{link} - the specified URL link.");
 											Message('server', "Example: [url=favicon.png]Logo of the SCP Foundation.[/url]");
+											break;
+											
+										case "[vid]":
+											Message('server', "[notag][vid]{link}[/vid]");
+											Message('server', "Allows embedding direct video links as playable videos. End tag required.");
+											Message('server', "{link} - the specified direct video link.");
+											Message('server', "Example: [vid]SCPTECH.mp4[/vid]");
 											break;
 											
 										default:
