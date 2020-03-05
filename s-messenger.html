@@ -13,6 +13,10 @@
 				padding: 0;
 				overscroll-behavior: none;
 				frame: { type: "none" };
+				overflow-y: hidden;
+			}
+			html {
+				overflow-y: hidden;
 			}
 			
 			p {
@@ -152,7 +156,7 @@
 			var ddon = false;
 			var pinnedMessage;
 			var mhistory = [];
-			const version = "1.1.7";
+			const version = "1.1.8";
 
 			let deferredPrompt;
 			//APPLICATION
@@ -1036,6 +1040,10 @@
 					document.getElementById("suggestbox").style.display = "none";
 				}
 			}
+			function Exit(){
+				End();
+				close();
+			}
 		</script>
 		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
@@ -1049,13 +1057,13 @@
 		</audio>
 		<div id="windowBorder" class=windowBorder>
 			<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">S-Messenger</span>
-			<img src="close.png" class=windowButton>
+			<img src="close.png" class=windowButton onclick="Exit()">
 			<img src="hide.png" class=windowButton>
 			<img src="options.png" style="margin-right: 8px" class=windowButton>
 		</div>
 		<div id="windowContent" style="display: block; position: absolute; display:inline-block; width: 100%; height: calc(100% - 24px);">
 			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%">
-				<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 12%;" onload="Load()">
+				<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 24px;" onload="Load()">
 				<h1 align=CENTER>S-Messenger</h1>
 				<p align=CENTER>Websocket URL</p>
 				<input id="ws" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 75%; margin-bottom:8px;" placeholder="Enter websocket URL">
