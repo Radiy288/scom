@@ -149,7 +149,12 @@
 		</style>
 		<script>
 			//GLOBALVARS
-			var username = "";
+			if(document.cookie == ""){
+				var username = makeid(8);
+			}
+			else{
+				var username = document.cookie;
+			}
 			var websocket;
 			var connected = false;
 			var lastElement;
@@ -347,7 +352,7 @@
 				servers.className='fade';
 				servers.style.opacity=1;
 				document.getElementById('ws').value = "wss://connect.websocket.in/v2/1?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjY0NWJkYzI2OGQ2NjkxMmY3MzI5MWM1YWE4YmY3YmI5YTkzMzEwOGUwYjRiYjA4NDgyOGI4YzliMzczMGVkNjhmMGI1MGQ2NGM5ODZhNmE4In0.eyJhdWQiOiI4IiwianRpIjoiNjQ1YmRjMjY4ZDY2OTEyZjczMjkxYzVhYThiZjdiYjlhOTMzMTA4ZTBiNGJiMDg0ODI4YjhjOWIzNzMwZWQ2OGYwYjUwZDY0Yzk4NmE2YTgiLCJpYXQiOjE1ODMxNzE1OTcsIm5iZiI6MTU4MzE3MTU5NywiZXhwIjoxNjE0NzA3NTk3LCJzdWIiOiI1OTgiLCJzY29wZXMiOltdfQ.KJGvQbVglNPlFE9S0ScLTdaLARCRwTvv8YzeL-HyUYMVX37YDU0fQy88iUH1uDhKf3sSq-ljdyplhn9ukMcY4pHGYneEPXnVJzRMM0O3NF-U97JL4FPcHjUmNkXwYV-o1AWo-B5h3NcGAeuhVDoJGDXbjP7pQt0YhtPzfU4rhGw-9JrKwvXNLmq5J3qHV-m3BkpE4QdXfR2KIHO_Rr78x_ufGkneRGCxkE5nyW2vVLrP-_BDCKIvaP7dS6oob_gRvjmVMJaRITNKsbJqpyZBnkDvdKzXjxlgcvDQh2ZXMFT63RCIBh3o29lr7BlmOQs5CXCz7Tq0EFp8o4iHyWdnXAqoBIzadT1_0hkRo6KojYhMtLNpXDuba-7QvPBO556Bp8VzT0QLPSBdl6_N--LcqrQ90UtJpkiJIVf4dQLfST8TIitTHiqGg6cJSUkqhDwIACSMG7Ah_b09zzciJ8n_ILCEhclGH66L81jvvpGtHfnCsocBPJ_coIECAuyxC074T2s4gdj0Jral9GYtjeb4JGCmgtgMul1-vwk8wjWK4tT2LGsdiUqbnovhK-wNLa2V4gQnzb2H1YgKmf1LKcmUOxZMpnJFfXm6rBw-N6HzKLfq0O8QztGOsseU9f7nzQZQZLeixXIWd9MLI9tDzvzxsxhZHMl9cVa1jyU_9lVkOlw";
-				document.getElementById('un').value = makeid(8);
+				document.getElementById('un').value = username;
 			}
 			
 			function SendClick(){
@@ -391,6 +396,9 @@
 								if(prs == ""){
 									Message("server", "Invalid username.");
 									return;
+								}
+								if(prs == "client" || prs == "server"){
+									Message("server", "REGISTERED PROPERTY");
 								}
 								Message("server", username+" changed username to "+prs+".");
 								SendMessage('message', 'server', username+" changed username to "+prs+".");
@@ -914,6 +922,7 @@
 				};
 				websocket.onopen = function(event){
 					console.log("OPENING");
+					document.cookie = username;
 					SendMessage('message', 'server', username+' has joined the session.');
 					SendMessage('pinrequest', username, '');
 					var servers = document.getElementById("servers");
@@ -1115,7 +1124,7 @@
 		<audio id="audio_notification">
 			<source src="message1.mp3">
 		</audio>
-		<div id="windowBorder" class=windowBorder>
+		<div id="windowBorder" class=windowBorder style="z-index: 8;">
 			<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">S-Messenger</span>
 			<img src="close.png" class=windowButton onclick="Exit()">
 			<img src="hide.png" class=windowButton onclick="Minimize()">
