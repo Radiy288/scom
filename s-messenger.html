@@ -12,6 +12,7 @@
 				margin: 0;
 				padding: 0;
 				overscroll-behavior: none;
+				frame: { type: "none" };
 			}
 			
 			p {
@@ -118,6 +119,23 @@
 			a:active {
 				color:SlateGray;
 			}
+			
+			.windowBorder {
+				min-height: 24px;
+				max-height: 24px;
+				background: #898989;
+				box-sizing: border-box;
+			}
+			.windowButton {
+				margin: 0;
+				float: right;
+			}
+			.windowButton:hover {
+				filter: brightness(1.3);
+			}
+			.windowButton:active {
+				filter: brightness(1.5);
+			}
 		</style>
 		<script>
 			//GLOBALVARS
@@ -132,10 +150,11 @@
 			bbs.sort();
 			var bbsEl = [];
 			var ddon = false;
-			let deferredPrompt;
 			var pinnedMessage;
-			const version = "1.1.6";
+			var mhistory = [];
+			const version = "1.1.7";
 
+			let deferredPrompt;
 			//APPLICATION
 			window.addEventListener('beforeinstallprompt', (e) => {
 			  // Stash the event so it can be triggered later.
@@ -175,6 +194,24 @@
 			  );
 			});
 			
+			chrome.app.runtime.onLaunched.addListener(function() {
+				chrome.app.window.frame = "none";
+			});
+			
+			function insertAtCaret(areaId, text) {
+				var txtarea = document.getElementById(areaId);
+				var scrollPos = txtarea.scrollTop;
+				var caretPos = txtarea.selectionStart;
+
+				var front = (txtarea.value).substring(0, caretPos);
+				var back = (txtarea.value).substring(txtarea.selectionEnd, txtarea.value.length);
+				txtarea.value = front + text + back;
+				caretPos = caretPos + text.length;
+				txtarea.selectionStart = caretPos;
+				txtarea.selectionEnd = caretPos;
+				txtarea.focus();
+				txtarea.scrollTop = scrollPos;
+			}
 			
 			
 			function Start(){
@@ -194,38 +231,71 @@
 						}
 					}
 				});
-				
+				document.body.addEventListener("keyup", function(event) {
+					if(!connected){
+						if (event.keyCode === 13) {
+							document.getElementById("connectbutton").click();
+						}
+					}
+				});
 				input.addEventListener("keyup", function(event) {
 					if (event.keyCode === 13) {
-						document.getElementById("sendButton").click();
-					}
-					var suggestions = document.getElementsByClassName("suggest");
-					var available = [];
-					for (let i=0; i<suggestions.length; i++){
-						if(suggestions[i].style.display == "block"){
-							available.push(suggestions[i]);
+						if (event.shiftKey){
+							insertAtCaret("chatInput", "[n]");
+						}
+						else{
+							document.getElementById("sendButton").click();
 						}
 					}
-					if (event.keyCode === 38) {
-						if(suggestcur == -1){
-							suggestcur = available.length;
+					if(document.getElementById("suggestbox").style.display != "none"){
+						var suggestions = document.getElementsByClassName("suggest");
+						var available = [];
+						for (let i=0; i<suggestions.length; i++){
+							if(suggestions[i].style.display == "block"){
+								available.push(suggestions[i]);
+							}
 						}
-						if(input.value.charAt(0) == '/' || input.value.charAt(0) == '['){
+						if (event.keyCode === 38) {
+							if(suggestcur == -1){
+								suggestcur = available.length;
+							}
+							if(input.value.charAt(0) == '/' || input.value.charAt(0) == '['){
+								if(suggestcur > 0){
+									suggestcur--;
+								}
+								input.value = available[suggestcur].innerText;
+							}
+						}
+						if (event.keyCode === 40) {
+							if(suggestcur == -1){
+								suggestcur = 0;
+							}
+							if(input.value.charAt(0) == '/' || input.value.charAt(0) == '['){
+								if(suggestcur < available.length-1){
+									suggestcur++;
+								}
+								input.value = available[suggestcur].innerText;
+							}
+						}
+					}
+					else{
+						if (event.keyCode === 38) {
+							if(suggestcur == -1){
+								suggestcur = mhistory.length;
+							}
 							if(suggestcur > 0){
 								suggestcur--;
 							}
-							input.value = available[suggestcur].innerText;
+							input.value = mhistory[suggestcur];
 						}
-					}
-					if (event.keyCode === 40) {
-						if(suggestcur == -1){
-							suggestcur = 0;
-						}
-						if(input.value.charAt(0) == '/' || input.value.charAt(0) == '['){
-							if(suggestcur < available.length-1){
+						if (event.keyCode === 40) {
+							if(suggestcur == -1){
+								suggestcur = mhistory.length;
+							}
+							if(suggestcur < mhistory.length-1){
 								suggestcur++;
 							}
-							input.value = available[suggestcur].innerText;
+							input.value = mhistory[suggestcur];
 						}
 					}
 				});
@@ -269,6 +339,8 @@
 				suggestcur = -1;
 				var input = document.getElementById("chatInput");
 				if(input.value != ""){
+					mhistory.push(input.value);
+					console.log(input.value);
 					if(input.value.charAt(0) == '/'){
 						var read="";
 						for(let i=1; i<input.value.length; i++){
@@ -396,7 +468,7 @@
 											
 										case "[n]":
 											Message('server', "[⁣n]");
-											Message('server', "Adds newline to text. End tag not required.");
+											Message('server', "Adds newline to text. Can also be entered via Shift+Enter. End tag not required.");
 											Message('server', "Example: New[n]line.");
 											
 										case "[notag]":
@@ -800,6 +872,16 @@
 					}, 10);
 					return;
 				}
+				if(un.value == "client" || un.value == "server"){
+					error.innerHTML = "REGISTERED PROPERTY";
+					error.className = "";
+					error.style.opacity = 1;
+					setTimeout(function(){
+						error.className = "fade";
+						error.style.opacity = 0;
+					}, 10);
+					return;
+				}
 				document.getElementById("connectbutton").disabled = true;
 				username = un.value;
 				websocket = new WebSocket(ws.value);
@@ -965,28 +1047,36 @@
 		<audio id="audio_notification">
 			<source src="message1.mp3">
 		</audio>
-		<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%">
-			<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 12%;" onload="Load()">
-			<h1 align=CENTER>S-Messenger</h1>
-			<p align=CENTER>Websocket URL</p>
-			<input id="ws" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 75%; margin-bottom:8px;" placeholder="Enter websocket URL">
-			<p align=CENTER>Username</p>
-			<input id="un" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 50%; margin-bottom:8px;" placeholder="Enter username">
-			<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
-			<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</h3>
-			<div style="position: absolute; bottom: 0; width: 100%;">
-				<span align=CENTER id="versionShow" style="display: block;"></span>
-				<button id="updatebutton" class=uibutton style="display: block;margin-left: auto; margin-right: auto; margin-bottom: 4px;" onclick="location.reload()">Update</button>
-			</div>
+		<div id="windowBorder" class=windowBorder>
+			<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">S-Messenger</span>
+			<img src="close.png" class=windowButton>
+			<img src="hide.png" class=windowButton>
+			<img src="options.png" style="margin-right: 8px" class=windowButton>
 		</div>
-		<div id="chat" style="display: none; overflow-y: auto;">
-			<div id="chatbox" style="overflow-y: auto; max-height: calc(100% - 25px);">
-				<div id="suggestbox" style="display: none; position: absolute; bottom: 25px; overflow: auto;">
-					
+		<div id="windowContent" style="display: block; position: absolute; display:inline-block; width: 100%; height: calc(100% - 24px);">
+			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%">
+				<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 12%;" onload="Load()">
+				<h1 align=CENTER>S-Messenger</h1>
+				<p align=CENTER>Websocket URL</p>
+				<input id="ws" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 75%; margin-bottom:8px;" placeholder="Enter websocket URL">
+				<p align=CENTER>Username</p>
+				<input id="un" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 50%; margin-bottom:8px;" placeholder="Enter username">
+				<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
+				<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</h3>
+				<div style="position: absolute; top: calc(100% - 48px); width: 100%;">
+					<span align=CENTER id="versionShow" style="display: block;"></span>
+					<button id="updatebutton" class=uibutton style="display: block;margin-left: auto; margin-right: auto; margin-bottom: 4px;" onclick="location.reload()">Update</button>
 				</div>
 			</div>
-			<div class=bottomui>
-				<input id="chatInput" class=inputbox oninput="CheckCommand()"><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
+			<div id="chat" style="display: none; overflow-y: auto;">
+				<div id="chatbox" style="overflow-y: auto; max-height: calc(100% - 25px);">
+					<div id="suggestbox" style="display: none; position: absolute; bottom: 25px; overflow: auto;">
+						
+					</div>
+				</div>
+				<div class=bottomui>
+					<input id="chatInput" class=inputbox oninput="CheckCommand()"><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
+				</div>
 			</div>
 		</div>
 	</body>
