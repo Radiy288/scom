@@ -1086,6 +1086,12 @@
 				mouseprev[0]=event.clientX;
 				mouseprev[1]=event.clientY;
 			}
+			function TouchStart(event){
+				var touches = event.changedTouches;
+				mouseprev[0]=touches[0].pageX;
+				mouseprev[1]=touches[0].pageY;
+				dragOptions = true;
+			}
 			function TouchMove(event){
 				var touches = event.changedTouches;
 				mouserel[0] = touches[0].pageX-mouseprev[0];
@@ -1117,7 +1123,7 @@
 		</div>
 		<div id="windowContent" style="display: block; position: absolute; display:inline-block; width: 100%; height: calc(100% - 24px);">
 			<div id="optionsMenu" class=menuWindow style="display: none; width: 320; height: 240;">
-				<div id="windowBorder" class=windowBorder onmousedown="dragOptions = true;" ontouchstart="dragOptions = true;">
+				<div id="windowBorder" class=windowBorder onmousedown="dragOptions = true;" ontouchstart="TouchStart(event)">
 					<img src="close.png" class=windowButton onclick="document.getElementById('optionsMenu').style.display = 'none';">
 				</div>
 			</div>
