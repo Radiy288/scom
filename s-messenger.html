@@ -168,8 +168,17 @@
 			}
 		</style>
 		<script>
-			function setCookie(cname, cvalue) {
-				document.cookie = cname + "=" + cvalue + ";";
+			function StringToBool(str){
+				if(str == "true"){
+					return true;
+				}
+				return false;
+			}
+			function setCookie(cname, cvalue, exdays) {
+				var d = new Date();
+				d.setTime(d.getTime() + (exdays*24*60*60*1000));
+				var expires = "expires="+ d.toUTCString();
+				document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 			}
 			function getCookie(cname) {
 				var name = cname + "=";
@@ -198,14 +207,14 @@
 				var enableNotify = true;
 			}
 			else{
-				var enableNotify = getCookie("enableNotify");
+				var enableNotify = StringToBool(getCookie("enableNotify"));
 			}
 			//ENABLE SOUND
 			if(getCookie("enableSound") == ""){
 				var enableSound = true;
 			}
 			else{
-				var enableSound = getCookie("enableSound");
+				var enableSound = StringToBool(getCookie("enableSound"));
 			}
 			var websocket;
 			var connected = false;
@@ -1055,7 +1064,7 @@
 				};
 				websocket.onopen = function(event){
 					console.log("OPENING");
-					document.cookie = username;
+					setCookie('username', username, 365);
 					SendMessage('message', 'server', username+' has joined the session.');
 					SendMessage('pinrequest', username, '');
 					var servers = document.getElementById("servers");
@@ -1301,9 +1310,9 @@
 				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Notification permission: <span id="notifperm">Null</span></span>
 				<button class=uibutton style="float:right; margin-right: 4px;" onclick="Notification.requestPermission().then(function(result) {document.getElementById('notifperm').innerText = result;});">Request</button>
 				<br>
-				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Enable notifications:</span><button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNotify=false;}else{this.innerText='✓'; enableNotify=true;}">✓</button>
+				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Enable notifications:</span><button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNotify=false; setCookie('enableNotify', 'false', 365);}else{this.innerText='✓'; enableNotify=true; setCookie('enableNotify', 'true', 365);}">✓</button>
 				<br>
-				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Notification sound:</span><button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableSound=false;}else{this.innerText='✓'; enableSound=true;}">✓</button>
+				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Notification sound:</span><button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableSound=false; setCookie('enableSound', 'false', 365);}else{this.innerText='✓'; enableSound=true; setCookie('enableSound', 'true', 365);}">✓</button>
 			</div>
 			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%">
 				<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 24px;" onload="Load()" ondragstart="return false;">
