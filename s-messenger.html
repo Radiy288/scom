@@ -135,25 +135,77 @@
 				margin: 0;
 				float: right;
 			}
-			.windowButton:hover {
+			.windowButton:hover, .uicheckbox:hover {
 				filter: brightness(1.3);
 			}
-			.windowButton:active {
+			.windowButton:active, .uicheckbox:active {
 				filter: brightness(1.5);
 			}
 			.menuWindow {
 				background: #212121;
 				position: absolute;
 				z-index: 3;
+				max-width: 100%;
+				max-height: 100%;
+			}
+			hr {
+				margin: 2px;
+				background: #292929;
+				height: 2px;
+				border: none;
+			}
+			.uicheckbox {
+				min-width: 20px;
+				min-height: 20px;
+				max-width: 20px;
+				max-height: 20px;
+				background: #424242;
+				border: none;
+				padding: 0px;
+				margin-top: 1px;
+				margin-bottom: 1px;
+				position: absolute;
 			}
 		</style>
 		<script>
+			function setCookie(cname, cvalue) {
+				document.cookie = cname + "=" + cvalue + ";";
+			}
+			function getCookie(cname) {
+				var name = cname + "=";
+				var ca = document.cookie.split(';');
+				for(var i = 0; i < ca.length; i++) {
+					var c = ca[i];
+					while (c.charAt(0) == ' ') {
+						c = c.substring(1);
+					}
+					if (c.indexOf(name) == 0) {
+						return c.substring(name.length, c.length);
+					}
+				}
+				return "";
+			}
 			//GLOBALVARS
-			if(document.cookie == ""){
+			//USERNAME
+			if(getCookie("username") == ""){
 				var username = makeid(8);
 			}
 			else{
-				var username = document.cookie;
+				var username = getCookie("username");
+			}
+			//ENABLE NOTIFY
+			if(getCookie("enableNotify") == ""){
+				var enableNotify = true;
+			}
+			else{
+				var enableNotify = getCookie("enableNotify");
+			}
+			//ENABLE SOUND
+			if(getCookie("enableSound") == ""){
+				var enableSound = true;
+			}
+			else{
+				var enableSound = getCookie("enableSound");
 			}
 			var websocket;
 			var connected = false;
@@ -161,13 +213,13 @@
 			var suggestcur = -1;
 			var cmds = ["/clr", "/check", "/disconnect", "/info (str)", "/update", "/username {str}"];
 			var cmdsEl = [];
-			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]", "[vid]"];
+			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]", "[vid]", "[size]"];
 			bbs.sort();
 			var bbsEl = [];
 			var ddon = false;
 			var pinnedMessage;
 			var mhistory = [];
-			const version = "1.1.9";
+			const version = "1.2.0";
 			var dragOptions = false;
 			var optionsWindow;
 			var mouseprev = [0, 0];
@@ -231,7 +283,7 @@
 				txtarea.focus();
 				txtarea.scrollTop = scrollPos;
 			}
-			
+
 			
 			function Start(){
 				optionsWindow = document.getElementById("optionsMenu");
@@ -362,7 +414,21 @@
 				if(input.value != ""){
 					mhistory.push(input.value);
 					console.log(input.value);
-					if(input.value.charAt(0) == '/'){
+					if(input.value.charAt(0) == '@'){
+						var read="";
+						for(let i=1; i<input.value.length; i++){
+							if (input.value.charAt(i) == " "){
+								break;
+							}
+							read += input.value.charAt(i);
+						}
+						console.log(read);
+						var today = new Date();
+						var time = pad(today.getHours()) + ":" + pad(today.getMinutes());
+						Message('client', input.value, time);
+						SendMessage('private', username, input.value, read);
+					}
+					else if(input.value.charAt(0) == '/'){
 						var read="";
 						for(let i=1; i<input.value.length; i++){
 							if (input.value.charAt(i) == " "){
@@ -507,6 +573,12 @@
 											Message('server', "Example: [quote]This text is quoted.[/quote]");
 											break;
 											
+										case "[size]":
+											Message('server', "[notag][size={val}][/size]");
+											Message('server', "Makes inner text's size the specified number. End tag required.");
+											Message('server', "Example: [size=32]This text's size is 32px.[/size]");
+											break;
+											
 										case "[small]":
 											Message('server', "[notag][small][/small]");
 											Message('server', "Makes inner text relatively smaller. End tag required.");
@@ -577,14 +649,15 @@
 			function pad(d) {
 				return (d < 10) ? '0' + d.toString() : d.toString();
 			}
-			function SendMessage(msgid, msgsender, msgtext){
+			function SendMessage(msgid, msgsender, msgtext, msgadressant){
 				var today = new Date();
 				var time = pad(today.getHours()) + ":" + pad(today.getMinutes());
 				var msg = {
 						id: msgid,
 						sender: msgsender,
 						text: msgtext,
-						time: time
+						time: time,
+						adressant: msgadressant
 					};
 				websocket.send(JSON.stringify(msg));
 			}
@@ -753,56 +826,115 @@
 				msg.appendChild(msgText);
 				//BB CODE
 				if(!msgText.innerText.includes("[notag]")){
-					msgText.innerText = msgText.innerText.replace(/(\[img\])/g, "<img style='max-width: 100%; outline: none;' src='");
-					msgText.innerText = msgText.innerText.replace(/(\[\/img\])/g, "'>");
-					msgText.innerText = msgText.innerText.replace(/(\[vid\])/g, "<video controls style='max-width: 100%; outline: none;'><source src='");
-					msgText.innerText = msgText.innerText.replace(/(\[\/vid\])/g, "'></video>");
-					msgText.innerText = msgText.innerText.replace(/(\[aud\])/g, "<audio controls style='max-width: 100%; outline: none;'><source src='");
-					msgText.innerText = msgText.innerText.replace(/(\[\/aud\])/g, "'></audio>");
-					//[COLOR]
-					var colorCount = (msgText.innerText.match(/(\[color=)/g) || []).length;
-					for(let i=0; i<colorCount; i++){
+					//msgText.innerText = msgText.innerText.replace(/(\[img\])/g, "<img style='max-width: 100%; outline: none;' src='");
+					//msgText.innerHTML = msgText.innerText.replace(/(\[\/img\])/g, "'>");
+					//msgText.innerText = msgText.innerText.replace(/(\[vid\])/g, "<video controls style='max-width: 100%; outline: none;'><source src='");
+					//msgText.innerText = msgText.innerText.replace(/(\[\/vid\])/g, "'></video>");
+					//msgText.innerText = msgText.innerText.replace(/(\[aud\])/g, "<audio controls style='max-width: 100%; outline: none;'><source src='");
+					//msgText.innerText = msgText.innerText.replace(/(\[\/aud\])/g, "'></audio>");
+					var tagCount;
+					//[IMAGE]
+					tagCount = (msgText.innerHTML.match(/(\[img\])/g) || []).length;
+					for(let i=0; i<tagCount; i++){
 						var prs="";
-						for(let j=msgText.innerText.indexOf("[color=")+7; j<msgText.innerText.length; j++){
-							if(msgText.innerText.charAt(j) == "]"){
-								break;
-							}
-							prs+=msgText.innerText.charAt(j);
-						}
-						console.log(prs);
-						msgText.innerText = msgText.innerText.replace("[color="+prs+"]", "<span style='color: "+prs+"'>");
-					}
-					msgText.innerText = msgText.innerText.replace(/(\[\/color\])/g, "</span>");
-					//[URL=]
-					var urlCount = (msgText.innerText.match(/(\[url=)/g) || []).length;
-					for(let i=0; i<urlCount; i++){
-						var prs="";
-						for(let j=msgText.innerText.indexOf("[url=")+5; j<msgText.innerText.length; j++){
-							if(msgText.innerText.charAt(j) == "]"){
-								break;
-							}
-							prs+=msgText.innerText.charAt(j);
-						}
-						console.log(prs);
-						msgText.innerText = msgText.innerText.replace("[url="+prs+"]", "<a href="+prs+">");
-					}
-					//[URL]
-					var urlCount = (msgText.innerText.match(/(\[url\])/g) || []).length;
-					for(let i=0; i<urlCount; i++){
-						var prs="";
-						for(let j=msgText.innerText.indexOf("[url]")+5; j<msgText.innerText.length; j++){
-							if(msgText.innerText.charAt(j) == "["){
-								if(msgText.innerText.charAt(j+1) == "/"){
+						
+						for(let j=msgText.innerHTML.indexOf("[img]")+5; j<msgText.innerHTML.length; j++){
+							if(msgText.innerHTML.charAt(j) == "["){
+								if(msgText.innerHTML.charAt(j+1) == "/"){
 									break;
 								}
 							}
-							prs+=msgText.innerText.charAt(j);
+							prs+=msgText.innerHTML.charAt(j);
 						}
-						console.log(prs);
-						msgText.innerText = msgText.innerText.replace("[url]"+prs+"[/url]", "<a href="+prs+">"+prs+"</a>");
+						msgText.innerHTML = msgText.innerHTML.replace("[img]"+prs+"[/img]", '<img style="max-width: 100%" src="'+prs+'">');
 					}
-					msgText.innerText = msgText.innerText.replace(/(\[\/url\])/g, "</a>");
-					msgText.innerHTML = msgText.innerText;
+					//[AUDIO]
+					tagCount = (msgText.innerHTML.match(/(\[aud\])/g) || []).length;
+					for(let i=0; i<tagCount; i++){
+						var prs="";
+						
+						for(let j=msgText.innerHTML.indexOf("[aud]")+5; j<msgText.innerHTML.length; j++){
+							if(msgText.innerHTML.charAt(j) == "["){
+								if(msgText.innerHTML.charAt(j+1) == "/"){
+									break;
+								}
+							}
+							prs+=msgText.innerHTML.charAt(j);
+						}
+						msgText.innerHTML = msgText.innerHTML.replace("[aud]"+prs+"[/aud]", '<audio controls style="max-width: 100%; outline: none;"><source src="'+prs+'"></video>');
+					}
+					//[VIDEO]
+					tagCount = (msgText.innerHTML.match(/(\[vid\])/g) || []).length;
+					for(let i=0; i<tagCount; i++){
+						var prs="";
+						
+						for(let j=msgText.innerHTML.indexOf("[vid]")+5; j<msgText.innerHTML.length; j++){
+							if(msgText.innerHTML.charAt(j) == "["){
+								if(msgText.innerHTML.charAt(j+1) == "/"){
+									break;
+								}
+							}
+							prs+=msgText.innerHTML.charAt(j);
+						}
+						msgText.innerHTML = msgText.innerHTML.replace("[vid]"+prs+"[/vid]", '<video controls style="max-width: 100%; outline: none;"><source src="'+prs+'"></video>');
+					}
+					//[COLOR]
+					tagCount = (msgText.innerHTML.match(/(\[color=)/g) || []).length;
+					for(let i=0; i<tagCount; i++){
+						var prs="";
+						for(let j=msgText.innerHTML.indexOf("[color=")+7; j<msgText.innerHTML.length; j++){
+							if(msgText.innerHTML.charAt(j) == "]"){
+								break;
+							}
+							prs+=msgText.innerHTML.charAt(j);
+						}
+						msgText.innerHTML = msgText.innerHTML.replace("[color="+prs+"]", "<span style='color: "+prs+"'>");
+					}
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/color\])/g, "</span>");
+					//[URL=]
+					tagCount = (msgText.innerHTML.match(/(\[url=)/g) || []).length;
+					for(let i=0; i<tagCount; i++){
+						var prs="";
+						for(let j=msgText.innerHTML.indexOf("[url=")+5; j<msgText.innerHTML.length; j++){
+							if(msgText.innerHTML.charAt(j) == "]"){
+								break;
+							}
+							prs+=msgText.innerHTML.charAt(j);
+						}
+						msgText.innerHTML = msgText.innerHTML.replace("[url="+prs+"]", "<a href="+prs+">");
+					}
+					//[URL]
+					var urlCount = (msgText.innerHTML.match(/(\[url\])/g) || []).length;
+					for(let i=0; i<tagCount; i++){
+						var prs="";
+						for(let j=msgText.innerHTML.indexOf("[url]")+5; j<msgText.innerHTML.length; j++){
+							if(msgText.innerHTML.charAt(j) == "["){
+								if(msgText.innerHTML.charAt(j+1) == "/"){
+									break;
+								}
+							}
+							prs+=msgText.innerHTML.charAt(j);
+						}
+						msgText.innerHTML = msgText.innerHTML.replace("[url]"+prs+"[/url]", "<a href="+prs+">"+prs+"</a>");
+					}
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/url\])/g, "</a>");
+					//[SIZE=]
+					tagCount = (msgText.innerHTML.match(/(\[size=)/g) || []).length;
+					for(let i=0; i<tagCount; i++){
+						var prs="";
+						for(let j=msgText.innerHTML.indexOf("[size=")+6; j<msgText.innerHTML.length; j++){
+							if(msgText.innerHTML.charAt(j) == "]"){
+								break;
+							}
+							prs+=msgText.innerHTML.charAt(j);
+						}
+						var iprs = prs;
+						if(parseInt(prs) > 200){iprs='200';}
+						if(parseInt(prs) < 0){iprs='0';}
+						msgText.innerHTML = msgText.innerHTML.replace("[size="+prs+"]", '<span style="font-size: '+iprs+'px">');
+					}
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/size\])/g, "</span>");
+					//msgText.innerHTML = msgText.innerText;
 					//<button style='font-size: 48px; color: #fff; background: #000;' onclick='ClearDropDowns();'>▶</button>
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[i\])/g, '<i>');
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/i\])/g, '</i>');
@@ -932,20 +1064,24 @@
 					servers.style.opacity = 0;
 					document.getElementById("chat").style.display = "block";
 					servers.style.display = "none";
+					Message('server', 'Successfully connected to a server. Online users:');
+					Message('server', username);
+					SendMessage('joincheck', username);
 				};
 				websocket.onclose = function(event){
 					//SendMessage('message', 'server', username+' has left the session.');
-					ClearDropDowns();
-					var lastpin = document.getElementById('pin');
-					if(lastpin != null){
-						lastpin.parentNode.removeChild(lastpin);
-					}
-					var msgs = document.getElementsByClassName("chatMessage");
-					while (msgs[0]) {
-						msgs[0].parentNode.removeChild(msgs[0]);
-					}
-					console.log("CLOSING");
+					Message('server', 'Disconnecting...');
 					setTimeout(function(){
+						ClearDropDowns();
+						var lastpin = document.getElementById('pin');
+						if(lastpin != null){
+							lastpin.parentNode.removeChild(lastpin);
+						}
+						var msgs = document.getElementsByClassName("chatMessage");
+						while (msgs[0]) {
+							msgs[0].parentNode.removeChild(msgs[0]);
+						}
+						console.log("CLOSING");
 						var servers = document.getElementById("servers");
 						document.getElementById("chat").style.display = "none";
 						servers.style.display = "block";
@@ -959,15 +1095,21 @@
 						case 'message':
 							Message(msg.sender, msg.text, msg.time);
 							if(document.hasFocus()){
-								document.getElementById("audio_message").play();
+								if(enableSound){
+									document.getElementById("audio_message").play();
+								}
 							}
 							else{
-								document.getElementById("audio_notification").play();
-								var options = {
-									body: msg.text,
-									icon: "favicon.png"
+								if(enableSound){
+									document.getElementById("audio_notification").play();
 								}
-								var msgNotify = new Notification(msg.sender, options);
+								if(enableNotify){
+									var options = {
+										body: msg.text,
+										icon: "favicon.png"
+									}
+									var msgNotify = new Notification(msg.sender, options);
+								}
 							}
 							break;
 						case 'kick':
@@ -983,18 +1125,35 @@
 								websocket.close();
 							}
 							break;
-						case 'image':
-							MessageImage(msg.sender, msg.text, msg.time);
-							if(document.hasFocus()){
-								document.getElementById("audio_message").play();
-							}
-							else{
-								document.getElementById("audio_notification").play();
-							}
-							break;
 						case 'check':
 							Message('server', username, '0');
 							SendMessage('message', 'server', username);
+							break;
+						case 'joincheck':
+							SendMessage('private', 'server', username, msg.sender);
+							break;
+							
+						case 'private':
+							if(msg.adressant == username){
+								Message(msg.sender, msg.text, msg.time);
+								if(document.hasFocus()){
+									if(enableSound){
+										document.getElementById("audio_message").play();
+									}
+								}
+								else{
+									if(enableSound){
+										document.getElementById("audio_notification").play();
+									}
+									if(enableNotify){
+										var options = {
+											body: msg.text,
+											icon: "favicon.png"
+										}
+										var msgNotify = new Notification(msg.sender, options);
+									}
+								}
+							}
 							break;
 							
 						case 'pin':
@@ -1073,13 +1232,13 @@
 				alwaysLowered = true;
 			}
 			function Options(){
-				optionsWindow.style.left = window.innerWidth/2 - 160;
-				optionsWindow.style.top = window.innerHeight/2 - 120;
 				if(optionsWindow.style.display == "block"){
 					optionsWindow.style.display = "none";
 					return;
 				}
 				optionsWindow.style.display = "block";
+				optionsWindow.style.left = window.innerWidth/2 - optionsWindow.getBoundingClientRect().width/2;
+				optionsWindow.style.top = window.innerHeight/2 - optionsWindow.getBoundingClientRect().height/2;
 			}
 			
 			function Drag(val){
@@ -1132,12 +1291,19 @@
 			<img src="options.png" style="margin-right: 8px" class=windowButton onclick="Options()">
 		</div>
 		<div id="windowContent" style="display: block; position: absolute; display:inline-block; width: 100%; height: calc(100% - 24px);">
-			<div id="optionsMenu" class=menuWindow style="display: none; width: 320; height: 240;">
+			<div id="optionsMenu" class=menuWindow style="display: none; width: 440; height: 240;">
 				<div id="windowBorder" class=windowBorder onmousedown="dragOptions = true;" ontouchstart="TouchStart(event)">
+					<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">Options</span>
 					<img src="close.png" class=windowButton onclick="document.getElementById('optionsMenu').style.display = 'none';">
 				</div>
-				<span style="margin:4px;">Notification permission: <span id="notifperm">Null</span></span>
-				<button class=uibutton style="margin:4px;" onclick="Notification.requestPermission().then(function(result) {document.getElementById('notifperm').innerText = result;});">Request</button>
+				<big style="display: block; margin:4px; margin-bottom: 0px;">NOTIFICATIONS</big>
+				<hr>
+				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Notification permission: <span id="notifperm">Null</span></span>
+				<button class=uibutton style="float:right; margin-right: 4px;" onclick="Notification.requestPermission().then(function(result) {document.getElementById('notifperm').innerText = result;});">Request</button>
+				<br>
+				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Enable notifications:</span><button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNotify=false;}else{this.innerText='✓'; enableNotify=true;}">✓</button>
+				<br>
+				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Notification sound:</span><button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableSound=false;}else{this.innerText='✓'; enableSound=true;}">✓</button>
 			</div>
 			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%">
 				<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 24px;" onload="Load()" ondragstart="return false;">
