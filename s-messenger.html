@@ -371,19 +371,6 @@
 							document.getElementById("sendButton").click();
 						}
 					}
-					else{
-						if(connected){
-							if(enableTyping){
-							if(logType){
-								SendMessage('typing', username);
-								logType = false;
-								setTimeout(function(){
-									logType = true;
-								}, 1700);
-							}
-							}
-						}
-					}
 					if(document.getElementById("suggestbox").style.display != "none"){
 						var suggestions = document.getElementsByClassName("suggest");
 						var available = [];
@@ -1398,6 +1385,20 @@
 				});
 				//return false;
 			}
+			function Type(){
+				console.log("input");
+				if(connected){
+					if(enableTyping){
+					if(logType){
+						SendMessage('typing', username);
+						logType = false;
+						setTimeout(function(){
+							logType = true;
+						}, 1700);
+					}
+					}
+				}
+			}
 			</script>
 		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
@@ -1462,7 +1463,7 @@
 					</div>
 				</div>
 				<div class=bottomui>
-					<input id="chatInput" class=inputbox oninput="CheckCommand()" onpaste="if(enableNTag){OnPaste(); return false;}"><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
+					<input id="chatInput" class=inputbox oninput="CheckCommand(); Type();" onpaste="if(enableNTag){OnPaste(); return false;}"><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
 				</div>
 			</div>
 		</div>
