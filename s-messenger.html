@@ -366,7 +366,7 @@
 				rawFile.onload = function (){
 					if(rawFile.readyState === rawFile.DONE){
 						if(rawFile.status === 200 || rawFile.status == 0){
-							var allText = JSON.stringify(rawFile.responseText).version;
+							var allText = JSON.parse(rawFile.responseText).version;
 							console.log(allText);
 							version = allText;
 							document.getElementById("versionShow").innerText = "Version "+version;
@@ -387,7 +387,7 @@
 				rawFile.onload = function (){
 					if(rawFile.readyState === rawFile.DONE){
 						if(rawFile.status === 200 || rawFile.status == 0){
-							var allText = JSON.stringify(rawFile.responseText).version;
+							var allText = JSON.parse(rawFile.responseText).version;
 							if(allText != version){
 								console.log("NEW VERSION FOUND");
 								var menu = document.getElementById("updateMenu");
