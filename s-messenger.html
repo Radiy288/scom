@@ -82,14 +82,30 @@
 			}
 			.fade {
 				opacity: 1;
-				-webkit-transition: opacity 1s linear;
+				transition: opacity 1s linear;
 			}
 			
 			.fade-quick {
 				opacity: 0;
-				-webkit-transition: opacity 0.1s linear;
+				transition: opacity 0.1s linear;
 			}
-			
+			.scplogo {
+				display: block;
+				margin-left: auto;
+				margin-right: auto;
+				width: 25%;
+				margin-top: 24px;
+			}
+			.logoanim {
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				margin-left: auto;
+				margin-right: auto;
+				opacity: 0;
+				transition: transform 0.7s linear, opacity 0.6s linear;
+			}
 			.option {
 				cursor:pointer;
 				padding: 14px;
@@ -252,6 +268,13 @@
 			else{
 				var enableNTag = StringToBool(getCookie("enableNTag"));
 			}
+			//CHECK FOR UPDATES
+			if(getCookie("checkNV") == ""){
+				var checkNV = true;
+			}
+			else{
+				var checkNV = StringToBool(getCookie("checkNV"));
+			}
 			var peopleTypingTimeout;
 			var clientTypingTimeout;
 			var logType = true;
@@ -269,7 +292,8 @@
 			var ddon = false;
 			var pinnedMessage;
 			var mhistory = [];
-			const version = "1.2.2";
+			var version = "";
+			var checkNVTimer;
 			var dragOptions = false;
 			var optionsWindow;
 			var mouseprev = [0, 0];
@@ -298,6 +322,7 @@
 				'/',
 				'/favicon.png',
 				'/scpf.png',
+				'/scpsign.png',
 				'/message.mp3',
 				'/message1.mp3',
 				'/manifest.json',
@@ -333,14 +358,80 @@
 				txtarea.focus();
 				txtarea.scrollTop = scrollPos;
 			}
-
+			
+			function ChangeVersion(){
+				var rawFile = new XMLHttpRequest();
+				rawFile.open("GET", 'https://greatcorn.github.io/scom/version.txt', true);
+				rawFile.onload = function (){
+					if(rawFile.readyState === rawFile.DONE){
+						if(rawFile.status === 200 || rawFile.status == 0){
+							var allText = rawFile.responseText;
+							version = allText;
+							document.getElementById("versionShow").innerText = "Version "+version;
+						}
+					}
+				};
+				rawFile.send(null);
+			}
+			
+			function CheckVersion(){
+				if(checkNVTimer){
+					clearTimeout(checkNVTimer);
+					checkNVTimer = 0;
+				}
+				console.log("Checking version...");
+				var rawFile = new XMLHttpRequest();
+				rawFile.open("GET", 'https://greatcorn.github.io/scom/version.txt', true);
+				rawFile.onload = function (){
+					if(rawFile.readyState === rawFile.DONE){
+						if(rawFile.status === 200 || rawFile.status == 0){
+							var allText = rawFile.responseText;
+							if(allText != version){
+								console.log("NEW VERSION FOUND");
+								var menu = document.getElementById("updateMenu");
+								document.getElementById("newVersion").innerText = allText;
+								menu.style.display = "block";
+								menu.style.left = window.innerWidth/2 - menu.getBoundingClientRect().width/2;
+								menu.style.top = window.innerHeight/2 - menu.getBoundingClientRect().height/2;
+								document.getElementById("updateLabel").style.display = "block";
+								if(document.hasFocus()){
+									if(enableSound){
+										document.getElementById("audio_message").play();
+									}
+								}
+								else{
+									if(enableSound){
+										document.getElementById("audio_notification").play();
+									}
+									if(enableNotify){
+										var options = {
+											body: "New update available",
+											icon: "favicon.png"
+										}
+										var msgNotify = new Notification(allText, options);
+									}
+								}
+							}
+							else{
+								if(checkNV){
+									checkNVTimer = setTimeout(CheckVersion, 10000);
+								}
+							}
+						}
+					}
+				};
+				rawFile.send(null);
+			}
 			
 			function Start(){
 				optionsWindow = document.getElementById("optionsMenu");
 				typer = document.getElementById("typer");
 				document.getElementById("notifperm").innerText = Notification.permission;
 				var input = document.getElementById("chatInput");
-				document.getElementById("versionShow").innerText = "Version "+version;
+				ChangeVersion();
+				if(checkNV){
+					CheckVersion();
+				}
 				document.body.parentNode.addEventListener('click', function(event){
 					var dropdowns = document.getElementsByClassName("dropdown");
 					event.preventDefault();
@@ -1403,7 +1494,7 @@
 		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	</head>
-	<body onload = "Start()" onbeforeunload="End()" onmousemove="MouseMove(event)" ontouchmove="TouchMove(event)" ontouchend="dragOptions = false;" onmouseup="dragOptions = false;">
+	<body onload = "Start(); setTimeout(function(){var anim = document.getElementById('serverInput'); anim.style.opacity = 1;}, 400);" onbeforeunload="End()" onmousemove="MouseMove(event)" ontouchmove="TouchMove(event)" ontouchend="dragOptions = false;" onmouseup="dragOptions = false;">
 		<audio id="audio_message">
 			<source src="message.mp3">
 		</audio>
@@ -1417,6 +1508,7 @@
 			<img src="options.png" style="margin-right: 8px" class=windowButton onclick="Options()" ondragstart="return false;">
 		</div>
 		<div id="windowContent" style="display: block; position: absolute; display:inline-block; width: 100%; height: calc(100% - 24px);">
+			<p id="updateLabel" align=CENTER style="display: none; position: fixed; width: 100%;">NEW UPDATE AVAILABLE</p>
 			<div id="optionsMenu" class=menuWindow style="display: none; width: 350; height: 320;">
 				<div id="windowBorder" class=windowBorder onmousedown="dragOptions = true;" ontouchstart="TouchStart(event)">
 					<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">Options</span>
@@ -1441,19 +1533,38 @@
 				<big style="display: block; margin:4px; margin-bottom: 0px;">OTHER</big>
 				<hr>
 				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNTag=false; setCookie('enableNTag', 'false', 365);}else{this.innerText='✓'; enableNTag=true; setCookie('enableNTag', 'true', 365);}">✓</button>
-				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Replace newline with [n] on paste<span>
+				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Replace newline with [n] on paste</span>
+				<br>
+				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; checkNV=false; setCookie('checkNV', 'false', 365);}else{this.innerText='✓'; checkNV=true; setCookie('checkNV', 'true', 365); CheckVersion();}">✓</button>
+				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Check for updates</span>
+			</div>
+			<div id="updateMenu" class=menuWindow style="display: none; width: 340; height: 160;">
+				<div id="windowBorder" class=windowBorder>
+					<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">New update available</span>
+					<img src="close.png" class=windowButton onclick="this.parentElement.parentElement.style.display = 'none';" ondragstart="return false;">
+				</div>
+				<p align=CENTER style="display: block; margin:4px; width: 90%; margin-left: auto; margin-right: auto; margin-bottom: 3px;">New version available - <span id="newVersion"></span></p>
+				<p align=CENTER style="display: block; margin:4px; width: 90%; margin-left: auto; margin-right: auto; margin-bottom: 3px;">You can always update using the /refresh command.</p>
+				<button class=uibutton style="position: absolute; left: 16px; bottom: 12px;" onclick="location.reload()">Refresh</button>
+				<button class=uibutton style="position: absolute; right: 16px; bottom: 12px;" onclick="this.parentElement.style.display = 'none';">Cancel</button>
 			</div>
 			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%">
-				<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 24px;" onload="Load()" ondragstart="return false;">
-				<h1 align=CENTER>S-Messenger</h1>
-				<p align=CENTER>Websocket URL</p>
-				<input id="ws" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 75%; margin-bottom:8px;" placeholder="Enter websocket URL">
-				<p align=CENTER>Username</p>
-				<input id="un" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 50%; margin-bottom:8px;" placeholder="Enter username">
-				<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
-				<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</h3>
-				<span id="versionShow" style="position: absolute; top: 2px; left: 4px;"></span>
-				<div style="display: block; position: absolute; top: 2px; right: 4px;"><button id="updatebutton" class=uibutton onclick="location.reload()">Refresh</button></div>
+				<div>
+					<img id="scplogo" src="scpf.png" class=scplogo onload="Load()" ondragstart="return false;">
+					<img id="scplogoleft" src="scpsign.png" class="scplogo logoanim" style="transform: rotate(45deg) translate(-5%, 0px) scale(1.4);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoleft'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
+					<img id="scplogoright" src="scpsign.png" class="scplogo logoanim" style="transform: rotate(-45deg) translate(5%, 0px) scale(1.4);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoright'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
+				</div>
+				<div id="serverInput" style="opacity: 0; transition: opacity 0.6s linear;">
+					<h1 align=CENTER>S-Messenger</h1>
+					<p align=CENTER>Websocket URL</p>
+					<input id="ws" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 75%; margin-bottom:8px;" placeholder="Enter websocket URL">
+					<p align=CENTER>Username</p>
+					<input id="un" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 50%; margin-bottom:8px;" placeholder="Enter username">
+					<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
+					<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</h3>
+					<span id="versionShow" style="position: absolute; top: 2px; left: 4px;"></span>
+					<div style="display: block; position: absolute; top: 2px; right: 4px;"><button id="updatebutton" class=uibutton onclick="location.reload()">Refresh</button></div>
+				</div>
 			</div>
 			<div id="chat" style="display: none; overflow-y: auto;">
 				<div id="chatbox" style="overflow-y: auto; max-height: calc(100% - 25px);">
