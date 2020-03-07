@@ -383,11 +383,12 @@
 				}
 				console.log("Checking version...");
 				var rawFile = new XMLHttpRequest();
-				rawFile.open("GET", 'https://greatcorn.github.io/scom/version.txt', true);
+				rawFile.open("GET", 'https://greatcorn.github.io/scom/manifest.json', true);
 				rawFile.onload = function (){
 					if(rawFile.readyState === rawFile.DONE){
 						if(rawFile.status === 200 || rawFile.status == 0){
-							var allText = JSON.parse(rawFile.responseText).version;
+							var someText = rawFile.responseText;
+							var allText = JSON.parse(someText).version;
 							if(allText != version){
 								console.log("NEW VERSION FOUND");
 								var menu = document.getElementById("updateMenu");
