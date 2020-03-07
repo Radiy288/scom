@@ -233,6 +233,16 @@
 				}
 				return "";
 			}
+			function assignCookie(idstr, cname) {
+				var elObj = document.getElementById(idstr);
+				var ckie = getCookie(cname);
+				if(ckie == "true"){
+					elObj.innerText == '✓';
+					return true;
+				}
+				elObj.innerText == '';
+				return false;
+			}
 			//GLOBALVARS
 			//USERNAME
 			if(getCookie("username") == ""){
@@ -247,6 +257,7 @@
 			}
 			else{
 				var enableNotify = StringToBool(getCookie("enableNotify"));
+				assignCookie('cbNotif', "enableNotify");
 			}
 			//ENABLE SOUND
 			if(getCookie("enableSound") == ""){
@@ -254,6 +265,7 @@
 			}
 			else{
 				var enableSound = StringToBool(getCookie("enableSound"));
+				assignCookie('cbSound', "enableSound");
 			}
 			//ENABLE TYPING
 			if(getCookie("enableTyping") == ""){
@@ -261,6 +273,7 @@
 			}
 			else{
 				var enableTyping = StringToBool(getCookie("enableTyping"));
+				assignCookie('cbType', "enableTyping");
 			}
 			//ENABLE NEWLINE REPLACE TAG
 			if(getCookie("enableNTag") == ""){
@@ -268,6 +281,7 @@
 			}
 			else{
 				var enableNTag = StringToBool(getCookie("enableNTag"));
+				assignCookie('cbNL', "enableNTag");
 			}
 			//CHECK FOR UPDATES
 			if(getCookie("checkNV") == ""){
@@ -275,6 +289,7 @@
 			}
 			else{
 				var checkNV = StringToBool(getCookie("checkNV"));
+				assignCookie('cbUpdate', "checkNV");
 			}
 			var peopleTypingTimeout;
 			var clientTypingTimeout;
@@ -1077,7 +1092,7 @@
 						msgText.innerHTML = msgText.innerHTML.replace("[url="+prs+"]", "<a href="+prs+">");
 					}
 					//[URL]
-					var urlCount = (msgText.innerHTML.match(/(\[url\])/g) || []).length;
+					var tagCount = (msgText.innerHTML.match(/(\[url\])/g) || []).length;
 					for(let i=0; i<tagCount; i++){
 						var prs="";
 						for(let j=msgText.innerHTML.indexOf("[url]")+5; j<msgText.innerHTML.length; j++){
@@ -1531,23 +1546,23 @@
 				<span style="display: inline-block; margin:4px; margin-bottom: 3px;">Permission: <span id="notifperm">Null</span></span>
 				<button class=uibutton style="float:right; margin-right: 4px;" onclick="Notification.requestPermission().then(function(result) {document.getElementById('notifperm').innerText = result;});">Request</button>
 				<br>
-				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNotify=false; setCookie('enableNotify', 'false', 365);}else{this.innerText='✓'; enableNotify=true; setCookie('enableNotify', 'true', 365);}">✓</button>
+				<button id="cbNotif" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNotify=false; setCookie('enableNotify', 'false', 365);}else{this.innerText='✓'; enableNotify=true; setCookie('enableNotify', 'true', 365);}">✓</button>
 				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Enable notifications</span>
 				<br>
-				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableSound=false; setCookie('enableSound', 'false', 365);}else{this.innerText='✓'; enableSound=true; setCookie('enableSound', 'true', 365);}">✓</button>
+				<button id="cbSound" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableSound=false; setCookie('enableSound', 'false', 365);}else{this.innerText='✓'; enableSound=true; setCookie('enableSound', 'true', 365);}">✓</button>
 				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Notification sound</span>
 				<hr>
 				<big style="display: block; margin:4px; margin-bottom: 0px;">PRIVACY</big>
 				<hr>
-				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableTyping=false; setCookie('enableTyping', 'false', 365);}else{this.innerText='✓'; enableTyping=true; setCookie('enableTyping', 'true', 365);}">✓</button>
+				<button id="cbType" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableTyping=false; setCookie('enableTyping', 'false', 365);}else{this.innerText='✓'; enableTyping=true; setCookie('enableTyping', 'true', 365);}">✓</button>
 				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Show typing</span>
 				<hr>
 				<big style="display: block; margin:4px; margin-bottom: 0px;">OTHER</big>
 				<hr>
-				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNTag=false; setCookie('enableNTag', 'false', 365);}else{this.innerText='✓'; enableNTag=true; setCookie('enableNTag', 'true', 365);}">✓</button>
+				<button id="cbNL" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNTag=false; setCookie('enableNTag', 'false', 365);}else{this.innerText='✓'; enableNTag=true; setCookie('enableNTag', 'true', 365);}">✓</button>
 				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Replace newline with [n] on paste</span>
 				<br>
-				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; checkNV=false; setCookie('checkNV', 'false', 365);}else{this.innerText='✓'; checkNV=true; setCookie('checkNV', 'true', 365); CheckVersion();}">✓</button>
+				<button id="cbUpdate" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; checkNV=false; setCookie('checkNV', 'false', 365);}else{this.innerText='✓'; checkNV=true; setCookie('checkNV', 'true', 365); CheckVersion();}">✓</button>
 				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Check for updates</span>
 			</div>
 			<div id="updateMenu" class=menuWindow style="display: none; width: 340; height: 160;">
