@@ -162,9 +162,15 @@
 				background: #424242;
 				border: none;
 				padding: 0px;
-				margin-top: 1px;
-				margin-bottom: 1px;
+				margin: 2px;
+				margin-left: 4px;
 				position: absolute;
+			}
+			.typing {
+				background: #424242;
+				position: fixed;
+				display: block;
+				padding: 2px;
 			}
 		</style>
 		<script>
@@ -216,6 +222,18 @@
 			else{
 				var enableSound = StringToBool(getCookie("enableSound"));
 			}
+			//ENABLE TYPING
+			if(getCookie("enableTyping") == ""){
+				var enableTyping = true;
+			}
+			else{
+				var enableTyping = StringToBool(getCookie("enableTyping"));
+			}
+			var peopleTypingTimeout;
+			var clientTypingTimeout;
+			var logType = true;
+			var peopleTyping = [];
+			var typer;
 			var websocket;
 			var connected = false;
 			var lastElement;
@@ -228,7 +246,7 @@
 			var ddon = false;
 			var pinnedMessage;
 			var mhistory = [];
-			const version = "1.2.0";
+			const version = "1.2.1";
 			var dragOptions = false;
 			var optionsWindow;
 			var mouseprev = [0, 0];
@@ -296,6 +314,7 @@
 			
 			function Start(){
 				optionsWindow = document.getElementById("optionsMenu");
+				typer = document.getElementById("typer");
 				document.getElementById("notifperm").innerText = Notification.permission;
 				var input = document.getElementById("chatInput");
 				document.getElementById("versionShow").innerText = "Version "+version;
@@ -327,6 +346,19 @@
 						}
 						else{
 							document.getElementById("sendButton").click();
+						}
+					}
+					else{
+						if(connected){
+							if(enableTyping){
+							if(logType){
+								SendMessage('typing', username);
+								logType = false;
+								setTimeout(function(){
+									logType = true;
+								}, 1700);
+							}
+							}
 						}
 					}
 					if(document.getElementById("suggestbox").style.display != "none"){
@@ -473,8 +505,13 @@
 									Message("server", "Invalid username.");
 									return;
 								}
+								if(prs.length > 32){
+									Message("server", "USERNAME TOO LONG");
+									return;
+								}
 								if(prs == "client" || prs == "server"){
 									Message("server", "REGISTERED PROPERTY");
+									return;
 								}
 								Message("server", username+" changed username to "+prs+".");
 								SendMessage('message', 'server', username+" changed username to "+prs+".");
@@ -607,10 +644,9 @@
 											break;
 											
 										case "[url]":
-											Message('server', "[notag][url={link}][/url]");
-											Message('server', "[notag][url]{link}[/url]");
+											Message('server', "[notag][url=(link)](link)[/url]");
 											Message('server', "Allows embedding clickable URL links. End tag required.");
-											Message('server', "{link} - the specified URL link.");
+											Message('server', "(link) - the specified URL link.");
 											Message('server', "Example: [url=favicon.png]Logo of the SCP Foundation.[/url]");
 											break;
 											
@@ -1037,6 +1073,16 @@
 					}, 10);
 					return;
 				}
+				if(un.length > 32){
+					error.innerHTML = "USERNAME TOO LONG";
+					error.className = "";
+					error.style.opacity = 1;
+					setTimeout(function(){
+						error.className = "fade";
+						error.style.opacity = 0;
+					}, 10);
+					return;
+				}
 				if(un.value == "client" || un.value == "server"){
 					error.innerHTML = "REGISTERED PROPERTY";
 					error.className = "";
@@ -1181,6 +1227,27 @@
 						case 'update':
 							location.reload();
 							break;
+							
+						case 'typing':
+							window.clearTimeout(peopleTypingTimeout);
+							typer.style.display = "block";
+							if (!peopleTyping.includes(msg.sender)){
+								peopleTyping.push(msg.sender);
+								typer.innerText = peopleTyping[0]+' is typing...';
+								if(peopleTyping.length>1){
+									typer.innerText = peopleTyping.join(", ")+' are typing...';
+								}
+								if(peopleTyping.length>4){
+									typer.innerText = 'Several people are typing...';
+								}
+							}
+							peopleTypingTimeout = setTimeout(function(){
+								peopleTyping.splice(peopleTyping.indexOf(msg.sender), 1);
+								if (peopleTyping.length == 0){
+									typer.style.display = "none";
+								}
+							}, 2000);
+							break;
 					}
 				}
 			}
@@ -1234,11 +1301,11 @@
 				close();
 			}
 			function Minimize(){
-				window.innerWidth = 100;
+				/*window.innerWidth = 100;
 				window.innerHeight = 100;
 				window.screenX = screen.width;
 				window.screenY = screen.height;
-				alwaysLowered = true;
+				alwaysLowered = true;*/
 			}
 			function Options(){
 				if(optionsWindow.style.display == "block"){
@@ -1300,19 +1367,26 @@
 			<img src="options.png" style="margin-right: 8px" class=windowButton onclick="Options()">
 		</div>
 		<div id="windowContent" style="display: block; position: absolute; display:inline-block; width: 100%; height: calc(100% - 24px);">
-			<div id="optionsMenu" class=menuWindow style="display: none; width: 440; height: 240;">
+			<div id="optionsMenu" class=menuWindow style="display: none; width: 360; height: 240;">
 				<div id="windowBorder" class=windowBorder onmousedown="dragOptions = true;" ontouchstart="TouchStart(event)">
 					<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">Options</span>
 					<img src="close.png" class=windowButton onclick="document.getElementById('optionsMenu').style.display = 'none';">
 				</div>
 				<big style="display: block; margin:4px; margin-bottom: 0px;">NOTIFICATIONS</big>
 				<hr>
-				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Notification permission: <span id="notifperm">Null</span></span>
+				<span style="display: inline-block; margin:4px; margin-bottom: 3px;">Permission: <span id="notifperm">Null</span></span>
 				<button class=uibutton style="float:right; margin-right: 4px;" onclick="Notification.requestPermission().then(function(result) {document.getElementById('notifperm').innerText = result;});">Request</button>
 				<br>
-				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Enable notifications:</span><button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNotify=false; setCookie('enableNotify', 'false', 365);}else{this.innerText='✓'; enableNotify=true; setCookie('enableNotify', 'true', 365);}">✓</button>
+				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNotify=false; setCookie('enableNotify', 'false', 365);}else{this.innerText='✓'; enableNotify=true; setCookie('enableNotify', 'true', 365);}">✓</button>
+				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Enable notifications</span>
 				<br>
-				<span style="display: inline-block; margin:4px; margin-bottom: 0px;">Notification sound:</span><button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableSound=false; setCookie('enableSound', 'false', 365);}else{this.innerText='✓'; enableSound=true; setCookie('enableSound', 'true', 365);}">✓</button>
+				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableSound=false; setCookie('enableSound', 'false', 365);}else{this.innerText='✓'; enableSound=true; setCookie('enableSound', 'true', 365);}">✓</button>
+				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Notification sound</span>
+				<hr>
+				<big style="display: block; margin:4px; margin-bottom: 0px;">PRIVACY</big>
+				<hr>
+				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableTyping=false; setCookie('enableTyping', 'false', 365);}else{this.innerText='✓'; enableTyping=true; setCookie('enableTyping', 'true', 365);}">✓</button>
+				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Show typing</span>
 			</div>
 			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%">
 				<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 24px;" onload="Load()" ondragstart="return false;">
@@ -1323,13 +1397,12 @@
 				<input id="un" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 50%; margin-bottom:8px;" placeholder="Enter username">
 				<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
 				<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</h3>
-				<div style="position: absolute; margin-top: 3em; width: 100%;">
-					<span align=CENTER id="versionShow" style="display: block;"></span>
-					<button id="updatebutton" class=uibutton style="display: block;margin-left: auto; margin-right: auto; margin-bottom: 4px;" onclick="location.reload()">Update</button>
-				</div>
+				<span id="versionShow" style="position: absolute; top: 2px; left: 4px;"></span>
+				<div style="display: block; position: absolute; top: 2px; right: 4px;"><button id="updatebutton" class=uibutton onclick="location.reload()">Refresh</button></div>
 			</div>
 			<div id="chat" style="display: none; overflow-y: auto;">
 				<div id="chatbox" style="overflow-y: auto; max-height: calc(100% - 25px);">
+					<div class=typing id="typer" style="bottom: 25px; display: none;"></div>
 					<div id="suggestbox" style="display: none; position: absolute; bottom: 25px; overflow: auto;">
 						
 					</div>
