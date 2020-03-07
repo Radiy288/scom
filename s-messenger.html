@@ -93,8 +93,9 @@
 				display: block;
 				margin-left: auto;
 				margin-right: auto;
-				width: 25%;
-				margin-top: 24px;
+				height: 50%;
+				margin-top: 10%;
+				transition: height 0.6s ease;
 			}
 			.logoanim {
 				position: absolute;
@@ -104,7 +105,7 @@
 				margin-left: auto;
 				margin-right: auto;
 				opacity: 0;
-				transition: transform 0.7s linear, opacity 0.6s linear;
+				transition: transform 0.7s linear, opacity 0.6s ease, height 0.6s ease;
 			}
 			.option {
 				cursor:pointer;
@@ -424,6 +425,15 @@
 			}
 			
 			function Start(){
+				setTimeout(function(){
+					var anim = document.getElementById('serverInput'); 
+					anim.style.opacity = 1;
+				}, 400);
+				setTimeout(function(){
+					document.getElementById('scplogo').style.height = "38%"; 
+					document.getElementById('scplogoleft').style.height = "38%"; 
+					document.getElementById('scplogoright').style.height = "38%"; 
+				}, 800);
 				optionsWindow = document.getElementById("optionsMenu");
 				typer = document.getElementById("typer");
 				document.getElementById("notifperm").innerText = Notification.permission;
@@ -1494,7 +1504,7 @@
 		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	</head>
-	<body onload = "Start(); setTimeout(function(){var anim = document.getElementById('serverInput'); anim.style.opacity = 1;}, 400);" onbeforeunload="End()" onmousemove="MouseMove(event)" ontouchmove="TouchMove(event)" ontouchend="dragOptions = false;" onmouseup="dragOptions = false;">
+	<body onload = "Start()" onbeforeunload="End()" onmousemove="MouseMove(event)" ontouchmove="TouchMove(event)" ontouchend="dragOptions = false;" onmouseup="dragOptions = false;">
 		<audio id="audio_message">
 			<source src="message.mp3">
 		</audio>
