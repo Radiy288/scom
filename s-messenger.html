@@ -12,7 +12,6 @@
 				margin: 0;
 				padding: 0;
 				overscroll-behavior: none;
-				frame: { type: "none" };
 				overflow: hidden;
 				position: relative;
 			}
@@ -172,6 +171,23 @@
 				display: block;
 				padding: 2px;
 			}
+			.message {
+				overflow-wrap: break-word;
+				word-wrap: break-word;
+				hyphens: auto;
+				padding: 14px;
+				margin-top: 5px;
+				margin-bottom: 5px;
+				max-width: 75%;
+				white-space: pre-wrap;
+			}
+			.message:active {
+				background: #404040;
+				color: #696969;
+			}
+			b {
+				font-weight: 900;
+			}
 		</style>
 		<script>
 			function StringToBool(str){
@@ -229,6 +245,13 @@
 			else{
 				var enableTyping = StringToBool(getCookie("enableTyping"));
 			}
+			//ENABLE NEWLINE REPLACE TAG
+			if(getCookie("enableNTag") == ""){
+				var enableNTag = true;
+			}
+			else{
+				var enableNTag = StringToBool(getCookie("enableNTag"));
+			}
 			var peopleTypingTimeout;
 			var clientTypingTimeout;
 			var logType = true;
@@ -238,15 +261,15 @@
 			var connected = false;
 			var lastElement;
 			var suggestcur = -1;
-			var cmds = ["/clr", "/check", "/disconnect", "/info (str)", "/update", "/username {str}"];
+			var cmds = ["/clr", "/check", "/disconnect", "/info (str)", "/refresh", "/username {str}"];
 			var cmdsEl = [];
-			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]", "[vid]", "[size]"];
+			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]", "[vid]", "[size]", "[align]", "[b]"];
 			bbs.sort();
 			var bbsEl = [];
 			var ddon = false;
 			var pinnedMessage;
 			var mhistory = [];
-			const version = "1.2.1";
+			const version = "1.2.2";
 			var dragOptions = false;
 			var optionsWindow;
 			var mouseprev = [0, 0];
@@ -564,9 +587,16 @@
 											Message('server', "Example of usage: [i]/username CONT_999[/i]");
 											break;
 											
-										case "update":
-											Message('server', "/update");
-											Message('server', "Updates the S-Messenger. This will disconnect the client from the currently connected server.");
+										case "refresh":
+											Message('server', "/refresh");
+											Message('server', "Refreshes the S-Messenger (to possibly update to a newer version). This will disconnect the client from the currently connected server.");
+											break;
+											
+										case "[align]":
+											Message('server', "[notag][align={str}][/align]");
+											Message('server', "Allows text align to specified value. End tag required.");
+											Message('server', "{str} - the specified align value (CENTER | LEFT | RIGHT).");
+											Message('server', "Example: [align=left]This message is aligned left.[/align]");
 											break;
 											
 										case "[aud]":
@@ -574,6 +604,12 @@
 											Message('server', "Allows embedding direct audio links as playable audio. End tag required.");
 											Message('server', "{link} - the specified direct audio link.");
 											Message('server', "Example: [aud]message.mp3[/aud]");
+											break;
+											
+										case "[b]":
+											Message('server', "[notag][b][/b]");
+											Message('server', "Makes inner text bold. End tag required.");
+											Message('server', "Example: [b]This text is bold.[/b]");
 											break;
 											
 										case "[big]":
@@ -665,7 +701,7 @@
 								}
 								break;
 								
-							case "update":
+							case "refresh":
 								location.reload();
 								break;
 								
@@ -751,34 +787,24 @@
 				msgText.className = "messageText";
 				msgText.innerText = text;
 				var msgSender = document.createElement("p");
-				msg.style["overflow-wrap"] = "break-word";
-				msg.style["word-wrap"] = "break-word";
-				msg.style["hyphens"] = "auto";
+				msg.className = "message";
 				if(sender === 'client'){
 					msg.style.background = "#191919";
-					msg.style.padding = 14;
-					msgBody.style["margin-top"] = 5;
-					msgBody.style["margin-bottom"] = 5;
 					msgBody.style["min-width"] = "100%";
-					msg.style["max-width"] = "75%";
 					msg.style.float = "right";
 					msgBody.style.overflow = "auto";
 					msgSender.innerHTML = "<small>"+username+", "+time+"</small>";
 					msgSender.align = "RIGHT";
 				}
 				else if (sender === 'server'){
+					msg.style["max-width"] = "100%";
+					msg.style.padding = 0;
 					msg.align = "CENTER";
-					msg.style["margin-top"] = 5;
-					msg.style["margin-bottom"] = 5;
 					msg.style.color = "#666"
 				}
 				else{
 					msg.style.background = "#0A0A0A";
-					msg.style.padding = 14;
-					msgBody.style["margin-top"] = 5;
-					msgBody.style["margin-bottom"] = 5;
 					msgBody.style["min-width"] = "100%";
-					msg.style["max-width"] = "75%";
 					msg.style.float = "left";
 					msgBody.style.overflow = "auto";
 					msgSender.innerHTML = "<small>"+sender+", "+time+"</small>";
@@ -822,12 +848,11 @@
 							}
 						}
 					};
-					var optionPin = document.createElement("p");
-					optionPin.innerHTML = "Pin message";
-					optionPin.onclick = function(){
-						pinnedMessage = lastElement;
-						SendMessage('pin', 'server', pinnedMessage.children[0].innerText);
-						PinMessage(pinnedMessage.children[0].innerText);
+					var optionTag = document.createElement("p");
+					optionTag.innerHTML = "Send private";
+					optionTag.onclick = function(){
+						document.getElementById("chatInput").value = '@'+lastElement.children[1].innerText.split(",")[0]+' '+document.getElementById("chatInput").value;
+						document.getElementById("chatInput").focus();
 						ClearDropDowns();
 					};
 					var optionCancel = document.createElement("p");
@@ -838,13 +863,13 @@
 					optionQuote.className = "option";
 					optionDelete.className = "option";
 					optionCopy.className = "option";
-					optionPin.className = "option";
+					optionTag.className = "option";
 					optionCancel.className = "option";
 					
 					dropdown.appendChild(optionQuote);
 					dropdown.appendChild(optionDelete);
 					dropdown.appendChild(optionCopy);
-					dropdown.appendChild(optionPin);
+					dropdown.appendChild(optionTag);
 					dropdown.appendChild(optionCancel);
 					
 					msgBody.appendChild(dropdown);
@@ -936,6 +961,19 @@
 						msgText.innerHTML = msgText.innerHTML.replace("[color="+prs+"]", "<span style='color: "+prs+"'>");
 					}
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/color\])/g, "</span>");
+					//[ALIGN]
+					tagCount = (msgText.innerHTML.match(/(\[align=)/g) || []).length;
+					for(let i=0; i<tagCount; i++){
+						var prs="";
+						for(let j=msgText.innerHTML.indexOf("[align=")+7; j<msgText.innerHTML.length; j++){
+							if(msgText.innerHTML.charAt(j) == "]"){
+								break;
+							}
+							prs+=msgText.innerHTML.charAt(j);
+						}
+						msgText.innerHTML = msgText.innerHTML.replace("[align="+prs+"]", "<p align='"+prs+"'>");
+					}
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/align\])/g, "</p>");
 					//[URL=]
 					tagCount = (msgText.innerHTML.match(/(\[url=)/g) || []).length;
 					for(let i=0; i<tagCount; i++){
@@ -981,6 +1019,8 @@
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/size\])/g, "</span>");
 					//msgText.innerHTML = msgText.innerText;
 					//<button style='font-size: 48px; color: #fff; background: #000;' onclick='ClearDropDowns();'>▶</button>
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[b\])/g, '<b>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/b\])/g, '</b>');
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[i\])/g, '<i>');
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/i\])/g, '</i>');
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[u\])/g, '<u>');
@@ -1349,6 +1389,15 @@
 				mouseprev[0]=touches[0].pageX;
 				mouseprev[1]=touches[0].pageY;
 			}
+			function OnPaste(){
+				navigator.clipboard.readText().then(text => {
+					var replaced = text.replace(/(?:\r\n|\r|\n)/g, '[n]');
+					console.log(replaced);
+					insertAtCaret('chatInput', replaced);
+					document.getElementById("chatInput").focus();
+				});
+				//return false;
+			}
 			</script>
 		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
@@ -1362,15 +1411,15 @@
 		</audio>
 		<div id="windowBorder" class=windowBorder style="z-index: 8;">
 			<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">S-Messenger</span>
-			<img src="close.png" class=windowButton onclick="Exit()">
-			<img src="hide.png" class=windowButton onclick="Minimize()">
-			<img src="options.png" style="margin-right: 8px" class=windowButton onclick="Options()">
+			<img src="close.png" class=windowButton onclick="Exit()" ondragstart="return false;">
+			<img src="hide.png" class=windowButton onclick="Minimize()" ondragstart="return false;">
+			<img src="options.png" style="margin-right: 8px" class=windowButton onclick="Options()" ondragstart="return false;">
 		</div>
 		<div id="windowContent" style="display: block; position: absolute; display:inline-block; width: 100%; height: calc(100% - 24px);">
-			<div id="optionsMenu" class=menuWindow style="display: none; width: 360; height: 240;">
+			<div id="optionsMenu" class=menuWindow style="display: none; width: 350; height: 320;">
 				<div id="windowBorder" class=windowBorder onmousedown="dragOptions = true;" ontouchstart="TouchStart(event)">
 					<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">Options</span>
-					<img src="close.png" class=windowButton onclick="document.getElementById('optionsMenu').style.display = 'none';">
+					<img src="close.png" class=windowButton onclick="document.getElementById('optionsMenu').style.display = 'none';" ondragstart="return false;">
 				</div>
 				<big style="display: block; margin:4px; margin-bottom: 0px;">NOTIFICATIONS</big>
 				<hr>
@@ -1387,6 +1436,11 @@
 				<hr>
 				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableTyping=false; setCookie('enableTyping', 'false', 365);}else{this.innerText='✓'; enableTyping=true; setCookie('enableTyping', 'true', 365);}">✓</button>
 				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Show typing</span>
+				<hr>
+				<big style="display: block; margin:4px; margin-bottom: 0px;">OTHER</big>
+				<hr>
+				<button class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNTag=false; setCookie('enableNTag', 'false', 365);}else{this.innerText='✓'; enableNTag=true; setCookie('enableNTag', 'true', 365);}">✓</button>
+				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Replace newline with [n] on paste<span>
 			</div>
 			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%">
 				<img id="scplogo" src="scpf.png" style="display: block; margin-left: auto; margin-right: auto; width: 25%; margin-top: 24px;" onload="Load()" ondragstart="return false;">
@@ -1408,7 +1462,7 @@
 					</div>
 				</div>
 				<div class=bottomui>
-					<input id="chatInput" class=inputbox oninput="CheckCommand()"><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
+					<input id="chatInput" class=inputbox oninput="CheckCommand()" onpaste="if(enableNTag){OnPaste(); return false;}"><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
 				</div>
 			</div>
 		</div>
