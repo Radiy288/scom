@@ -237,11 +237,13 @@
 				var elObj = document.getElementById(idstr);
 				var ckie = getCookie(cname);
 				if(ckie == "true"){
-					elObj.innerText == '✓';
-					return true;
+					if(elObj){
+						elObj.innerText == '✓';
+						return true;
+					}
 				}
 				elObj.innerText == '';
-				return false;
+				return;
 			}
 			//GLOBALVARS
 			//USERNAME
