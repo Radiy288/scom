@@ -967,8 +967,8 @@
 					var rect = this.getBoundingClientRect();
 					var droprect = dropdown.getBoundingClientRect();
 					console.log(droprect);
-					if(rect.top>document.body.getBoundingClientRect().height-droprect.height-25){
-						dropdown.style.top = document.body.getBoundingClientRect().height-droprect.height-25;
+					if(rect.top>document.body.getBoundingClientRect().height-droprect.height-49){
+						dropdown.style.top = document.body.getBoundingClientRect().height-droprect.height-49;
 					}
 					else if(rect.top<0){
 						dropdown.style.top = 0;
@@ -976,8 +976,8 @@
 					else{
 						dropdown.style.top = rect.top;
 					}
-					if(rect.left>document.body.getBoundingClientRect().width-droprect.width-25){
-						dropdown.style.left = document.body.getBoundingClientRect().width-droprect.width-25;
+					if(rect.left>document.body.getBoundingClientRect().width-droprect.width){
+						dropdown.style.left = document.body.getBoundingClientRect().width-droprect.width;
 					}
 					else{
 						dropdown.style.left = rect.left;
