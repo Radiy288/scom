@@ -235,6 +235,8 @@
 			}
 			function assignCookie(idstr, cname) {
 				var elObj = document.getElementById(idstr);
+				console.log(idstr);
+				console.log(elObj);
 				var ckie = getCookie(cname);
 				if(ckie == "true"){
 					if(elObj){
