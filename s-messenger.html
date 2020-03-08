@@ -409,23 +409,7 @@
 								menu.style.left = window.innerWidth/2 - menu.getBoundingClientRect().width/2;
 								menu.style.top = window.innerHeight/2 - menu.getBoundingClientRect().height/2;
 								document.getElementById("updateLabel").style.display = "block";
-								if(document.hasFocus()){
-									if(enableSound){
-										document.getElementById("audio_message").play();
-									}
-								}
-								else{
-									if(enableSound){
-										document.getElementById("audio_notification").play();
-									}
-									if(enableNotify){
-										var options = {
-											body: "New update available",
-											icon: "favicon.png"
-										}
-										var msgNotify = new Notification(allText, options);
-									}
-								}
+								Notify(allText, "New update available");
 							}
 							else{
 								if(checkNV){
@@ -545,7 +529,9 @@
 						}
 					}
 				});
-				Notification.requestPermission();
+				if(Notification.permission != 'granted'){
+					Notification.requestPermission();
+				}
 				for (let i=0; i<cmds.length; i++){
 					var el = document.createElement("p");
 					el.className = "suggest";
@@ -1301,23 +1287,7 @@
 					switch (msg.id){
 						case 'message':
 							Message(msg.sender, msg.text, msg.time);
-							if(document.hasFocus()){
-								if(enableSound){
-									document.getElementById("audio_message").play();
-								}
-							}
-							else{
-								if(enableSound){
-									document.getElementById("audio_notification").play();
-								}
-								if(enableNotify){
-									var options = {
-										body: msg.text,
-										icon: "favicon.png"
-									}
-									var msgNotify = new Notification(msg.sender, options);
-								}
-							}
+							Notify(msg.sender, msg.text);
 							break;
 						case 'kick':
 							if(msg.sender == 'server'){
@@ -1343,6 +1313,7 @@
 						case 'private':
 							if(msg.adressant == username){
 								Message(msg.sender, msg.text, msg.time);
+								Notify(msg.sender, msg.text);
 								if(document.hasFocus()){
 									if(enableSound){
 										document.getElementById("audio_message").play();
@@ -1530,6 +1501,41 @@
 							logType = true;
 						}, 1700);
 					}
+					}
+				}
+			}
+			function Notify(title, text){
+				if(document.hasFocus()){
+					if(enableSound){
+						document.getElementById("audio_message").play();
+					}
+				}
+				else{
+					if(enableSound){
+						document.getElementById("audio_notification").play();
+					}
+					if(enableNotify){
+						if (("Notification" in window)) {
+							if (Notification.permission === "granted") {
+								var options = {
+									body: text,
+									icon: "favicon.png",
+									vibrate: [200, 100, 200]
+								}
+								navigator.serviceWorker.ready.then(function(registration) {
+									registration.showNotification(title, options);
+								});
+								var msgNotify = new Notification(title, options);
+							}
+							else if (Notification.permission !== "denied"){
+								Notification.requestPermission().then(function (permission) {
+									navigator.serviceWorker.ready.then(function(registration) {
+										registration.showNotification(title, options);
+									});
+									var msgNotify = new Notification(title, options);
+								});
+							}
+						}
 					}
 				}
 			}
