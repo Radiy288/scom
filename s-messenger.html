@@ -235,8 +235,6 @@
 			}
 			function assignCookie(idstr, cname) {
 				var elObj = document.getElementById(idstr);
-				console.log(idstr);
-				console.log(elObj);
 				var ckie = getCookie(cname);
 				if(ckie == "true"){
 					if(elObj){
@@ -263,7 +261,6 @@
 			}
 			else{
 				var enableNotify = StringToBool(getCookie("enableNotify"));
-				assignCookie('cbNotif', "enableNotify");
 			}
 			//ENABLE SOUND
 			if(getCookie("enableSound") == ""){
@@ -271,7 +268,6 @@
 			}
 			else{
 				var enableSound = StringToBool(getCookie("enableSound"));
-				assignCookie('cbSound', "enableSound");
 			}
 			//ENABLE TYPING
 			if(getCookie("enableTyping") == ""){
@@ -279,7 +275,6 @@
 			}
 			else{
 				var enableTyping = StringToBool(getCookie("enableTyping"));
-				assignCookie('cbType', "enableTyping");
 			}
 			//ENABLE NEWLINE REPLACE TAG
 			if(getCookie("enableNTag") == ""){
@@ -287,7 +282,6 @@
 			}
 			else{
 				var enableNTag = StringToBool(getCookie("enableNTag"));
-				assignCookie('cbNL', "enableNTag");
 			}
 			//CHECK FOR UPDATES
 			if(getCookie("checkNV") == ""){
@@ -295,7 +289,6 @@
 			}
 			else{
 				var checkNV = StringToBool(getCookie("checkNV"));
-				assignCookie('cbUpdate', "checkNV");
 			}
 			var peopleTypingTimeout;
 			var clientTypingTimeout;
@@ -388,7 +381,6 @@
 					if(rawFile.readyState === rawFile.DONE){
 						if(rawFile.status === 200 || rawFile.status == 0){
 							var allText = JSON.parse(rawFile.responseText).version;
-							console.log(allText);
 							version = allText;
 							document.getElementById("versionShow").innerText = "Version "+version;
 						}
@@ -402,7 +394,6 @@
 					clearTimeout(checkNVTimer);
 					checkNVTimer = 0;
 				}
-				console.log("Checking version...");
 				var rawFile = new XMLHttpRequest();
 				rawFile.open("GET", 'https://greatcorn.github.io/scom/manifest.json', true);
 				rawFile.onload = function (){
@@ -448,6 +439,13 @@
 			}
 			
 			function Start(){
+				//SET COOKIES
+				assignCookie('cbNotif', "enableNotify");
+				assignCookie('cbSound', "enableSound");
+				assignCookie('cbType', "enableTyping");
+				assignCookie('cbNL', "enableNTag");
+				assignCookie('cbUpdate', "checkNV");
+				
 				setTimeout(function(){
 					var anim = document.getElementById('serverInput'); 
 					anim.style.opacity = 1;
@@ -588,7 +586,6 @@
 				var input = document.getElementById("chatInput");
 				if(input.value != ""){
 					mhistory.push(input.value);
-					console.log(input.value);
 					if(input.value.charAt(0) == '@'){
 						var read="";
 						for(let i=1; i<input.value.length; i++){
@@ -597,7 +594,6 @@
 							}
 							read += input.value.charAt(i);
 						}
-						console.log(read);
 						var today = new Date();
 						var time = pad(today.getHours()) + ":" + pad(today.getMinutes());
 						Message('client', input.value, time);
@@ -611,7 +607,6 @@
 							}
 							read += input.value.charAt(i);
 						}
-						console.log(read);
 						switch (read){
 							case "clr":
 								var msgs = document.getElementsByClassName("chatMessage");
@@ -987,7 +982,6 @@
 					
 					var rect = this.getBoundingClientRect();
 					var droprect = dropdown.getBoundingClientRect();
-					console.log(droprect);
 					if(rect.top>document.body.getBoundingClientRect().height-droprect.height-49){
 						dropdown.style.top = document.body.getBoundingClientRect().height-droprect.height-49;
 					}
@@ -1393,13 +1387,22 @@
 								}
 							}
 							peopleTypingTimeout = setTimeout(function(){
-								peopleTyping.splice(peopleTyping.indexOf(msg.sender), 1);
-								if (peopleTyping.length == 0){
-									typer.style.display = "none";
-								}
+								WaitForTimeout(msg.sender);
 							}, 2000);
 							break;
 					}
+				}
+			}
+			function WaitForTimeout(senders) {
+				console.log("WAITING FOR INPUT CLEAR")
+				peopleTyping.splice(peopleTyping.indexOf(senders), 1);
+				if (peopleTyping.length == 0){
+					typer.style.display = "none";
+				}
+				else{
+					peopleTypingTimeout = setTimeout(function(){
+						WaitForTimeout(senders);
+					}, 2000);
 				}
 			}
 			function End() {
