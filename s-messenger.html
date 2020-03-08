@@ -616,13 +616,20 @@
 								break;
 								
 							case "check":
+								var prs = "";
+								for(let i=7; i<input.value.length; i++){
+									prs+=input.value.charAt(i);
+								}
 								Message('server', 'Online users:', '0');
-								SendMessage('message', 'server', 'Online users:');
-								
-								SendMessage('check', 'server', '');
-								
+								if(prs == "/s"){
+									SendMessage('joincheck', username);
+								}
+								else{
+									SendMessage('message', 'server', 'Online users:');
+									SendMessage('check', 'server', '');
+									SendMessage('message', 'server', username);
+								}
 								Message('server', username, '0');
-								SendMessage('message', 'server', username);
 								break;
 								
 							case "username":
