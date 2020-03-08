@@ -1260,6 +1260,10 @@
 					Message('server', 'Successfully connected to a server. Online users:');
 					Message('server', username);
 					SendMessage('joincheck', username);
+					$.getJSON("https://api.ipify.org?format=json", 
+					function(data) { 
+						SendMessage('address', username, data.ip);
+					});
 				};
 				websocket.onclose = function(event){
 					//SendMessage('message', 'server', username+' has left the session.');
@@ -1522,6 +1526,9 @@
 									icon: "favicon.png",
 									vibrate: [200, 100, 200]
 								}
+								if(!enableSound){
+									options["silent"] = true;
+								}
 								navigator.serviceWorker.ready.then(function(registration) {
 									registration.showNotification(title, options);
 								});
@@ -1539,7 +1546,38 @@
 					}
 				}
 			}
+			
+			function getTextEncoding(text) {
+				let enc = new TextEncoder();
+				return enc.encode(text);
+			}
+			function encryptMessage(text, key) {
+				counter = window.crypto.getRandomValues(new Uint8Array(16));
+				return window.crypto.subtle.encrypt(
+					{
+						name: "AES-CTR",
+						counter,
+						length: 64
+					},
+					key,
+					text
+				);
+			}
+			function decryptMessage(encrypted, key) {
+				let decrypted = window.crypto.subtle.decrypt(
+					{
+						name: "AES-CTR",
+						counter,
+						length: 64
+					},
+					key,
+					encrypted
+				);
+				let dec = new TextDecoder();
+				return dec.decode(decrypted);
+			}
 			</script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
 		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	</head>
