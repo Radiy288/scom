@@ -17,8 +17,14 @@
 			}
 			html {
 				overflow: hidden;
+				cursor: url('cursor.png'), auto;
 			}
-			
+			input{
+				cursor: url('beam.png'), auto;
+			}
+			button{
+				cursor: url('cursor.png'), auto;
+			}
 			p {
 				margin-bottom: 0;
 				margin-top: 0;
@@ -61,6 +67,7 @@
 				font-weight: bold;
 				height: 25px;
 				width: calc(100% - 106px);
+				padding-right: 2px;
 			}
 			
 			.uibutton {
@@ -108,7 +115,7 @@
 				transition: transform 0.7s linear, opacity 0.6s ease, height 0.6s ease;
 			}
 			.option {
-				cursor:pointer;
+				cursor: url('link.png'), auto;
 				padding: 14px;
 				display: block;
 				background: #292929;
@@ -117,7 +124,7 @@
 			}
 			
 			.suggest {
-				cursor:pointer;
+				cursor: url('link.png'), auto;
 				padding: 4px;
 				display: block;
 				background: #191919;
@@ -1639,6 +1646,7 @@
 		<audio id="audio_notification">
 			<source src="message1.mp3">
 		</audio>
+		<input type="file" id="file-input">
 		<div id="windowBorder" class=windowBorder style="z-index: 8;">
 			<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">S-Messenger</span>
 			<img src="close.png" class=windowButton onclick="Exit()" ondragstart="return false;">
@@ -1689,7 +1697,7 @@
 				<button class=uibutton style="position: absolute; left: 16px; bottom: 12px;" onclick="location.reload()">Refresh</button>
 				<button class=uibutton style="position: absolute; right: 16px; bottom: 12px;" onclick="this.parentElement.style.display = 'none';">Cancel</button>
 			</div>
-			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%; overflow-y: auto;">
+			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%; overflow-y: auto; overflow-x: hidden;">
 				<div>
 					<img id="scplogo" src="scpf.png" class=scplogo onload="Load()" ondragstart="return false;">
 					<img id="scplogoleft" src="scpsign.png" class="scplogo logoanim" style="transform: rotate(45deg) translate(-7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoleft'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
