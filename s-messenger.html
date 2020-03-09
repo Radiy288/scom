@@ -217,6 +217,7 @@
 				var d = new Date();
 				d.setTime(d.getTime() + (exdays*24*60*60*1000));
 				var expires = "expires="+ d.toUTCString();
+				console.log(expires);
 				document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 			}
 			function getCookie(cname) {
@@ -233,21 +234,28 @@
 				}
 				return "";
 			}
-			function assignCookie(idstr, cname) {
+			function assignCookie(idstr, value) {
 				var elObj = document.getElementById(idstr);
-				var ckie = getCookie(cname);
-				if(ckie == "true"){
+				if(value == true){
 					if(elObj){
-						elObj.innerText == '✓';
+						elObj.innerText = '✓';
 						return true;
 					}
 				}
 				if(elObj){
-					elObj.innerText == '';
+					elObj.innerText = '';
 				}
 				return;
 			}
 			//GLOBALVARS
+			//SERVER
+			const defaultServer = "wss://connect.websocket.in/v2/1?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjY0NWJkYzI2OGQ2NjkxMmY3MzI5MWM1YWE4YmY3YmI5YTkzMzEwOGUwYjRiYjA4NDgyOGI4YzliMzczMGVkNjhmMGI1MGQ2NGM5ODZhNmE4In0.eyJhdWQiOiI4IiwianRpIjoiNjQ1YmRjMjY4ZDY2OTEyZjczMjkxYzVhYThiZjdiYjlhOTMzMTA4ZTBiNGJiMDg0ODI4YjhjOWIzNzMwZWQ2OGYwYjUwZDY0Yzk4NmE2YTgiLCJpYXQiOjE1ODMxNzE1OTcsIm5iZiI6MTU4MzE3MTU5NywiZXhwIjoxNjE0NzA3NTk3LCJzdWIiOiI1OTgiLCJzY29wZXMiOltdfQ.KJGvQbVglNPlFE9S0ScLTdaLARCRwTvv8YzeL-HyUYMVX37YDU0fQy88iUH1uDhKf3sSq-ljdyplhn9ukMcY4pHGYneEPXnVJzRMM0O3NF-U97JL4FPcHjUmNkXwYV-o1AWo-B5h3NcGAeuhVDoJGDXbjP7pQt0YhtPzfU4rhGw-9JrKwvXNLmq5J3qHV-m3BkpE4QdXfR2KIHO_Rr78x_ufGkneRGCxkE5nyW2vVLrP-_BDCKIvaP7dS6oob_gRvjmVMJaRITNKsbJqpyZBnkDvdKzXjxlgcvDQh2ZXMFT63RCIBh3o29lr7BlmOQs5CXCz7Tq0EFp8o4iHyWdnXAqoBIzadT1_0hkRo6KojYhMtLNpXDuba-7QvPBO556Bp8VzT0QLPSBdl6_N--LcqrQ90UtJpkiJIVf4dQLfST8TIitTHiqGg6cJSUkqhDwIACSMG7Ah_b09zzciJ8n_ILCEhclGH66L81jvvpGtHfnCsocBPJ_coIECAuyxC074T2s4gdj0Jral9GYtjeb4JGCmgtgMul1-vwk8wjWK4tT2LGsdiUqbnovhK-wNLa2V4gQnzb2H1YgKmf1LKcmUOxZMpnJFfXm6rBw-N6HzKLfq0O8QztGOsseU9f7nzQZQZLeixXIWd9MLI9tDzvzxsxhZHMl9cVa1jyU_9lVkOlw";
+			if(getCookie("server") == ""){
+				var server = defaultServer;
+			}
+			else{
+				var server = getCookie("server");
+			}
 			//USERNAME
 			if(getCookie("username") == ""){
 				var username = makeid(8);
@@ -424,12 +432,12 @@
 			
 			function Start(){
 				//SET COOKIES
-				assignCookie('cbNotif', "enableNotify");
-				assignCookie('cbSound', "enableSound");
-				assignCookie('cbType', "enableTyping");
-				assignCookie('cbNL', "enableNTag");
-				assignCookie('cbUpdate', "checkNV");
-				
+				assignCookie('cbNotif', enableNotify);
+				assignCookie('cbSound', enableSound);
+				assignCookie('cbType', enableTyping);
+				assignCookie('cbNL', enableNTag);
+				assignCookie('cbUpdate', checkNV);
+				document.getElementById("ws").value = server;
 				setTimeout(function(){
 					var anim = document.getElementById('serverInput'); 
 					anim.style.opacity = 1;
@@ -563,7 +571,7 @@
 				var servers = document.getElementById('servers');
 				servers.className='fade';
 				servers.style.opacity=1;
-				document.getElementById('ws').value = "wss://connect.websocket.in/v2/1?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjY0NWJkYzI2OGQ2NjkxMmY3MzI5MWM1YWE4YmY3YmI5YTkzMzEwOGUwYjRiYjA4NDgyOGI4YzliMzczMGVkNjhmMGI1MGQ2NGM5ODZhNmE4In0.eyJhdWQiOiI4IiwianRpIjoiNjQ1YmRjMjY4ZDY2OTEyZjczMjkxYzVhYThiZjdiYjlhOTMzMTA4ZTBiNGJiMDg0ODI4YjhjOWIzNzMwZWQ2OGYwYjUwZDY0Yzk4NmE2YTgiLCJpYXQiOjE1ODMxNzE1OTcsIm5iZiI6MTU4MzE3MTU5NywiZXhwIjoxNjE0NzA3NTk3LCJzdWIiOiI1OTgiLCJzY29wZXMiOltdfQ.KJGvQbVglNPlFE9S0ScLTdaLARCRwTvv8YzeL-HyUYMVX37YDU0fQy88iUH1uDhKf3sSq-ljdyplhn9ukMcY4pHGYneEPXnVJzRMM0O3NF-U97JL4FPcHjUmNkXwYV-o1AWo-B5h3NcGAeuhVDoJGDXbjP7pQt0YhtPzfU4rhGw-9JrKwvXNLmq5J3qHV-m3BkpE4QdXfR2KIHO_Rr78x_ufGkneRGCxkE5nyW2vVLrP-_BDCKIvaP7dS6oob_gRvjmVMJaRITNKsbJqpyZBnkDvdKzXjxlgcvDQh2ZXMFT63RCIBh3o29lr7BlmOQs5CXCz7Tq0EFp8o4iHyWdnXAqoBIzadT1_0hkRo6KojYhMtLNpXDuba-7QvPBO556Bp8VzT0QLPSBdl6_N--LcqrQ90UtJpkiJIVf4dQLfST8TIitTHiqGg6cJSUkqhDwIACSMG7Ah_b09zzciJ8n_ILCEhclGH66L81jvvpGtHfnCsocBPJ_coIECAuyxC074T2s4gdj0Jral9GYtjeb4JGCmgtgMul1-vwk8wjWK4tT2LGsdiUqbnovhK-wNLa2V4gQnzb2H1YgKmf1LKcmUOxZMpnJFfXm6rBw-N6HzKLfq0O8QztGOsseU9f7nzQZQZLeixXIWd9MLI9tDzvzxsxhZHMl9cVa1jyU_9lVkOlw";
+				document.getElementById('ws').value = server;
 				document.getElementById('un').value = username;
 			}
 			
@@ -575,7 +583,7 @@
 					if(input.value.charAt(0) == '@'){
 						var read="";
 						for(let i=1; i<input.value.length; i++){
-							if (input.value.charAt(i) == " "){
+							if (input.value.charAt(i) == "@"){
 								break;
 							}
 							read += input.value.charAt(i);
@@ -635,9 +643,14 @@
 									Message("server", "REGISTERED PROPERTY");
 									return;
 								}
+								if(prs.includes('@')){
+									Message("server", "ILLEGAL CHARACTER IN USERNAME");
+									return;
+								}
 								Message("server", username+" changed username to "+prs+".");
 								SendMessage('message', 'server', username+" changed username to "+prs+".");
 								username = prs;
+								setCookie('username', username, 365);
 								break;
 								
 							case "disconnect":
@@ -651,6 +664,7 @@
 								}
 								if(prs == ""){
 									Message('server', "S-Messenger "+version);
+									Message('server', "© SCP Technologies Ltd 1999-2004");
 									Message('server', navigator.platform+Define(navigator.oscpu)+" "+navigator.language+". "+Define(navigator.vendor));
 									Message('server', Define(navigator.userAgent));
 								}
@@ -1001,6 +1015,21 @@
 					//msgText.innerText = msgText.innerText.replace(/(\[aud\])/g, "<audio controls style='max-width: 100%; outline: none;'><source src='");
 					//msgText.innerText = msgText.innerText.replace(/(\[\/aud\])/g, "'></audio>");
 					var tagCount;
+					//[FRAME]
+					tagCount = (msgText.innerHTML.match(/(\[frame\])/g) || []).length;
+					for(let i=0; i<tagCount; i++){
+						var prs="";
+						
+						for(let j=msgText.innerHTML.indexOf("[frame]")+7; j<msgText.innerHTML.length; j++){
+							if(msgText.innerHTML.charAt(j) == "["){
+								if(msgText.innerHTML.charAt(j+1) == "/"){
+									break;
+								}
+							}
+							prs+=msgText.innerHTML.charAt(j);
+						}
+						msgText.innerHTML = msgText.innerHTML.replace("[frame]"+prs+"[/frame]", '<iframe style="max-width: 100%" src="'+prs+'" allowfullscreen></iframe>');
+					}
 					//[IMAGE]
 					tagCount = (msgText.innerHTML.match(/(\[img\])/g) || []).length;
 					for(let i=0; i<tagCount; i++){
@@ -1231,6 +1260,16 @@
 					}, 10);
 					return;
 				}
+				if(un.value.includes('@')){
+					error.innerHTML = "ILLEGAL CHARACTER IN USERNAME";
+					error.className = "";
+					error.style.opacity = 1;
+					setTimeout(function(){
+						error.className = "fade";
+						error.style.opacity = 0;
+					}, 10);
+					return;
+				}
 				document.getElementById("connectbutton").disabled = true;
 				username = un.value;
 				websocket = new WebSocket(ws.value);
@@ -1248,6 +1287,8 @@
 				};
 				websocket.onopen = function(event){
 					console.log("OPENING");
+					server = document.getElementById("ws").value;
+					setCookie('server', server, 365);
 					setCookie('username', username, 365);
 					SendMessage('message', 'server', username+' has joined the session.');
 					SendMessage('pinrequest', username, '');
@@ -1495,7 +1536,6 @@
 				//return false;
 			}
 			function Type(){
-				console.log("input");
 				if(connected){
 					if(enableTyping){
 					if(logType){
@@ -1576,6 +1616,17 @@
 				let dec = new TextDecoder();
 				return dec.decode(decrypted);
 			}
+			
+			function DefaultSettings(){
+				setCookie('server', '', -32);
+				setCookie('username', '', -32);
+				setCookie('checkNV', '', -32);
+				setCookie('enableNTag', '', -32);
+				setCookie('enableNotify', '', -32);
+				setCookie('enableSound', '', -32);
+				setCookie('enableTyping', '', -32);
+				location.reload();
+			}
 			</script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
 		<link rel="shortcut icon" href="favicon.png">
@@ -1596,7 +1647,7 @@
 		</div>
 		<div id="windowContent" style="display: block; position: absolute; display:inline-block; width: 100%; height: calc(100% - 24px);">
 			<p id="updateLabel" align=CENTER style="display: none; position: fixed; width: 100%;">NEW UPDATE AVAILABLE</p>
-			<div id="optionsMenu" class=menuWindow style="display: none; width: 350; height: 320;">
+			<div id="optionsMenu" class=menuWindow style="display: none; width: 350; height: auto; padding-bottom: 4px;">
 				<div id="windowBorder" class=windowBorder onmousedown="dragOptions = true;" ontouchstart="TouchStart(event)">
 					<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">Options</span>
 					<img src="close.png" class=windowButton onclick="document.getElementById('optionsMenu').style.display = 'none';" ondragstart="return false;">
@@ -1624,6 +1675,9 @@
 				<br>
 				<button id="cbUpdate" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; checkNV=false; setCookie('checkNV', 'false', 365);}else{this.innerText='✓'; checkNV=true; setCookie('checkNV', 'true', 365); CheckVersion();}">✓</button>
 				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Check for updates</span>
+				<br>
+				<hr>
+				<button class="uibutton" style="width:calc(100% - 8px); margin-left: 4px; margin-right: 4px;" onclick="DefaultSettings()">Revert to default</button>
 			</div>
 			<div id="updateMenu" class=menuWindow style="display: none; width: 340; height: 160;">
 				<div id="windowBorder" class=windowBorder>
@@ -1635,21 +1689,24 @@
 				<button class=uibutton style="position: absolute; left: 16px; bottom: 12px;" onclick="location.reload()">Refresh</button>
 				<button class=uibutton style="position: absolute; right: 16px; bottom: 12px;" onclick="this.parentElement.style.display = 'none';">Cancel</button>
 			</div>
-			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%">
+			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%; overflow-y: auto;">
 				<div>
 					<img id="scplogo" src="scpf.png" class=scplogo onload="Load()" ondragstart="return false;">
-					<img id="scplogoleft" src="scpsign.png" class="scplogo logoanim" style="transform: rotate(45deg) translate(-5%, 0px) scale(1.4);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoleft'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
-					<img id="scplogoright" src="scpsign.png" class="scplogo logoanim" style="transform: rotate(-45deg) translate(5%, 0px) scale(1.4);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoright'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
+					<img id="scplogoleft" src="scpsign.png" class="scplogo logoanim" style="transform: rotate(45deg) translate(-7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoleft'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
+					<img id="scplogoright" src="scpsign.png" class="scplogo logoanim" style="transform: rotate(-45deg) translate(7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoright'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
 				</div>
 				<div id="serverInput" style="opacity: 0; transition: opacity 0.6s linear;">
 					<h1 align=CENTER>S-Messenger</h1>
 					<p align=CENTER>Websocket URL</p>
-					<input id="ws" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 75%; margin-bottom:8px;" placeholder="Enter websocket URL">
+					<div style="margin-bottom:8px; margin-left:auto; margin-right:auto; width: 75%;">
+						<input id="ws" class=inputbox style="display:inline-block; margin-right: 2px; width: calc(100% - 2em - 2px);" placeholder="Enter websocket URL"><div style="display: inline-block; float: right;"><button id="updatebutton" class=uibutton style="width: 2em;" onclick='document.getElementById("ws").value = defaultServer;'>D</button></div>
+					</div>
 					<p align=CENTER>Username</p>
 					<input id="un" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 50%; margin-bottom:8px;" placeholder="Enter username">
 					<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
 					<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</h3>
-					<span id="versionShow" style="position: absolute; top: 2px; left: 4px;"></span>
+					<p id="versionShow" style="position: absolute; top: 2px; left: 4px;"></p>
+					<p style="position: absolute; top: 1.1em; left: 4px; max-width:50%;">© SCP Technologies Ltd 1999-2004<br>SCP Foundation 1982-2004</p>
 					<div style="display: block; position: absolute; top: 2px; right: 4px;"><button id="updatebutton" class=uibutton onclick="location.reload()">Refresh</button></div>
 				</div>
 			</div>
