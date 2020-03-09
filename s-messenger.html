@@ -971,7 +971,7 @@
 					var optionTag = document.createElement("p");
 					optionTag.innerHTML = "Send private";
 					optionTag.onclick = function(){
-						document.getElementById("chatInput").value = '@'+lastElement.children[1].innerText.split(",")[0]+' '+document.getElementById("chatInput").value;
+						document.getElementById("chatInput").value = '@'+lastElement.children[1].innerText.split(",")[0]+'@ '+document.getElementById("chatInput").value;
 						document.getElementById("chatInput").focus();
 						ClearDropDowns();
 					};
@@ -1646,7 +1646,6 @@
 		<audio id="audio_notification">
 			<source src="message1.mp3">
 		</audio>
-		<input type="file" id="file-input">
 		<div id="windowBorder" class=windowBorder style="z-index: 8;">
 			<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">S-Messenger</span>
 			<img src="close.png" class=windowButton onclick="Exit()" ondragstart="return false;">
