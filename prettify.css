@@ -6,10 +6,12 @@
 		color:#D69D85
 	}
 	.kwd{
-		color:#569CD6
+		color:#569CD6;
+		font-weight:bold;
 	}
 	.com{
-		color:#57A64A
+		color:#57A64A;
+		font-style: italic;
 	}
 	.typ{
 		color:#569CD6

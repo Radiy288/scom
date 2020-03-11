@@ -32,6 +32,7 @@
 			
 			::-webkit-scrollbar {
 				width: 11px;
+				height: 11px;
 			}
 
 			::-webkit-scrollbar-track {
@@ -205,6 +206,10 @@
 				max-width: 75%;
 				white-space: pre-wrap;
 			}
+			pre {
+				overflow: auto;
+				font-weight: normal;
+			}
 			.message:active {
 				background: #404040;
 				color: #696969;
@@ -316,7 +321,7 @@
 			var suggestcur = -1;
 			var cmds = ["/clr", "/check", "/disconnect", "/info (str)", "/refresh", "/username {str}"];
 			var cmdsEl = [];
-			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]", "[vid]", "[size]", "[align]", "[b]", "[frame]"];
+			var bbs = ["[aud]", "[i]", "[img]", "[n]", "[quote]", "[u]", "[small]", "[big]", "[tt]", "[notag]", "[color]", "[url]", "[vid]", "[size]", "[align]", "[b]", "[frame]", "[code]"];
 			bbs.sort();
 			var bbsEl = [];
 			var ddon = false;
@@ -1042,7 +1047,7 @@
 							}
 							prs+=msgText.innerHTML.charAt(j);
 						}
-						msgText.innerHTML = msgText.innerHTML.replace("[frame]"+prs+"[/frame]", '<iframe style="max-width: 100%" src="'+prs+'" allowfullscreen></iframe>');
+						msgText.innerHTML = msgText.innerHTML.replace("[frame]"+prs+"[/frame]", '<iframe style="width: 50vw; height: 35vh; max-width: 100%" src="'+prs+'" allowfullscreen></iframe>');
 					}
 					//[IMAGE]
 					tagCount = (msgText.innerHTML.match(/(\[img\])/g) || []).length;
