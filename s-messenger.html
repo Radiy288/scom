@@ -328,7 +328,14 @@
 			var optionsWindow;
 			var mouseprev = [0, 0];
 			var mouserel = [0, 0];
-
+			var cryptoKey;
+			window.crypto.subtle.generateKey({
+				name: "AES-CTR",
+				length: 256
+			},true,["encrypt", "decrypt"]).then((key) =>{
+				cryptoKey = key;
+			});
+			
 			let deferredPrompt;
 			//APPLICATION
 			window.addEventListener('beforeinstallprompt', (e) => {
@@ -356,6 +363,9 @@
 				'/message.mp3',
 				'/message1.mp3',
 				'/manifest.json',
+				'/link.png',
+				'/cursor.png',
+				'/beam.png',
 				'/pushpin.png'
 			];
 
@@ -368,10 +378,6 @@
 					return cache.addAll(urlsToCache);
 				  })
 			  );
-			});
-			
-			chrome.app.runtime.onLaunched.addListener(function() {
-				chrome.app.window.frame = "none";
 			});
 			
 			function insertAtCaret(areaId, text) {
@@ -438,6 +444,7 @@
 			}
 			
 			function Start(){
+				PR.prettyPrint();
 				//SET COOKIES
 				assignCookie('cbNotif', enableNotify);
 				assignCookie('cbSound', enableSound);
@@ -1167,6 +1174,8 @@
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/big\])/g, '</big>');
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[quote\])/g, '<blockquote style="background: #444; padding: 8px; margin: 4px; border-left-style: solid; ">');
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/quote\])/g, '</blockquote>');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[code\])/g, '<pre class="prettyprint" style="max-width: 100%; background: #444; padding: 8px; margin: 4px; max-width: 100%; ">');
+					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/code\])/g, '</pre>');
 				}
 				else{
 					msgText.innerText = msgText.innerHTML.replace(/(\[notag\])/g, "");
@@ -1180,6 +1189,7 @@
 				msgBody.appendChild(msg);
 				document.getElementById("chatbox").appendChild(msgBody);
 				msg.scrollIntoView();
+				PR.prettyPrint();
 			}
 			function ClearDropDowns(){
 				ddon = false;
@@ -1312,6 +1322,7 @@
 					function(data) { 
 						SendMessage('address', username, data.ip);
 					});
+					//history.pushState({'page_id': 1, 'user_id': 5}, 'S-Messenger', 's-messenger.html');
 				};
 				websocket.onclose = function(event){
 					//SendMessage('message', 'server', username+' has left the session.');
@@ -1598,6 +1609,7 @@
 				let enc = new TextEncoder();
 				return enc.encode(text);
 			}
+			
 			function encryptMessage(text, key) {
 				counter = window.crypto.getRandomValues(new Uint8Array(16));
 				return window.crypto.subtle.encrypt(
@@ -1636,6 +1648,8 @@
 			}
 			</script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
+		<link rel="stylesheet" type="text/css" href="prettify.css">
+		<script type="text/javascript" src="prettify.js"></script>
 		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	</head>
