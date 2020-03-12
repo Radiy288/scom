@@ -6,7 +6,7 @@ function CompileBatch(str){
 	let cmds = str.split(';');
 	cmds.forEach(function(item){
 		for(let i=0; i<item.length; i++){
-			if(item.charAt(i) == ' ' || item.charAt(i) == '\n'){
+			if(item.charAt(i) == ' ' || item.charAt(i) == '\n' || item.charAt(i) == '	'){
 				//console.log("Fooound ooone");
 			}
 			else{
@@ -150,7 +150,11 @@ function Compile(str){
 				prs+=str.charAt(i);
 			}
 			if(isNaN(prs)){
-				Error('Unexpected buffer start value type.');
+				if(!functions.hasOwnProperty(prs)){
+					Error('No "'+prs+'" procedure found.');
+					return;
+				}
+				delete functions[prs];
 				return;
 			}
 			for (let i=6+prs.length; i<str.length; i++){
@@ -180,6 +184,7 @@ function Compile(str){
 				Error('Invalid procedure name.');
 				return;
 			}
+			console.log(prs);
 			openedFunction = prs;
 			functions[openedFunction] = " ";
 			break;
@@ -233,6 +238,9 @@ function Compile(str){
 			break;
 			
 		case "":
+			break;
+			
+		case "//":
 			break;
 			
 		default:
