@@ -5,11 +5,14 @@
 		<style>
 			body {
 				font-family: "Courier";
-				font-size: 15px;
+				font-size: 16px;
 				font-weight: bold;
 				color: #fff;
 				background: #000000;
+				margin: 0;
+				padding: 0;
 				line-height: 0.3;
+				overscroll-behavior: none;
 				background-image: url('bg.png'), url('bgh.png'), url('bgv.png');
 				background-repeat: no-repeat, repeat-y, repeat-x;
 				background-attachment: fixed;
@@ -86,6 +89,16 @@
 			.windowButton:active, .uicheckbox:active {
 				filter: brightness(1.5);
 			}
+			
+			.option {
+				cursor: url('link.png'), auto;
+				padding: 14px;
+				display: block;
+				background: #292929;
+				color: #fff;
+				border: 1px solid #424242;
+				margin: 0;
+			}
 		</style>
 		<script>
 			var mouseRel = []; mouseRel[0]=0; mouseRel[1]=0;
@@ -97,10 +110,14 @@
 			var icons = [];
 			
 			function OnStart(){
+				document.addEventListener('contextmenu', function(e) {
+					e.preventDefault();
+				}, false);
+			
 				desktop = document.getElementById("desktop");
 				CreateIcon('icon_database.png', 'Database', "", 384, 0);
-				CreateIcon('icon_database.png', 'S-Messenger', "CreateWindow('s-messenger.html', 640, 512, true);", 256, 0);
-				CreateIcon('icon_console.png', 'Console', '', 128, 0);
+				CreateIcon('icon_sm.png', 'S-Messenger', "CreateWindow('s-messenger.html', 640, 512, true);", 256, 0);
+				CreateIcon('icon_console.png', 'Console', "CreateWindow('console.html', 640, 360, true);", 128, 0);
 				CreateIcon('icon_pc.png', 'Computer', '', 0, 0);
 			}
 			function OnMouseMove(event){
@@ -145,6 +162,25 @@
 				}
 			}
 			
+			function CreateContextMenu(elems){
+				ClearContext();
+				let dropdown = document.createElement('div');
+				dropdown.className = "dropdown";
+				dropdown.style.position = 'fixed';
+				dropdown.style.left = mousePrev[0];
+				dropdown.style.top = mousePrev[1];
+				dropdown.style.zIndex = 3;
+				for(let i=1; elems['e'+i.toString()]; i++){
+					let option = document.createElement('p');
+					option.className = 'option';
+					option.innerText = elems['e'+i.toString()];
+					option.onmousedown = function(){
+						eval(elems['e'+i.toString()+'action'])
+					}
+					dropdown.appendChild(option);
+				}
+				document.body.appendChild(dropdown);
+			}
 			function CreateIcon(img, name, func, x, y){
 				let icon = document.createElement("div");
 				let iconImg = document.createElement("img");
@@ -166,7 +202,7 @@
 				}
 				iconName.innerText = name;
 				iconName.className = 'info';
-				iconName.style = "position: absolute; left:46%; transform: translateX(-50%); text-align: center; margin: 4px; width: 128px;";
+				iconName.style = "position: absolute; left:41%; transform: translateX(-50%); text-align: center; margin: 8px; width: 128px;";
 				
 				icon.appendChild(iconImg);
 				icon.appendChild(iconName);
@@ -179,13 +215,16 @@
 			function CreateWindow(src, width, height, resizeable){
 				let window = document.createElement("div");
 				let windowBorder = document.createElement("div");
+				let windowCaption = document.createElement("span");
 				let windowClose = document.createElement("img");
 				let windowHide = document.createElement("img");
 				let windowOptions = document.createElement("img");
 				let windowContent = document.createElement("iframe");
 				
+				windowCaption.style = "padding:3px; padding-left: 6px; position: absolute; top: 0.5em;";
 				windowBorder.className = "windowBorder";
 				windowBorder.style.width = width+6;
+				windowBorder.appendChild(windowCaption);
 				windowBorder.appendChild(windowClose);
 				windowBorder.appendChild(windowHide);
 				windowBorder.appendChild(windowOptions);
@@ -212,7 +251,12 @@
 				windowClose.className = "windowButton";
 				windowClose.ondragstart = function(){return false;};
 				windowClose.onclick = function(){
-					windowContent.contentWindow.Exit(); 
+					try{
+						windowContent.contentWindow.Exit(); 
+					}
+					catch (e){
+						console.log(e);
+					}
 					windowBorder.remove();
 				};
 				
@@ -225,6 +269,7 @@
 						return;
 					}
 					window.style.display = 'none';
+					windowBorder.style.width = 128;
 				};
 				
 				windowOptions.style = "margin-right: 8px";
@@ -234,6 +279,10 @@
 				windowOptions.onclick = function(){
 					windowContent.contentWindow.Options(); 
 				};
+				
+				windowContent.onload = function (){
+					windowCaption.innerText = windowContent.contentDocument.title;
+				}
 				
 				document.body.appendChild(windowBorder);
 			}
@@ -265,6 +314,22 @@
 					}
 				}
 			}
+			function CallMenu(event){
+				ClearContext();
+				if(event.which == 3){
+					let elems = {
+						e1: 'Settings',
+						e1action: 'CreateWindow("", 640, 480, true)',
+					}
+					CreateContextMenu(elems);
+				}
+			}
+			function ClearContext(){
+				let dropdowns = document.getElementsByClassName('dropdown');
+				while (dropdowns[0]) {
+					dropdowns[0].parentNode.removeChild(dropdowns[0]);
+				}
+			}
 			//FUNCS
 			function Clamp(value, min, max){
 				if(value < min){
@@ -280,9 +345,9 @@
 			}
 		</script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
-		<link rel="shortcut icon" href="favicon.png">
+		<link rel="shortcut icon" href="favicon_old.png">
 	</head>
-	<body onload="OnStart()" onmousemove="OnMouseMove(event)" onmouseup="OnDragEnd()">
+	<body onload="OnStart()" onmousemove="OnMouseMove(event)" onmouseup="OnDragEnd()" onmousedown="CallMenu(event)">
 		<p style="position:fixed; left:350px; top:30px; font-size:30px; z-index: 2;">S-COM SOFTWARE 1.5</p>
 		<div align=RIGHT style="margin-right:152px;"><button onclick="Exit()" class=bigbutton style="position:fixed; top:36px; font-size:30px; width:129; height:52;">EXIT</button></div>
 		<div class="info" style="position:fixed; left:23px; top:204px;">

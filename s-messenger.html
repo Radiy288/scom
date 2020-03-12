@@ -457,6 +457,10 @@
 			}
 			
 			function Start(){
+				if(inIframe()){
+					document.getElementById("windowBorder").style.display = "none";
+					document.getElementById("windowContent").style.height = "100%";
+				}
 				PR.prettyPrint();
 				//SET COOKIES
 				assignCookie('cbNotif', enableNotify);
@@ -474,10 +478,6 @@
 					document.getElementById('scplogoleft').style.height = "38%"; 
 					document.getElementById('scplogoright').style.height = "38%"; 
 				}, 800);
-				if(inIframe()){
-					document.getElementById("windowBorder").style.display = "none";
-					document.getElementById("windowContent").style.height = "100%";
-				}
 				optionsWindow = document.getElementById("optionsMenu");
 				typer = document.getElementById("typer");
 				document.getElementById("notifperm").innerText = Notification.permission;
@@ -1667,7 +1667,7 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
 		<link rel="stylesheet" type="text/css" href="prettify.css">
 		<script type="text/javascript" src="prettify.js"></script>
-		<link rel="shortcut icon" href="favicon.png">
+		<link rel="shortcut icon" href="icon_sm.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	</head>
 	<body onload = "Start()" onbeforeunload="End()" onmousemove="MouseMove(event)" ontouchmove="TouchMove(event)" ontouchend="dragOptions = false;" onmouseup="dragOptions = false;">
