@@ -108,6 +108,7 @@
 			var clicktimeout = false;
 			var desktop;
 			var icons = [];
+			var resizing;
 			
 			function OnStart(){
 				document.addEventListener('contextmenu', function(e) {
@@ -136,6 +137,11 @@
 					draggingWindow.style.left = draggingWindow.offsetLeft + mouseRel[0];
 					draggingWindow.style.top = draggingWindow.offsetTop + mouseRel[1];
 				}
+				if(resizing){
+					resizing.style.width = Clamp(parseFloat(resizing.style.width) + mouseRel[0], 200, window.innerWidth+resizing.offsetLeft);
+					resizing.style.height = Clamp(parseFloat(resizing.style.height) + mouseRel[1], 100, window.innerHeight+resizing.offsetTop);
+					resizing.parentElement.style.width = resizing.offsetWidth;
+				}
 				mousePrev[0] = event.clientX;
 				mousePrev[1] = event.clientY;
 			}
@@ -159,6 +165,10 @@
 					setTimeout(function(){
 						clicktimeout = false;
 					}, 50);
+				}
+				if(resizing){
+					resizing.children[0].style.pointerEvents = "auto";
+					resizing = null;
 				}
 			}
 			
@@ -224,15 +234,25 @@
 				windowCaption.style = "padding:3px; padding-left: 6px; position: absolute; top: 0.5em;";
 				windowBorder.className = "windowBorder";
 				windowBorder.style.width = width+6;
+				windowBorder.style.left = Clamp(mousePrev[0]-width/2, 0, window.innerWidth);
+				windowBorder.style.top = Clamp(mousePrev[1]-height/2, 0, window.innerHeight);
 				windowBorder.appendChild(windowCaption);
 				windowBorder.appendChild(windowClose);
 				windowBorder.appendChild(windowHide);
 				windowBorder.appendChild(windowOptions);
 				windowBorder.appendChild(window);
-				windowBorder.onmousedown = function(){
-					draggingWindow = this;
+				window.onmousedown = function(){
+					console.log("draggin yo");
 					windowContent.style.pointerEvents = "none";
+					resizing = window;
 					return false;
+				}
+				windowBorder.onmousedown = function(){
+					if(!resizing){
+						draggingWindow = this;
+						windowContent.style.pointerEvents = "none";
+						return false;
+					}
 				}
 				
 				window.className = "window";
@@ -240,6 +260,7 @@
 				window.style.height = height;
 				window.style.display = 'block';
 				window.style.marginTop = 24;
+				window.style.cursor = "url('resize.png'), default"
 				window.appendChild(windowContent);
 
 				windowContent.style.width = "100%";
@@ -266,10 +287,11 @@
 				windowHide.onclick = function(){
 					if(window.style.display == 'none'){
 						window.style.display = 'block';
+						windowBorder.style.width = width+6;
 						return;
 					}
 					window.style.display = 'none';
-					windowBorder.style.width = 128;
+					windowBorder.style.width = 256;
 				};
 				
 				windowOptions.style = "margin-right: 8px";
