@@ -102,7 +102,7 @@
 				margin-left: auto;
 				margin-right: auto;
 				height: 50%;
-				margin-top: 10%;
+				margin-top: 7%;
 				transition: height 0.6s ease;
 			}
 			.logoanim {
@@ -209,7 +209,7 @@
 			pre {
 				overflow: auto;
 				font-weight: normal;
-				font-size: 12px;
+				font-size: 13px;
 				cursor: url('beam.png'), auto;
 			}
 			.message:active {
@@ -386,7 +386,13 @@
 				  })
 			  );
 			});
-			
+			function inIframe () {
+				if ( window.location !== window.parent.location ) {
+					return true;
+				} else {
+					return false;
+				}
+			}
 			function insertAtCaret(areaId, text) {
 				var txtarea = document.getElementById(areaId);
 				var scrollPos = txtarea.scrollTop;
@@ -468,6 +474,10 @@
 					document.getElementById('scplogoleft').style.height = "38%"; 
 					document.getElementById('scplogoright').style.height = "38%"; 
 				}, 800);
+				if(inIframe()){
+					document.getElementById("windowBorder").style.display = "none";
+					document.getElementById("windowContent").style.height = "100%";
+				}
 				optionsWindow = document.getElementById("optionsMenu");
 				typer = document.getElementById("typer");
 				document.getElementById("notifperm").innerText = Notification.permission;
@@ -1746,7 +1756,7 @@
 					</div>
 				</div>
 				<div class=bottomui>
-					<input id="chatInput" class=inputbox oninput="CheckCommand(); Type();" onpaste="if(enableNTag){OnPaste(); return false;}"><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
+					<input id="chatInput" class=inputbox oninput="CheckCommand(); Type();" onpaste="if(enableNTag){OnPaste(); return false;}" autocomplete="off"><button id="sendButton" class=uibutton onclick="SendClick()">Send</button>
 				</div>
 			</div>
 		</div>

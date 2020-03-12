@@ -1,0 +1,307 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=0.5">
+		<title>S-COM Software Online</title>
+		<style>
+			body {
+				font-family: "Courier";
+				font-size: 15px;
+				font-weight: bold;
+				color: #fff;
+				background: #000000;
+				line-height: 0.3;
+				background-image: url('bg.png'), url('bgh.png'), url('bgv.png');
+				background-repeat: no-repeat, repeat-y, repeat-x;
+				background-attachment: fixed;
+			}
+			html {
+				overflow: hidden;
+				cursor: url('cursor.png'), auto;
+			}
+			.bigbutton {
+				cursor: url('cursor.png'), auto;
+				border-radius: 2px;
+				background-color: #212121;
+				color: #fff;
+				outline: none;
+				font-family: "Courier";
+				font-size: 15px;
+				font-weight: bold;
+				border-style: solid;
+				border-color: #fff;
+				z-index: 1; 
+			}
+			.bigbutton:hover {
+				background-color: #808080;
+			}
+			.bigbutton:active {
+				background-color: #909090;
+			}
+			
+			.info {
+				font-size: 18px;
+				z-index: 1; 
+			}
+			
+			.console {
+				max-width: 50%;
+			}
+			
+			.icon {
+				position:fixed;
+				width: auto;
+				height: auto;
+				left: 0px;
+				top: 0px;
+				transition: filter 0.1s ease 0s;
+			}
+			.icon:hover {
+				filter: brightness(0.8);
+			}
+			.icon:active {
+				filter: brightness(0.5);
+				position:fixed;
+			}
+			.window {
+				border: 3px solid #898989;
+				border-top: none;
+				background: #000;
+			}
+			.windowBorder {
+				position: fixed;
+				min-height: 24px;
+				max-height: 24px;
+				background: #898989;
+				box-sizing: border-box;
+				z-index: 2;
+			}
+			.windowButton {
+				margin: 0;
+				top: 0;
+				float: right;
+			}
+			.windowButton:hover, .uicheckbox:hover {
+				filter: brightness(1.3);
+			}
+			.windowButton:active, .uicheckbox:active {
+				filter: brightness(1.5);
+			}
+		</style>
+		<script>
+			var mouseRel = []; mouseRel[0]=0; mouseRel[1]=0;
+			var mousePrev = []; mousePrev[0]=0; mousePrev[1]=0;
+			var dragging;
+			var draggingWindow;
+			var clicktimeout = false;
+			var desktop;
+			var icons = [];
+			
+			function OnStart(){
+				desktop = document.getElementById("desktop");
+				CreateIcon('icon_database.png', 'Database', "", 384, 0);
+				CreateIcon('icon_database.png', 'S-Messenger', "CreateWindow('s-messenger.html', 640, 512, true);", 256, 0);
+				CreateIcon('icon_console.png', 'Console', '', 128, 0);
+				CreateIcon('icon_pc.png', 'Computer', '', 0, 0);
+			}
+			function OnMouseMove(event){
+				mouseRel[0] = event.clientX-mousePrev[0];
+				mouseRel[1] = event.clientY-mousePrev[1];
+				let x, y;
+				if(dragging){
+					//dragging.style.left = dragging.offsetLeft+mouseRel[0];
+					//dragging.style.top = dragging.offsetTop+mouseRel[1];
+					x = Clamp(Math.round((event.clientX-desktop.offsetLeft-32)/128)*128+desktop.offsetLeft, desktop.offsetLeft, window.innerWidth)
+					y = Clamp(Math.round((event.clientY-desktop.offsetTop-32)/128)*128+desktop.offsetTop, desktop.offsetTop, window.innerHeight)
+					dragging.style.left = Lerp(dragging.offsetLeft, x, 0.5);
+					dragging.style.top = Lerp(dragging.offsetTop, y, 0.5);
+				}
+				if(draggingWindow){
+					draggingWindow.style.left = draggingWindow.offsetLeft + mouseRel[0];
+					draggingWindow.style.top = draggingWindow.offsetTop + mouseRel[1];
+				}
+				mousePrev[0] = event.clientX;
+				mousePrev[1] = event.clientY;
+			}
+			function OnDragEnd(){
+				if(draggingWindow){
+					for(let i=0; i<draggingWindow.children.length; i++){
+						if(draggingWindow.children[i].tagName == 'DIV'){
+							draggingWindow.children[i].children[0].style.pointerEvents = "auto";
+						}
+					}
+					draggingWindow = null;
+				}
+				if(dragging){
+					PositionIcons();
+					if(dragging.offsetLeft+64 > window.innerWidth){
+						dragging.style.left = desktop.offsetLeft;
+						dragging.style.top = dragging.offsetTop+128;
+						PositionIcons();
+					}
+					dragging = null;
+					setTimeout(function(){
+						clicktimeout = false;
+					}, 50);
+				}
+			}
+			
+			function CreateIcon(img, name, func, x, y){
+				let icon = document.createElement("div");
+				let iconImg = document.createElement("img");
+				let iconName = document.createElement("p");
+				icon.className = 'icon';
+				icon.id = 'icon'+icons.length.toString();
+				icon.style.left = desktop.offsetLeft+x;
+				icon.style.top = desktop.offsetTop+y;
+				iconImg.src = img;
+				iconImg.ondragstart = function(){
+					dragging = this.parentElement;
+					clicktimeout = true;
+					return false;
+				}
+				iconImg.onclick = function(){
+					if(!clicktimeout){
+						eval(func);
+					}
+				}
+				iconName.innerText = name;
+				iconName.className = 'info';
+				iconName.style = "position: absolute; left:46%; transform: translateX(-50%); text-align: center; margin: 4px; width: 128px;";
+				
+				icon.appendChild(iconImg);
+				icon.appendChild(iconName);
+				desktop.appendChild(icon);
+				icons.push({name: name, x: icon.offsetLeft, y: icon.offsetTop, id: icon.id});
+				dragging = icon;
+				PositionIcons();
+				dragging = null;
+			}
+			function CreateWindow(src, width, height, resizeable){
+				let window = document.createElement("div");
+				let windowBorder = document.createElement("div");
+				let windowClose = document.createElement("img");
+				let windowHide = document.createElement("img");
+				let windowOptions = document.createElement("img");
+				let windowContent = document.createElement("iframe");
+				
+				windowBorder.className = "windowBorder";
+				windowBorder.style.width = width+6;
+				windowBorder.appendChild(windowClose);
+				windowBorder.appendChild(windowHide);
+				windowBorder.appendChild(windowOptions);
+				windowBorder.appendChild(window);
+				windowBorder.onmousedown = function(){
+					draggingWindow = this;
+					windowContent.style.pointerEvents = "none";
+					return false;
+				}
+				
+				window.className = "window";
+				window.style.width = width;
+				window.style.height = height;
+				window.style.display = 'block';
+				window.style.marginTop = 24;
+				window.appendChild(windowContent);
+
+				windowContent.style.width = "100%";
+				windowContent.style.height = "100%";
+				windowContent.style.border = "none";
+				windowContent.src = src;
+				
+				windowClose.src = "close.png";
+				windowClose.className = "windowButton";
+				windowClose.ondragstart = function(){return false;};
+				windowClose.onclick = function(){
+					windowContent.contentWindow.Exit(); 
+					windowBorder.remove();
+				};
+				
+				windowHide.src = "hide.png";
+				windowHide.className = "windowButton";
+				windowHide.ondragstart = function(){return false;};
+				windowHide.onclick = function(){
+					if(window.style.display == 'none'){
+						window.style.display = 'block';
+						return;
+					}
+					window.style.display = 'none';
+				};
+				
+				windowOptions.style = "margin-right: 8px";
+				windowOptions.src = "options.png";
+				windowOptions.className = "windowButton";
+				windowOptions.ondragstart = function(){return false;};
+				windowOptions.onclick = function(){
+					windowContent.contentWindow.Options(); 
+				};
+				
+				document.body.appendChild(windowBorder);
+			}
+			function PositionIcons(){
+				x = Clamp(Math.round((dragging.offsetLeft)/128)*128+desktop.offsetLeft%128, desktop.offsetLeft, window.innerWidth);
+				y = Clamp(Math.round((dragging.offsetTop)/128)*128+desktop.offsetTop%128, desktop.offsetTop, window.innerHeight);
+				dragging.style.left = x;
+				dragging.style.top = y;
+				let icon = icons[parseInt(dragging.id.substring(4))];
+				icon.x = dragging.offsetLeft;
+				icon.y = dragging.offsetTop;
+				
+				for(let j=0; j<icons.length; j++){
+					for(let i=0; i<icons.length; i++){
+						if(icons[i].id != icons[j].id){
+							if(icons[j].x == icons[i].x && icons[j].y == icons[i].y){
+								let overlap = document.getElementById(icons[i].id);
+								if(overlap.offsetLeft+128 > window.innerWidth){
+									overlap.style.left = desktop.offsetLeft;
+									overlap.style.top = overlap.offsetTop+128;
+								}
+								else{
+									overlap.style.left = overlap.offsetLeft+128;
+								}
+								icons[i].x = overlap.offsetLeft;
+								icons[i].y = overlap.offsetTop;
+							}
+						}
+					}
+				}
+			}
+			//FUNCS
+			function Clamp(value, min, max){
+				if(value < min){
+					return min;
+				}
+				if(value > max){
+					return max;
+				}
+				return value;
+			}
+			function Lerp(a, b, t){
+				return a + (b - a) * t;
+			}
+		</script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
+		<link rel="shortcut icon" href="favicon.png">
+	</head>
+	<body onload="OnStart()" onmousemove="OnMouseMove(event)" onmouseup="OnDragEnd()">
+		<p style="position:fixed; left:350px; top:30px; font-size:30px; z-index: 2;">S-COM SOFTWARE 1.5</p>
+		<div align=RIGHT style="margin-right:152px;"><button onclick="Exit()" class=bigbutton style="position:fixed; top:36px; font-size:30px; width:129; height:52;">EXIT</button></div>
+		<div class="info" style="position:fixed; left:23px; top:204px;">
+			<p>Encryption</p>
+			<p style="margin-left: 36px">AES-256 CTR</p>
+			<p style="margin-left: 36px">User Password</p>
+			<br>
+			<p>Server</p>
+			<p style="margin-left: 36px">S-COM Online</p>
+			<br>
+			<p>Client</p>
+			<p id="client" style="margin-left: 36px">[NOT LOGGED IN]</p>
+			<br>
+			<p>icmp_seq NULL</p>
+			<p>ttl = NULL</p>
+			<p>ping = NULL ms</p>
+		</div>
+		<div id="desktop" style="position: fixed; top:172px; left:290px; width:calc(100% - 290px); height:calc(100% - 172px);">
+			
+		</div>
+	</body>
+</html>
