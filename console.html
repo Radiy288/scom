@@ -11,12 +11,34 @@
 				background: #000000;
 				margin: 0;
 				padding: 0;
-				line-height: 0.3;
 				overscroll-behavior: none;
 			}
 			html {
 				overflow: hidden;
 				cursor: url('cursor.png'), auto;
+			}
+			p {
+				margin: 0;
+				white-space: pre-wrap;
+			}
+			::-webkit-scrollbar {
+				width: 11px;
+				height: 11px;
+			}
+
+			::-webkit-scrollbar-track {
+				background: #000; 
+				border: 1px;
+				border-style: solid;
+				border-color: #898989;
+			}
+
+			::-webkit-scrollbar-thumb {
+				background: #474747; 
+			}
+
+			::-webkit-scrollbar-thumb:hover {
+				background: #555; 
 			}
 			.windowBorder {
 				min-height: 24px;
@@ -48,7 +70,10 @@
 				margin: 0;
 			}
 			
-			input {
+			textarea {
+				cursor: url('cursor.png'), auto;
+				margin: 0;
+				padding: 0;
 				border: none;
 				background-color: #000;
 				color: #fff;
@@ -56,9 +81,26 @@
 				font-family: "Courier";
 				font-size: 16px;
 				font-weight: bold;
+				width: 100%;
+				height: auto;
+				resize: none;
+				overflow: hidden;
+			}
+			::-moz-selection { /* Code for Firefox */
+				color: #000;
+				background: #fff;
+			}
+
+			::selection {
+				color: #000;
+				background: #fff;
 			}
 		</style>
 		<script>
+			var consoleInput, windowBorder, windowContent;
+			var story = [];
+			var storyCursor = -1;
+			var prefix = "Console>";
 			function inIframe () {
 				if ( window.location !== window.parent.location ) {
 					return true;
@@ -67,23 +109,158 @@
 				}
 			}
 			function Start(){
+				consoleInput = document.getElementById("console");
+				windowBorder = document.getElementById("windowBorder");
+				windowContent = document.getElementById("windowContent");
 				if(inIframe()){
-					document.getElementById("windowBorder").style.display = "none";
-					document.getElementById("windowContent").style.height = "100%";
+					windowBorder.style.display = "none";
+					windowContent.style.height = "100%";
+				}
+				ConsolePrefix();
+				consoleInput.focus();
+			}
+			function OnInput(){
+				consoleInput.style.height = 'auto';
+				consoleInput.style.height = (consoleInput.scrollHeight) + 'px';
+				ConsolePrefix();
+			}
+			function OnEnter(event){
+				let str = consoleInput.value;
+				if (event.keyCode === 13) {
+					if (event.shiftKey){
+						//InsertAtCaret(consoleInput, '\n');
+						return;
+					}
+					Print(str);
+					story.push(str);
+					try{
+						CompileBatch(str.substring(prefix.length));
+					}
+					catch(e){
+						Print('%$R'+e.toString());
+						console.error(e);
+					}
+					storyCursor = -1;
+					consoleInput.value = "";
+				}
+				if(consoleInput.value.length == prefix.length){
+					if (event.keyCode === 37 || event.keyCode === 39) {
+						consoleInput.setSelectionRange(consoleInput.value.length,consoleInput.value.length);
+					}
 				}
 			}
+			function OnInter(event){
+				if(event.keyCode === 13 && !event.shiftKey){
+					consoleInput.value='';
+					ConsolePrefix();
+				} 
+				if(story.length > 0){
+					if (event.keyCode === 38) {
+						if(storyCursor == -1){
+							storyCursor = story.length;
+						}
+						if(storyCursor > 0){
+							storyCursor--;
+						}
+						consoleInput.value = story[storyCursor];
+						//consoleInput.focus();
+						consoleInput.setSelectionRange(consoleInput.value.length,consoleInput.value.length);
+					}
+					if (event.keyCode === 40) {
+						if(storyCursor == -1){
+							storyCursor = story.length;
+						}
+						if(storyCursor < story.length-1){
+							storyCursor++;
+						}
+						consoleInput.value = story[storyCursor];
+						//consoleInput.focus();
+						consoleInput.setSelectionRange(consoleInput.value.length,consoleInput.value.length);
+					}
+					if(consoleInput.value.length == prefix.length){
+						if (event.keyCode === 37 || event.keyCode === 39) {
+							consoleInput.setSelectionRange(consoleInput.value.length,consoleInput.value.length);
+						}
+					}
+				}
+			}
+			function ConsolePrefix(){
+				consoleInput.value = prefix+consoleInput.value.substring(prefix.length);
+			}
+			function InsertAtCaret(areaId, text) {
+				let txtarea = areaId;
+				let scrollPos = txtarea.scrollTop;
+				let caretPos = txtarea.selectionStart;
+
+				let front = (txtarea.value).substring(0, caretPos);
+				let back = (txtarea.value).substring(txtarea.selectionEnd, txtarea.value.length);
+				txtarea.value = front + text + back;
+				caretPos = caretPos + text.length;
+				txtarea.selectionStart = caretPos;
+				txtarea.selectionEnd = caretPos;
+				txtarea.focus();
+				txtarea.scrollTop = scrollPos;
+			}
+			function Clear(){
+				let logs = document.getElementsByClassName('consoleLog');
+				while (logs[0]) {
+					logs[0].parentNode.removeChild(logs[0]);
+				}
+			}
+			function Print(txt){
+				let log = document.createElement('p');
+				log.className = 'consoleLog';
+				log.innerText = txt;
+				try{
+					if(txt.charAt(0) == '%'){
+						if(txt.charAt(1) == '$'){
+							switch (txt.charAt(2)){
+								case 'R':
+									log.innerText = txt.substring(3);
+									log.innerHTML = '<span style="color: red">'+log.innerText+'</span>';
+									break;
+								case 'G':
+									log.innerText = txt.substring(3);
+									log.innerHTML = '<span style="color: green">'+log.innerText+'</span>';
+									break;
+								case 'L':
+									log.innerText = txt.substring(3);
+									log.innerHTML = '<span style="color: lime">'+log.innerText+'</span>';
+									break;
+								case 'Y':
+									log.innerText = txt.substring(3);
+									log.innerHTML = '<span style="color: yellow">'+log.innerText+'</span>';
+									break;
+								case 'S':
+									log.innerText = txt.substring(3);
+									log.innerHTML = '<span style="color: silver">'+log.innerText+'</span>';
+									break;
+								case 'B':
+									log.innerText = txt.substring(3);
+									log.innerHTML = '<span style="color: blue">'+log.innerText+'</span>';
+									break;
+							}
+						}
+					}
+				}
+				catch(e){
+					//do nothing and die
+				}
+				windowContent.insertBefore(log, consoleInput);
+			}
 		</script>
-		<link rel="shortcut icon" href="favicon.png">
+		<script src="compiler.js"></script> 
+		<link rel="shortcut icon" href="icon_console.png">
 	</head>
 	<body onload="Start()" onclick="document.getElementById('console').focus();">
 		<div id="windowBorder" class=windowBorder>
-			<span style="padding:3px; padding-left: 6px; position: absolute; top: 0.5em;">S-COM Console</span>
+			<span style="padding:3px; padding-left: 6px; position: absolute;">S-COM Console</span>
 			<img src="close.png" class=windowButton onclick="Exit()" ondragstart="return false;">
 			<img src="hide.png" class=windowButton onclick="Minimize()" ondragstart="return false;">
 			<img src="options.png" style="margin-right: 8px" class=windowButton onclick="Options()" ondragstart="return false;">
 		</div>
-		<div id="windowContent" style="width: 100%; height: calc(100% - 24px);">
-			<input id="console">
+		<div id="windowContent" style="width: 100%; height: calc(100% - 24px); overflow-y: auto;">
+			<textarea id="console" oninput="OnInput()" onkeyup="OnInter(event)" onkeydown="OnEnter(event)"></textarea>
 		</div>
 	</body>
 </html>
