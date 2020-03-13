@@ -1,0 +1,139 @@
+body {
+	font-family: "Courier";
+	font-size: 16px;
+	font-weight: bold;
+	color: #fff;
+	background: #000000;
+	margin: 0;
+	padding: 0;
+	overscroll-behavior: none;
+	overflow: hidden;
+	position: relative;
+}
+html {
+	overflow: hidden;
+	cursor: url('cursor.png'), auto;
+}
+input{
+	cursor: url('beam.png'), auto;
+}
+button{
+	cursor: url('cursor.png'), auto;
+}
+p {
+	margin: 0;
+}
+
+.windowBorder {
+	min-height: 24px;
+	max-height: 24px;
+	background: #898989;
+	box-sizing: border-box;
+	z-index: 2;
+}
+
+.windowButton {
+	margin: 0;
+	float: right;
+}
+.windowButton:hover, .uicheckbox:hover {
+	filter: brightness(1.3);
+}
+.windowButton:active, .uicheckbox:active {
+	filter: brightness(1.5);
+}
+
+.uibutton {
+	background: #191919;
+	border: 1px solid #424242;
+	font-family: "Courier";
+	font-size: 16px;
+	font-weight: bold;
+	color: #fff;
+	height: 25px;
+	width: 106px;
+	outline: none;
+}
+.uibutton:hover, .option:hover, .suggest:hover {
+	background-color: #202020;
+}
+.uibutton:active, .option:active, .suggest:active {
+	background: #404040;
+}
+.option {
+	cursor: url('link.png'), auto;
+	padding: 14px;
+	display: block;
+	background: #292929;
+	color: #fff;
+	border: 1px solid #424242;
+	margin: 0;
+}
+
+a:link {
+	color:SteelBlue;
+}
+
+a:visited {
+	color:RoyalBlue;
+}
+
+a:hover {
+	color:SkyBlue;
+}
+
+a:active {
+	color:SlateGray;
+}
+hr {
+	margin: 2px;
+	background: #292929;
+	height: 2px;
+	border: none;
+}
+b {
+	font-weight: 900;
+}
+
+.inputbox {
+	padding-left: 4px;
+	background: #292929;
+	color: #fff;
+	border: none;
+	outline: none;
+	font-family: "Courier";
+	font-size: 16px;
+	font-weight: bold;
+	height: 25px;
+	padding-right: 4px;
+}
+			
+::-moz-selection { /* Code for Firefox */
+	color: #000;
+	background: #fff;
+}
+
+::selection {
+	color: #000;
+	background: #fff;
+}
+
+::-webkit-scrollbar {
+	width: 11px;
+	height: 11px;
+}
+
+::-webkit-scrollbar-track {
+	background: #000; 
+	border: 1px;
+	border-style: solid;
+	border-color: #898989;
+}
+
+::-webkit-scrollbar-thumb {
+	background: #474747; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: #555; 
+}

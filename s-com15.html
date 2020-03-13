@@ -2,17 +2,10 @@
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=0.5">
 		<title>S-COM Software Online</title>
+		<link rel="stylesheet" type="text/css" href="commonStyles.css">
 		<style>
 			body {
-				font-family: "Courier";
-				font-size: 16px;
-				font-weight: bold;
-				color: #fff;
-				background: #000000;
-				margin: 0;
-				padding: 0;
 				line-height: 0.3;
-				overscroll-behavior: none;
 				background-image: url('bg.png'), url('bgh.png'), url('bgv.png');
 				background-repeat: no-repeat, repeat-y, repeat-x;
 				background-attachment: fixed;
@@ -20,6 +13,10 @@
 			html {
 				overflow: hidden;
 				cursor: url('cursor.png'), auto;
+			}
+			p {
+				margin-top: 1em;
+				margin-bottom: 1em;
 			}
 			.bigbutton {
 				cursor: url('cursor.png'), auto;
@@ -57,6 +54,10 @@
 				left: 0px;
 				top: 0px;
 				transition: filter 0.1s ease 0s;
+				max-width: 128px;
+				max-height: 128px;
+				min-width: 128px;
+				min-height: 128px;
 			}
 			.icon:hover {
 				filter: brightness(0.8);
@@ -72,33 +73,8 @@
 			}
 			.windowBorder {
 				position: fixed;
-				min-height: 24px;
-				max-height: 24px;
-				background: #898989;
-				box-sizing: border-box;
-				z-index: 2;
 			}
-			.windowButton {
-				margin: 0;
-				top: 0;
-				float: right;
-			}
-			.windowButton:hover, .uicheckbox:hover {
-				filter: brightness(1.3);
-			}
-			.windowButton:active, .uicheckbox:active {
-				filter: brightness(1.5);
-			}
-			
-			.option {
-				cursor: url('link.png'), auto;
-				padding: 14px;
-				display: block;
-				background: #292929;
-				color: #fff;
-				border: 1px solid #424242;
-				margin: 0;
-			}
+
 		</style>
 		<script>
 			var mouseRel = []; mouseRel[0]=0; mouseRel[1]=0;
@@ -116,10 +92,10 @@
 				}, false);
 			
 				desktop = document.getElementById("desktop");
-				CreateIcon('icon_database.png', 'Database', "", 384, 0);
-				CreateIcon('icon_sm.png', 'S-Messenger', "CreateWindow('s-messenger.html', 640, 512, true);", 256, 0);
-				CreateIcon('icon_console.png', 'Console', "CreateWindow('console.html', 640, 360, true);", 128, 0);
 				CreateIcon('icon_pc.png', 'Computer', '', 0, 0);
+				CreateIcon('icon_console.png', 'Console', "CreateWindow('console.html', 640, 360, true, true, true);", 128, 0);
+				CreateIcon('icon_sm.png', 'S-Messenger', "CreateWindow('s-messenger.html', 640, 512, true, true, true);", 256, 0);
+				CreateIcon('icon_database.png', 'Database', "CreateWindow('http://www.scp-wiki.net/', 800, 600, true, true, false, 'Database');", 384, 0);
 			}
 			function OnMouseMove(event){
 				mouseRel[0] = event.clientX-mousePrev[0];
@@ -171,14 +147,23 @@
 					resizing = null;
 				}
 			}
-			
+			function SortIcons(){
+				for(let i=0; i<icons.length; i++){
+					let icon = document.getElementById(icons[i].id);
+					dragging = icon;
+					icons[i].x = desktop.offsetLeft;
+					icons[i].y = desktop.offsetTop;
+					icon.style.left = icons[i].x;
+					icon.style.top = icons[i].y;
+				}
+				PositionIcons();
+				dragging = null;
+			}
 			function CreateContextMenu(elems){
 				ClearContext();
 				let dropdown = document.createElement('div');
 				dropdown.className = "dropdown";
 				dropdown.style.position = 'fixed';
-				dropdown.style.left = mousePrev[0];
-				dropdown.style.top = mousePrev[1];
 				dropdown.style.zIndex = 3;
 				for(let i=1; elems['e'+i.toString()]; i++){
 					let option = document.createElement('p');
@@ -190,6 +175,10 @@
 					dropdown.appendChild(option);
 				}
 				document.body.appendChild(dropdown);
+				dropdown.style.left = Clamp(mousePrev[0], 0, window.innerWidth-dropdown.offsetWidth);
+				console.log(dropdown.offsetWidth);
+				console.log(dropdown.offsetHeight);
+				dropdown.style.top = Clamp(mousePrev[1], 0, window.innerHeight-dropdown.offsetHeight);
 			}
 			function CreateIcon(img, name, func, x, y){
 				let icon = document.createElement("div");
@@ -200,6 +189,7 @@
 				icon.style.left = desktop.offsetLeft+x;
 				icon.style.top = desktop.offsetTop+y;
 				iconImg.src = img;
+				iconImg.style = "display: block; margin-left: auto; margin-right: auto;";
 				iconImg.ondragstart = function(){
 					dragging = this.parentElement;
 					clicktimeout = true;
@@ -212,7 +202,7 @@
 				}
 				iconName.innerText = name;
 				iconName.className = 'info';
-				iconName.style = "position: absolute; left:41%; transform: translateX(-50%); text-align: center; margin: 8px; width: 128px;";
+				iconName.style = "text-align: center; margin-top: 8px; width: 128px; line-height: 1em; word-wrap: break-word;";
 				
 				icon.appendChild(iconImg);
 				icon.appendChild(iconName);
@@ -222,7 +212,7 @@
 				PositionIcons();
 				dragging = null;
 			}
-			function CreateWindow(src, width, height, resizeable){
+			function CreateWindow(src, width, height, resizeable, hide, options, caption){
 				let window = document.createElement("div");
 				let windowBorder = document.createElement("div");
 				let windowCaption = document.createElement("span");
@@ -235,19 +225,46 @@
 				windowBorder.className = "windowBorder";
 				windowBorder.style.width = width+6;
 				windowBorder.style.left = Clamp(mousePrev[0]-width/2, 0, window.innerWidth);
-				windowBorder.style.top = Clamp(mousePrev[1]-height/2, 0, window.innerHeight);
+				windowBorder.style.top = Clamp(mousePrev[1]-12, 0, window.innerHeight);
 				windowBorder.appendChild(windowCaption);
 				windowBorder.appendChild(windowClose);
-				windowBorder.appendChild(windowHide);
-				windowBorder.appendChild(windowOptions);
+				if(hide){
+					windowHide.src = "hide.png";
+					windowHide.className = "windowButton";
+					windowHide.ondragstart = function(){return false;};
+					windowHide.onclick = function(){
+						if(window.style.display == 'none'){
+							window.style.display = 'block';
+							windowBorder.style.width = width+6;
+							return;
+						}
+						window.style.display = 'none';
+						windowBorder.style.width = 256;
+					};
+					windowBorder.appendChild(windowHide);
+				}
+				
+				if(options){
+					windowOptions.style = "margin-right: 8px";
+					windowOptions.src = "options.png";
+					windowOptions.className = "windowButton";
+					windowOptions.ondragstart = function(){return false;};
+					windowOptions.onclick = function(){
+						windowContent.contentWindow.Options(); 
+					};
+					windowBorder.appendChild(windowOptions);
+				}
+				
 				windowBorder.appendChild(window);
 				window.onmousedown = function(){
-					console.log("draggin yo");
-					windowContent.style.pointerEvents = "none";
-					resizing = window;
+					if(resizeable){
+						windowContent.style.pointerEvents = "none";
+						resizing = window;
+					}
 					return false;
 				}
 				windowBorder.onmousedown = function(){
+					PositionWindows(windowBorder);
 					if(!resizing){
 						draggingWindow = this;
 						windowContent.style.pointerEvents = "none";
@@ -267,6 +284,8 @@
 				windowContent.style.height = "100%";
 				windowContent.style.border = "none";
 				windowContent.src = src;
+				windowContent.allowfullscreen = true;
+				windowContent.allowpaymentrequest = true;
 				
 				windowClose.src = "close.png";
 				windowClose.className = "windowButton";
@@ -281,32 +300,23 @@
 					windowBorder.remove();
 				};
 				
-				windowHide.src = "hide.png";
-				windowHide.className = "windowButton";
-				windowHide.ondragstart = function(){return false;};
-				windowHide.onclick = function(){
-					if(window.style.display == 'none'){
-						window.style.display = 'block';
-						windowBorder.style.width = width+6;
-						return;
-					}
-					window.style.display = 'none';
-					windowBorder.style.width = 256;
-				};
-				
-				windowOptions.style = "margin-right: 8px";
-				windowOptions.src = "options.png";
-				windowOptions.className = "windowButton";
-				windowOptions.ondragstart = function(){return false;};
-				windowOptions.onclick = function(){
-					windowContent.contentWindow.Options(); 
-				};
-				
+				if(caption){
+					windowCaption.innerText = caption;
+					windowContent.name = caption;
+				}
 				windowContent.onload = function (){
-					windowCaption.innerText = windowContent.contentDocument.title;
+					if(!caption){
+						windowCaption.innerText = windowContent.contentDocument.title;
+						windowContent.name = windowContent.contentDocument.title;
+					}
+					windowContent.contentWindow.addEventListener('click', function(event) {
+						PositionWindows(windowBorder);
+					}, false);
 				}
 				
+				
 				document.body.appendChild(windowBorder);
+				PositionWindows(windowBorder);
 			}
 			function PositionIcons(){
 				x = Clamp(Math.round((dragging.offsetLeft)/128)*128+desktop.offsetLeft%128, desktop.offsetLeft, window.innerWidth);
@@ -336,12 +346,25 @@
 					}
 				}
 			}
+			function PositionWindows(top){
+				let windows = document.getElementsByClassName('windowBorder');
+				for (let i=0; i<windows.length; i++) {
+					if(windows[i] != top){
+						windows[i].style.zIndex = 2;
+					}
+				}
+				top.style.zIndex = 3;
+			}
 			function CallMenu(event){
 				ClearContext();
 				if(event.which == 3){
 					let elems = {
-						e1: 'Settings',
-						e1action: 'CreateWindow("", 640, 480, true)',
+						e1: 'Create new link',
+						e1action: 'CreateWindow("createlink.html", 512, 160, false, false, false, "Create new link");',
+						e2: 'Create new local link',
+						e2action: 'CreateWindow("createlink.html", 512, 160, false, false, false, "Create new link");',
+						e3: 'Sort automatically',
+						e3action: 'SortIcons();'
 					}
 					CreateContextMenu(elems);
 				}

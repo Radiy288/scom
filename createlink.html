@@ -1,0 +1,33 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Create link</title>
+		<link rel="stylesheet" type="text/css" href="commonStyles.css">
+	</head>
+	<script>
+		function CreateIcon(){
+			let link = document.getElementById('link').value;
+			let title = document.getElementById('linkname').value;
+			if(link != '' && title != ''){
+				parent.CreateIcon('icon_file.png', title, 'CreateWindow("'+link+'", 640, 480, true, true, true, "'+title+'")', 0, 0);
+				window.frameElement.parentElement.parentElement.remove();
+			}
+		}
+		function Enter(event){
+			if(event.keyCode === 13){
+				document.getElementById('finish').click();
+			}
+		}
+	</script>
+	<body onkeyup="Enter(event)">
+		<div style="margin-top: auto;">
+			<p align=center style="margin-top:10vh;">Link location</p>
+			<input id="link" class=inputbox style="position: absolute; width:90%; left: 5%;" placeholder="Enter link location">
+			<br><br>
+			<p align=center>Link name</p>
+			<input id="linkname" class=inputbox style="position: absolute; width:90%; left: 5%;" placeholder="Enter link name">
+			<br><br>
+			<button id="finish" class=uibutton style="position:absolute; left:50%; transform: translateX(-50%);" onclick="CreateIcon()">Create</button>
+		</div>
+	</body>
+</html>
