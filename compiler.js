@@ -3,6 +3,22 @@ var functions = {};
 var openedFunction;
 var paused = false;
 var js = false;
+var lastKey = 0;
+var inputString = "";
+
+window.addEventListener('keydown',function(event){
+	lastKey = event.keyCode;
+	inputString = consoleInput.value;
+	if(event.keyCode === 13){
+		if(!event.shiftKey){
+			inputString = "";
+		}
+	}
+	//console.log(lastKey);
+},false);
+window.addEventListener('keyup',function(event){
+	lastKey = 0;
+},false);
 
 async function CompileBatch(str){
 	if(js){
@@ -282,6 +298,66 @@ async function Compile(str){
 			functions[openedFunction] = " ";
 			break;
 			
+		case "key":
+			for (let i=4; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid buffer block number.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected buffer block number type.');
+				break;
+			}
+			await Sleep(1);
+			lastKey = 0;
+			Input(false);
+			return new Promise(async function(resolve){
+				function Check(){
+					if(lastKey != 0){
+						buffer[parseInt(prs)] = parseInt(lastKey);
+						resolve();
+					}
+				}
+				while(lastKey == 0){
+					await Sleep(10);
+					Check();
+				}
+			});
+			break;
+			
+		case "get":
+			for (let i=4; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid buffer block number.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected buffer block number type.');
+				break;
+			}
+			Input("input");
+			await Sleep(1);
+			lastKey = 0;
+			return new Promise(async function(resolve){
+				function Check(){
+					if(lastKey == 13){
+						buffer[parseInt(prs)] = consoleInput.value.replace(/\n/g, '');
+						Print(consoleInput.value);
+						consoleInput.value = "";
+						resolve();
+					}
+				}
+				while(lastKey != 13){
+					await Sleep(10);
+					Check();
+				}
+			});
+			break;
+			
 		case "end":
 			Exit();
 			
@@ -308,7 +384,12 @@ async function Compile(str){
 			for (let i=9; i<str.length; i++){
 				prs+=str.charAt(i);
 			}
-			eval(prs);
+			try{
+				eval(prs);
+			}
+			catch(e){
+				Error(e.toString());
+			}
 			break;
 			
 		case "if":
@@ -329,7 +410,15 @@ async function Compile(str){
 			for (let i=str.indexOf('(')+2+prs.length; i<str.length; i++){
 				subPrs+=str.charAt(i);
 			}
-			if(eval(prs)){
+			let result;
+			try{
+				result = Boolean(eval(prs));
+			}
+			catch(e){
+				Error(e.toString());
+				result = false;
+			}
+			if(result){
 				CompileBatch(subPrs);
 			}
 			break;
@@ -384,6 +473,10 @@ async function Compile(str){
 			for (let i=3; i<str.length; i++){
 				prs+=str.charAt(i);
 			}
+			if(!isNaN(prs)){
+				document.body.style.background = parseInt(prs);
+				break;
+			}
 			document.body.style.background = prs;
 			break;
 			
@@ -418,7 +511,7 @@ async function Compile(str){
 				break;
 			}
 			paused = true;
-			return new Promise(resolve => setTimeout(resolve, parseInt(prs)));
+			await Sleep(parseInt(prs));
 			break;
 			
 		case "js":
@@ -442,7 +535,9 @@ async function Compile(str){
 		return true;
 	}
 }
-
+function Sleep(ms){
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
 function Error(str){
 	Print('%$RError: '+str);
 }

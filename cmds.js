@@ -1,5 +1,11 @@
 //SCCOL COMMANDS V0.9
 var commands = {
+	"bg": {
+		"name": "BG {col}",
+		"info_short": "Sets background color.",
+		"info": "Sets the background color to a specified color.\n{col} - the specified color. Can be a hexademical value or a string.",
+		"example": "  BG GRAY;"
+	},
 	"call": {
 		"name": "CALL {proc}",
 		"info_short": "Calls a previously declared procedure.",
@@ -30,6 +36,12 @@ var commands = {
 		"info": "Frees specified memory buffer block or a range of them, previously set by the [SET {num}] command.\n{num/start} - the specified memory buffer block number. If the (end) value is specified, acts as a start of a block removal range.\n(end) - the optionally specified end memory buffer block number to end the removal range on it. It is included in the removal range.",
 		"example": "  FREE 0 16;"
 	},
+	"get": {
+		"name": "GET {num}",
+		"info_short": "Waits for user input to set its string to a memory buffer block.",
+		"info": "Waits for user to input a string and hit Enter, then sets the input string to the specified memory buffer block.\n{num} - the specified memory buffer block number to assign to.",
+		"example": "  GET 0;"
+	},
 	"if": {
 		"name": "IF {(expr)} {cmd}",
 		"info_short": "If an expression returns true, executes a command.",
@@ -42,11 +54,23 @@ var commands = {
 		"info": "Display information about the client on screen, or, if specified, about a command.\n(cmd) - the optionally specified command to show detailed information about.",
 		"example": "  INFO CMDS;"
 	},
+	"int": {
+		"name": "INT {num}",
+		"info_short": "Converts memory buffer block value to integer.",
+		"info": "Converts a floating point number to an integer in the specified memory buffer block.\n{num} - the specified memory buffer block number to get the value from and then assign to.",
+		"example": "  SET 0 (%^R $* 100);\n  INT 0;"
+	},
 	"js": {
 		"name": "JS",
 		"info_short": "Initiates JavaScript mode.",
 		"info": "Initiates JavaScript mode. All input will then be interpreted as JavaScript code. To exit - use the [SCCOL] command.",
 		"example": "  JS;"
+	},
+	"key": {
+		"name": "KEY {num}",
+		"info_short": "Waits for a keypress to set its value to a memory buffer block.",
+		"info": "Waits for a keypress, then sets the value of the keypress to the specified memory buffer block.\n{num} - the specified memory buffer block number to assign to.",
+		"example": "  KEY 0;"
 	},
 	"mem": {
 		"name": "MEM (proc)",
@@ -77,5 +101,11 @@ var commands = {
 		"info_short": "Sets a memory buffer block to a value.",
 		"info": "Sets the specified memory buffer block to a specified value.\n{num} - the specified memory block number to assign to.\n{val} - the specified value to assign to the memory block. Can be a real number or a string.",
 		"example": "  SET 0 Hello, World!;"
+	},
+	"wait": {
+		"name": "WAIT {ms}",
+		"info_short": "Pauses for an amount of milliseconds.",
+		"info": "Pauses the console for the specified amount of milliseconds.\n{ms} - the specified amount of milliseconds.",
+		"example": "  WAIT 1000;"
 	},
 }

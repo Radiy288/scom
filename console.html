@@ -9,10 +9,10 @@
 				overflow: auto;
 			}
 			p {
-				white-space: pre-wrap;
 				overflow-wrap: break-word;
 				word-wrap: break-word;
 				hyphens: auto;
+				white-space: pre-wrap;
 			}
 			
 			textarea {
@@ -64,6 +64,7 @@
 				consoleInput.style.height = 'auto';
 				consoleInput.style.height = (consoleInput.scrollHeight) + 'px';
 				ConsolePrefix();
+				consoleInput.scrollIntoView();
 			}
 			function OnEnter(event){
 				let str = consoleInput.value;
@@ -72,22 +73,24 @@
 						//InsertAtCaret(consoleInput, '\n');
 						return;
 					}
-					Print(prefix+str);
-					story.push(str);
-					try{
-						if(js){
-							CompileBatch(str);
+					if(prefixP.style.display != "none"){
+						Print(prefix+str);
+						story.push(str);
+						try{
+							if(js){
+								CompileBatch(str);
+							}
+							else{
+								CompileBatch(str);
+							}
 						}
-						else{
-							CompileBatch(str);
+						catch(e){
+							Print('%$R'+e.toString());
+							console.error(e);
 						}
-					}
-					catch(e){
-						Print('%$R'+e.toString());
-						console.error(e);
+						consoleInput.value = "";
 					}
 					storyCursor = -1;
-					consoleInput.value = "";
 				}
 			}
 			function OnInter(event){
@@ -119,6 +122,7 @@
 						consoleInput.setSelectionRange(consoleInput.value.length,consoleInput.value.length);
 					}
 				}
+				OnInput();
 			}
 			function ConsolePrefix(){
 				if(js){
@@ -195,15 +199,23 @@
 					//do nothing and die
 				}
 				windowContent.insertBefore(log, prefixP);
-				log.scrollIntoView();
+				OnInput();
+				//log.scrollIntoView();
 			}
 			function Input(show){
+				if(show == "input"){
+					consoleInput.style.display = "block";
+					prefixP.style.display = "none";
+					ConsolePrefix();
+					consoleInput.focus();
+					return;
+				}
 				if(show){
 					consoleInput.style.display = "block";
 					prefixP.style.display = "block";
 					ConsolePrefix();
 					consoleInput.focus();
-					consoleInput.scrollIntoView();
+					prefixP.scrollIntoView();
 					return;
 				}
 				consoleInput.style.display = "none";
