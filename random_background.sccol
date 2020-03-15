@@ -1,0 +1,21 @@
+CLR;
+SAY The program will set the background color to a random color.;
+SAY Press any key. Press ESC to exit.;
+PROC MAIN;
+	SET 1 (%^R$*1000);
+	INT 1;
+	BG #%^1;
+	KEY 0;
+	IF (%^0 == 27) BG BLACK;
+	IF (%^0 == 27) CLR;
+	
+	IF (%^0 != 27) CALL MAIN;
+	
+	IF (%^0 == 27) CALL FINISH;
+END;
+PROC FINISH;
+	FREE 0 1;
+	FREE MAIN;
+	FREE FINISH;
+END;
+CALL MAIN;
