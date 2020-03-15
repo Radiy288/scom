@@ -94,6 +94,26 @@ hr {
 b {
 	font-weight: 900;
 }
+.uislider {
+	-webkit-appearance: none;  /* Override default CSS styles */
+	appearance: none;
+	height: 4px;
+	background: #696969;
+	outline: none;
+	cursor: url('cursor.png'), auto;
+	transition: opacity .2s;
+	margin: 4px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+.uislider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 8px;
+	height: 20px;
+	background: #898989;
+	cursor: cursor: url('link.png'), auto;;
+}
 
 .inputbox {
 	padding-left: 4px;

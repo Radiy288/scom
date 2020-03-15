@@ -26,7 +26,6 @@
 				font-family: "Courier";
 				font-size: 16px;
 				font-weight: bold;
-				float: right;
 				height: auto;
 				resize: none;
 				overflow: hidden;
@@ -34,7 +33,7 @@
 			
 		</style>
 		<script>
-			var consoleInput, windowBorder, windowContent, prefixP;
+			var consoleInput, windowBorder, windowContent, prefixP, fontSlider, fontSizeShow;
 			var story = [];
 			var storyCursor = -1;
 			var prefix = "SCCOL>>>";
@@ -49,7 +48,10 @@
 				consoleInput = document.getElementById("console");
 				windowBorder = document.getElementById("windowBorder");
 				windowContent = document.getElementById("windowContent");
+				fontSlider = document.getElementById("fontSlider");
+				fontSizeShow = document.getElementById("fontSize");
 				prefixP = document.getElementById("prefix");
+				fontSlider.style.width = "calc(100% - "+(fontSizeShow.offsetWidth+16)+"px)";
 				if(inIframe()){
 					windowBorder.style.display = "none";
 					windowContent.style.height = "100%";
@@ -133,7 +135,7 @@
 				}
 				prefixP.innerText = prefix;
 				let prefixWidth = prefixP.offsetWidth;
-				consoleInput.style.width = "calc(100% - "+prefixWidth+"px)";
+				consoleInput.style.width = "calc(100% - "+(prefixWidth+8)+"px)";
 			}
 			function InsertAtCaret(areaId, text) {
 				let txtarea = areaId;
@@ -225,18 +227,38 @@
 				window.close();
 				window.frameElement.parentElement.parentElement.remove();
 			}
+			function FontSlider(val){
+				document.body.style.fontSize = val;
+				fontSizeShow.innerText = val;
+				consoleInput.style.fontSize = val;
+			}
+			function Options(){
+				let optWindow = document.getElementById('optionsWindow');
+				if(optWindow.style.display == "none"){
+					optWindow.style.display = "block";
+					fontSlider.style.width = "calc(100% - "+(fontSizeShow.offsetWidth+16)+"px)";
+					return;
+				}
+				optWindow.style.display = "none";
+				ConsolePrefix();
+			}
 		</script>
 		<script src="compiler.js"></script> 
 		<link rel="shortcut icon" href="icon_console.png">
 	</head>
 	<body onload="Start()" onclick="document.getElementById('console').focus();">
 		<div id="windowBorder" class=windowBorder>
-			<span style="padding:3px; padding-left: 6px; position: absolute;">S-COM Console</span>
+			<span style="padding:3px; padding-left: 6px; position: absolute; font-size: 16px;">S-COM Console</span>
 			<img src="close.png" class=windowButton onclick="Exit()" ondragstart="return false;">
 			<img src="hide.png" class=windowButton onclick="Minimize()" ondragstart="return false;">
 			<img src="options.png" style="margin-right: 8px" class=windowButton onclick="Options()" ondragstart="return false;">
 		</div>
 		<div id="windowContent" style="width: 100%; height: calc(100% - 24px); overflow-y: auto;">
+			<div id="optionsWindow" style="background: #212121; position: fixed; width: 100%; height: 100%; display: none;">
+				<big style="display: block; margin:4px; margin-bottom: 0px;">FONT</big>
+				<hr>
+				<p>Font size: </p><input type="range" min="1" max="144" value="16" class="uislider" oninput="FontSlider(this.value)" id="fontSlider"><span id="fontSize">16</span>
+			</div>
 			<p id="prefix" style="float: left; width: auto;"></p><textarea id="console" oninput="OnInput()" onkeyup="OnInter(event)" onkeydown="OnEnter(event)" autocomplete="off"></textarea>
 		</div>
 	</body>
