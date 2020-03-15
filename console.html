@@ -3,12 +3,16 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Console</title>
 		<link rel="stylesheet" type="text/css" href="commonStyles.css">
+		<script src="cmds.js"></script>
 		<style>
 			body {
 				overflow: auto;
 			}
 			p {
 				white-space: pre-wrap;
+				overflow-wrap: break-word;
+				word-wrap: break-word;
+				hyphens: auto;
 			}
 			
 			textarea {
@@ -16,13 +20,13 @@
 				margin: 0;
 				padding: 0;
 				border: none;
-				background-color: #000;
+				background-color: inherit;
 				color: #fff;
 				outline: none;
 				font-family: "Courier";
 				font-size: 16px;
 				font-weight: bold;
-				width: 100%;
+				float: right;
 				height: auto;
 				resize: none;
 				overflow: hidden;
@@ -30,10 +34,10 @@
 			
 		</style>
 		<script>
-			var consoleInput, windowBorder, windowContent;
+			var consoleInput, windowBorder, windowContent, prefixP;
 			var story = [];
 			var storyCursor = -1;
-			var prefix = "Console>";
+			var prefix = "SCCOL>>>";
 			function inIframe () {
 				if ( window.location !== window.parent.location ) {
 					return true;
@@ -45,12 +49,16 @@
 				consoleInput = document.getElementById("console");
 				windowBorder = document.getElementById("windowBorder");
 				windowContent = document.getElementById("windowContent");
+				prefixP = document.getElementById("prefix");
 				if(inIframe()){
 					windowBorder.style.display = "none";
 					windowContent.style.height = "100%";
 				}
 				ConsolePrefix();
 				consoleInput.focus();
+				Print("Welcome to the S-COM Command Oriented Language (SCCOL) console. To proceed please enter a command.");
+				Print("© SCP Technologies Ltd 1999-2004\nSCP Foundation 1982-2004.");
+				Print("%$YEnter [CMDS] to view the list of available commands.");
 			}
 			function OnInput(){
 				consoleInput.style.height = 'auto';
@@ -64,10 +72,15 @@
 						//InsertAtCaret(consoleInput, '\n');
 						return;
 					}
-					Print(str);
+					Print(prefix+str);
 					story.push(str);
 					try{
-						CompileBatch(str.substring(prefix.length));
+						if(js){
+							CompileBatch(str);
+						}
+						else{
+							CompileBatch(str);
+						}
 					}
 					catch(e){
 						Print('%$R'+e.toString());
@@ -75,11 +88,6 @@
 					}
 					storyCursor = -1;
 					consoleInput.value = "";
-				}
-				if(consoleInput.value.length == prefix.length){
-					if (event.keyCode === 37 || event.keyCode === 39) {
-						consoleInput.setSelectionRange(consoleInput.value.length,consoleInput.value.length);
-					}
 				}
 			}
 			function OnInter(event){
@@ -110,15 +118,18 @@
 						//consoleInput.focus();
 						consoleInput.setSelectionRange(consoleInput.value.length,consoleInput.value.length);
 					}
-					if(consoleInput.value.length == prefix.length){
-						if (event.keyCode === 37 || event.keyCode === 39) {
-							consoleInput.setSelectionRange(consoleInput.value.length,consoleInput.value.length);
-						}
-					}
 				}
 			}
 			function ConsolePrefix(){
-				consoleInput.value = prefix+consoleInput.value.substring(prefix.length);
+				if(js){
+					prefix = "JavaScript>>>";
+				}
+				else{
+					prefix = "SCCOL>>>";
+				}
+				prefixP.innerText = prefix;
+				let prefixWidth = prefixP.offsetWidth;
+				consoleInput.style.width = "calc(100% - "+prefixWidth+"px)";
 			}
 			function InsertAtCaret(areaId, text) {
 				let txtarea = areaId;
@@ -172,6 +183,10 @@
 									log.innerText = txt.substring(3);
 									log.innerHTML = '<span style="color: blue">'+log.innerText+'</span>';
 									break;
+								case 'D':
+									log.innerText = txt.substring(3);
+									log.innerHTML = '<span style="color: black">'+log.innerText+'</span>';
+									break;
 							}
 						}
 					}
@@ -179,7 +194,24 @@
 				catch(e){
 					//do nothing and die
 				}
-				windowContent.insertBefore(log, consoleInput);
+				windowContent.insertBefore(log, prefixP);
+				log.scrollIntoView();
+			}
+			function Input(show){
+				if(show){
+					consoleInput.style.display = "block";
+					prefixP.style.display = "block";
+					ConsolePrefix();
+					consoleInput.focus();
+					consoleInput.scrollIntoView();
+					return;
+				}
+				consoleInput.style.display = "none";
+				prefixP.style.display = "none";
+			}
+			function Exit(){
+				window.close();
+				window.frameElement.parentElement.parentElement.remove();
 			}
 		</script>
 		<script src="compiler.js"></script> 
@@ -193,7 +225,7 @@
 			<img src="options.png" style="margin-right: 8px" class=windowButton onclick="Options()" ondragstart="return false;">
 		</div>
 		<div id="windowContent" style="width: 100%; height: calc(100% - 24px); overflow-y: auto;">
-			<textarea id="console" oninput="OnInput()" onkeyup="OnInter(event)" onkeydown="OnEnter(event)"></textarea>
+			<p id="prefix" style="float: left; width: auto;"></p><textarea id="console" oninput="OnInput()" onkeyup="OnInter(event)" onkeydown="OnEnter(event)" autocomplete="off"></textarea>
 		</div>
 	</body>
 </html>

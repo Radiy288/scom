@@ -1,38 +1,95 @@
 var buffer = [];
 var functions = {};
 var openedFunction;
+var paused = false;
+var js = false;
 
-function CompileBatch(str){
-	let cmds = str.split(';');
-	cmds.forEach(function(item){
-		for(let i=0; i<item.length; i++){
-			if(item.charAt(i) == ' ' || item.charAt(i) == '\n' || item.charAt(i) == '	'){
-				//console.log("Fooound ooone");
+async function CompileBatch(str){
+	if(js){
+		str = str.replace(/sccol\;/g, 'js = false;');
+		eval(str);
+	}
+	else{
+		str = str.replace(/\\\;/g, '||SEMICOLON||');
+		let cmds = str.split(';');
+		Input(false);
+		/*
+		cmds.forEach(async function(item){
+			for(let i=0; i<item.length; i++){
+				if(item.charAt(i) == ' ' || item.charAt(i) == '\n' || item.charAt(i) == '	'){
+					//console.log("Fooound ooone");
+				}
+				else{
+					item = item.substring(i);
+					break;
+				}
+				//console.log("I'm checkin for pestilence");
+			}
+			if(openedFunction){
+				if(item.toLowerCase() == 'end'){
+					openedFunction = "";
+				}
+				else{
+					functions[openedFunction] += item+';';
+					console.log(item+';');
+				}
 			}
 			else{
-				item = item.substring(i);
-				break;
+				await Compile(item);
 			}
-			//console.log("I'm checkin for pestilence");
+		});*/
+		for(let index=0; index<cmds.length; index++){
+			await CleanCompile(cmds[index]);
 		}
-		if(openedFunction){
-			if(item.toLowerCase() == 'end'){
-				openedFunction = "";
-			}
-			else{
-				functions[openedFunction] += item+';';
-				console.log(item+';');
-			}
+		//console.log("DONE");
+		Input(true);
+	}
+}
+async function CleanCompile(str){
+	for(let i=0; i<str.length; i++){
+		if(str.charAt(i) == ' ' || str.charAt(i) == '\n' || str.charAt(i) == '	'){
+			//console.log("Fooound ooone");
 		}
 		else{
-			Compile(item);
+			str = str.substring(i);
+			break;
 		}
-	});
+		//console.log("I'm checkin for pestilence");
+	}
+	if(openedFunction){
+		if(str.toLowerCase() == 'end'){
+			openedFunction = "";
+		}
+		else{
+			functions[openedFunction] += str+';';
+			console.log(str+';');
+		}
+	}
+	else{
+		await Compile(str);
+	}
+	return true;
 }
-function Compile(str){
-	let varCount = (str.match(/(\%\^)/g) || []).length;
+function CheckPause(){
+	if (!paused){
+		return;
+	}
+	else{
+		console.log("WAITING");
+		setTimeout(CheckPause, 1);
+	}
+}
+async function Compile(str){
+	str = str.replace(/\|\|SEMICOLON\|\|/g, ';');
+	
+	//RANDOM NUMBER PARSING
+	let rndCount = (str.match(/(\%\^R)/g) || []).length;
+	for(let i=0; i<rndCount; i++){
+		str = str.replace("%^R", Math.random());
+	}
 	
 	//VARIABLE PARSING
+	let varCount = (str.match(/(\%\^)/g) || []).length;
 	for(let i=0; i<varCount; i++){
 		let prs="";
 		for(let j=str.indexOf("%^")+2; j<str.length; j++){
@@ -101,11 +158,30 @@ function Compile(str){
 				prs+=str.charAt(i);
 			}
 			if(prs == ""){
-				Print(" S-COM SOFTWARE 1.5 Console. © SCP Foundation 1982-1997.");
+				Print(" S-COM Command-Oriented Language (SCCOL) v0.9. © SCP Foundation 1982-2004.");
 				Print(" "+navigator.platform+Define(navigator.oscpu)+" "+navigator.language+". "+Define(navigator.vendor));
 				Print(" "+Define(navigator.userAgent));
 				Print(" Display: "+screen.width.toString()+"x"+screen.height.toString()+", "+screen.colorDepth.toString()+" bit.");
 				Print("  ");
+				break;
+			}
+			if(commands.hasOwnProperty(prs.toLowerCase())){
+				Print(commands[prs.toLowerCase()].name);
+				Print(commands[prs.toLowerCase()].info);
+				Print('Example of usage: \n'+commands[prs.toLowerCase()].example);
+				break;
+			}
+			Print('No information found about "'+prs+'" command.');
+			break;
+			
+		case "cmds":
+			for (let c in commands){
+				let cName = commands[c].name;
+				let cInfo = commands[c].info_short;
+				for(let i=0; i<32-cName.length; i++){
+					cName += ' ';
+				}
+				Print(cName+cInfo);
 			}
 			break;
 			
@@ -116,29 +192,46 @@ function Compile(str){
 				}
 				prs+=str.charAt(i);
 			}
+			if(prs == ''){
+				Error('Invalid buffer block number.');
+				break;
+			}
 			if(isNaN(prs)){
-				Error('Unexpected buffer value type.');
-				return;
+				Error('Unexpected buffer block number type.');
+				break;
 			}
 			for (let i=5+prs.length; i<str.length; i++){
 				subPrs+=str.charAt(i);
 			}
 			if(subPrs == ""){
 				Error('Value expected.');
-				return;
+				break;
 			}
 			if(isNaN(subPrs)){
 				buffer[parseInt(prs)] = subPrs;
-				return;
+				break;
 			}
 			buffer[parseInt(prs)] = parseFloat(subPrs);
 			break;
 			
 		case "mem":
+			for (let i=4; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs != ''){
+				if(functions[prs] != null){
+					Print(prs+':');
+					Print(functions[prs]);
+					break;
+				}
+			}
 			for(let i=0; i<buffer.length; i++){
 				if(buffer[i] != null){
 					Print(i.toString()+': '+buffer[i]);
 				}
+			}
+			for(var p in functions){
+				Print(p+';');
 			}
 			break;
 			
@@ -152,10 +245,10 @@ function Compile(str){
 			if(isNaN(prs)){
 				if(!functions.hasOwnProperty(prs)){
 					Error('No "'+prs+'" procedure found.');
-					return;
+					break;
 				}
 				delete functions[prs];
-				return;
+				break;
 			}
 			for (let i=6+prs.length; i<str.length; i++){
 				subPrs+=str.charAt(i);
@@ -168,7 +261,7 @@ function Compile(str){
 			}
 			if(isNaN(subPrs)){
 				Error('Unexpected buffer end value type.');
-				return;
+				break;
 			}
 			for (let i=parseInt(prs); i<parseInt(subPrs); i++){
 				buffer[i] = null;
@@ -182,7 +275,7 @@ function Compile(str){
 			}
 			if(prs == ""){
 				Error('Invalid procedure name.');
-				return;
+				break;
 			}
 			console.log(prs);
 			openedFunction = prs;
@@ -198,13 +291,17 @@ function Compile(str){
 			}
 			if(prs == ""){
 				Error('Invalid procedure name.');
-				return;
+				break;
 			}
 			if(!functions.hasOwnProperty(prs)){
 				Error('No "'+prs+'" procedure found.');
-				return;
+				break;
 			}
-			CompileBatch(functions[prs]);
+			//CompileBatch(functions[prs]);
+			let func = functions[prs].split(';');
+			for(let i=0; i<func.length; i++){
+				await CleanCompile(func[i]);
+			}
 			break;
 			
 		case "internal":
@@ -217,11 +314,11 @@ function Compile(str){
 		case "if":
 			if(!str.includes('(')){
 				Error('"(" expected.');
-				return;
+				break;
 			}
 			if(!str.includes(')')){
 				Error('")" expected.');
-				return;
+				break;
 			}
 			for (let i=str.indexOf('(')+1; i<str.length; i++){
 				if(str.charAt(i) == ')'){
@@ -237,7 +334,102 @@ function Compile(str){
 			}
 			break;
 			
+		case "fetch":
+			for (let i=6; i<str.length; i++){
+				if(str.charAt(i) == ' '){
+					break;
+				}
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid URL.');
+				break;
+			}
+			for (let i=7+prs.length; i<str.length; i++){
+				subPrs+=str.charAt(i);
+			}
+			if(subPrs == ''){
+				/*
+				let rawFile = new XMLHttpRequest();
+				rawFile.open("GET", prs, true);
+				rawFile.onreadystatechange = function ()
+				{
+					if(rawFile.readyState === 4)
+					{
+						if(rawFile.status === 200 || rawFile.status == 0)
+						{
+							var allText = rawFile.responseText;
+							Print(allText);
+						}
+					}
+				}
+				rawFile.send(null);
+				*/
+				var responseHTML = document.createElement("body");
+				
+				break;
+			}
+			if(isNaN(subPrs)){
+				Error('Unexpected buffer block number type.');
+				break;
+			}
+			fetch(prs)
+			.then((data) => {
+				buffer[parseInt(subPrs)] = data;
+			});
+			
+			break;
+			
+		case "bg":
+			for (let i=3; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			document.body.style.background = prs;
+			break;
+			
+		case "int":
+			for (let i=4; i<str.length; i++){
+				if(str.charAt(i) == ' '){
+					break;
+				}
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid buffer block number.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected buffer block number type.');
+				break;
+			}
+			buffer[parseInt(prs)] = Math.floor(buffer[parseInt(prs)]);
+			break;
+			
+		case "wait":
+			for (let i=5; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid wait amount.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected wait amount type.');
+				break;
+			}
+			paused = true;
+			return new Promise(resolve => setTimeout(resolve, parseInt(prs)));
+			break;
+			
+		case "js":
+			js = true;
+			break;
+			
 		case "":
+			break;
+			
+		case "sccol":
+			js = false;
 			break;
 			
 		case "//":
@@ -245,6 +437,9 @@ function Compile(str){
 			
 		default:
 			Error('Unknown command or reference "'+read+'".');
+	}
+	if(!paused){
+		return true;
 	}
 }
 
