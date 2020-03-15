@@ -231,6 +231,7 @@
 				document.body.style.fontSize = val;
 				fontSizeShow.innerText = val;
 				consoleInput.style.fontSize = val;
+				fontSlider.style.width = "calc(100% - "+(fontSizeShow.offsetWidth+16)+"px)";
 			}
 			function Options(){
 				let optWindow = document.getElementById('optionsWindow');
