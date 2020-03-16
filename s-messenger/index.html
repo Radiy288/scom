@@ -2,7 +2,7 @@
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>S-Messenger</title>
-		<link rel="stylesheet" type="text/css" href="commonStyles.css">
+		<link rel="stylesheet" type="text/css" href="../commonStyles.css">
 		<style>
 			.bottomui {
 				position:fixed;
@@ -40,7 +40,7 @@
 			}
 			
 			.suggest {
-				cursor: url('link.png'), auto;
+				cursor: url('../link.png'), auto;
 				padding: 4px;
 				display: block;
 				background: #191919;
@@ -87,7 +87,7 @@
 				overflow: auto;
 				font-weight: normal;
 				font-size: 13px;
-				cursor: url('beam.png'), auto;
+				cursor: url('../beam.png'), auto;
 			}
 			.message:active {
 				background: #404040;
@@ -1541,7 +1541,7 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
 		<link rel="stylesheet" type="text/css" href="prettify.css">
 		<script type="text/javascript" src="prettify.js"></script>
-		<link rel="shortcut icon" href="icon_sm.png">
+		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	</head>
 	<body onload = "Start()" onbeforeunload="End()" onmousemove="MouseMove(event)" ontouchmove="TouchMove(event)" ontouchend="dragOptions = false;" onmouseup="dragOptions = false;">
@@ -1553,16 +1553,16 @@
 		</audio>
 		<div id="windowBorder" class=windowBorder style="z-index: 8;">
 			<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">S-Messenger</span>
-			<img src="close.png" class=windowButton onclick="Exit()" ondragstart="return false;">
-			<img src="hide.png" class=windowButton onclick="Minimize()" ondragstart="return false;">
-			<img src="options.png" style="margin-right: 8px" class=windowButton onclick="Options()" ondragstart="return false;">
+			<img src="../close.png" class=windowButton onclick="Exit()" ondragstart="return false;">
+			<img src="../hide.png" class=windowButton onclick="Minimize()" ondragstart="return false;">
+			<img src="../options.png" style="margin-right: 8px" class=windowButton onclick="Options()" ondragstart="return false;">
 		</div>
 		<div id="windowContent" style="display: block; position: absolute; display:inline-block; width: 100%; height: calc(100% - 24px);">
 			<p id="updateLabel" align=CENTER style="display: none; position: fixed; width: 100%;">NEW UPDATE AVAILABLE</p>
 			<div id="optionsMenu" class=menuWindow style="display: none; width: 350; height: auto; padding-bottom: 4px;">
 				<div id="windowBorder" class=windowBorder onmousedown="dragOptions = true;" ontouchstart="TouchStart(event)">
 					<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">Options</span>
-					<img src="close.png" class=windowButton onclick="document.getElementById('optionsMenu').style.display = 'none';" ondragstart="return false;">
+					<img src="../close.png" class=windowButton onclick="document.getElementById('optionsMenu').style.display = 'none';" ondragstart="return false;">
 				</div>
 				<big style="display: block; margin:4px; margin-bottom: 0px;">NOTIFICATIONS</big>
 				<hr>
@@ -1594,7 +1594,7 @@
 			<div id="updateMenu" class=menuWindow style="display: none; width: 340; height: 160;">
 				<div id="windowBorder" class=windowBorder>
 					<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">New update available</span>
-					<img src="close.png" class=windowButton onclick="this.parentElement.parentElement.style.display = 'none';" ondragstart="return false;">
+					<img src="../close.png" class=windowButton onclick="this.parentElement.parentElement.style.display = 'none';" ondragstart="return false;">
 				</div>
 				<p align=CENTER style="display: block; margin:4px; width: 90%; margin-left: auto; margin-right: auto; margin-bottom: 3px;">New version available - <span id="newVersion"></span></p>
 				<p align=CENTER style="display: block; margin:4px; width: 90%; margin-left: auto; margin-right: auto; margin-bottom: 3px;">You can always update using the /refresh command.</p>
@@ -1603,9 +1603,9 @@
 			</div>
 			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%; overflow-y: auto; overflow-x: hidden;">
 				<div>
-					<img id="scplogo" src="scpf.png" class=scplogo onload="Load()" ondragstart="return false;">
-					<img id="scplogoleft" src="scpsign.png" class="scplogo logoanim" style="transform: rotate(45deg) translate(-7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoleft'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
-					<img id="scplogoright" src="scpsign.png" class="scplogo logoanim" style="transform: rotate(-45deg) translate(7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoright'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
+					<img id="scplogo" src="../scpf.png" class=scplogo onload="Load()" ondragstart="return false;">
+					<img id="scplogoleft" src="../scpsign.png" class="scplogo logoanim" style="transform: rotate(45deg) translate(-7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoleft'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
+					<img id="scplogoright" src="../scpsign.png" class="scplogo logoanim" style="transform: rotate(-45deg) translate(7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoright'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
 				</div>
 				<div id="serverInput" style="opacity: 0; transition: opacity 0.6s linear;">
 					<h1 align=CENTER>S-Messenger</h1>
