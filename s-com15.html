@@ -93,8 +93,8 @@
 			
 				desktop = document.getElementById("desktop");
 				CreateIcon('icon_pc.png', 'Computer', '', 0, 0);
-				CreateIcon('icon_console.png', 'Console', "CreateWindow('console.html', 640, 360, true, true, true);", 128, 0);
-				CreateIcon('icon_sm.png', 'S-Messenger', "CreateWindow('s-messenger.html', 640, 512, true, true, true);", 256, 0);
+				CreateIcon('icon_console.png', 'Console', "CreateWindow('console/index.html', 640, 360, true, true, true);", 128, 0);
+				CreateIcon('icon_sm.png', 'S-Messenger', "CreateWindow('s-messenger/index.html', 640, 512, true, true, true);", 256, 0);
 				CreateIcon('icon_database.png', 'Database', "CreateWindow('http://www.scp-wiki.net/', 800, 600, true, true, false, 'Database');", 384, 0);
 			}
 			function OnMouseMove(event){
@@ -151,12 +151,20 @@
 				for(let i=0; i<icons.length; i++){
 					let icon = document.getElementById(icons[i].id);
 					dragging = icon;
-					icons[i].x = desktop.offsetLeft;
+					icons[i].x = desktop.offsetLeft+128*i;
 					icons[i].y = desktop.offsetTop;
 					icon.style.left = icons[i].x;
 					icon.style.top = icons[i].y;
 				}
 				PositionIcons();
+				dragging = null;
+			}
+			function OnResize(){
+				for(let i=0; i<icons.length; i++){
+					let icon = document.getElementById(icons[i].id);
+					dragging = icon;
+					PositionIcons();
+				}
 				dragging = null;
 			}
 			function CreateContextMenu(elems){
@@ -329,16 +337,17 @@
 				
 				for(let j=0; j<icons.length; j++){
 					for(let i=0; i<icons.length; i++){
+						let overlap = document.getElementById(icons[i].id);
+						if(overlap.offsetLeft+128 > window.innerWidth){
+							if(desktop.offsetWidth > 128){
+								overlap.style.left = desktop.offsetLeft;
+								overlap.style.top = overlap.offsetTop+128;
+								console.log("OVERLAPPING WINDOW WIDTH");
+							}
+						}
 						if(icons[i].id != icons[j].id){
 							if(icons[j].x == icons[i].x && icons[j].y == icons[i].y){
-								let overlap = document.getElementById(icons[i].id);
-								if(overlap.offsetLeft+128 > window.innerWidth){
-									overlap.style.left = desktop.offsetLeft;
-									overlap.style.top = overlap.offsetTop+128;
-								}
-								else{
-									overlap.style.left = overlap.offsetLeft+128;
-								}
+								overlap.style.left = overlap.offsetLeft+128;
 								icons[i].x = overlap.offsetLeft;
 								icons[i].y = overlap.offsetTop;
 							}
@@ -363,7 +372,7 @@
 						e1action: 'CreateWindow("createlink.html", 512, 160, false, false, false, "Create new link");',
 						e2: 'Create new local link',
 						e2action: 'CreateWindow("createlink.html", 512, 160, false, false, false, "Create new link");',
-						e3: 'Sort automatically',
+						e3: 'Rearrange icons',
 						e3action: 'SortIcons();'
 					}
 					CreateContextMenu(elems);
@@ -392,7 +401,7 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
 		<link rel="shortcut icon" href="favicon_old.png">
 	</head>
-	<body onload="OnStart()" onmousemove="OnMouseMove(event)" onmouseup="OnDragEnd()" onmousedown="CallMenu(event)">
+	<body onload="OnStart()" onresize="OnResize()" onmousemove="OnMouseMove(event)" onmouseup="OnDragEnd()" onmousedown="CallMenu(event)">
 		<p style="position:fixed; left:350px; top:30px; font-size:30px; z-index: 2;">S-COM SOFTWARE 1.5</p>
 		<div align=RIGHT style="margin-right:152px;"><button onclick="Exit()" class=bigbutton style="position:fixed; top:36px; font-size:30px; width:129; height:52;">EXIT</button></div>
 		<div class="info" style="position:fixed; left:23px; top:204px;">
