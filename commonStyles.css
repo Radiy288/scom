@@ -94,6 +94,15 @@ hr {
 b {
 	font-weight: 900;
 }
+.quote {
+	background: #444;
+	border-left-style: solid;
+}
+.codeblock {
+	background: #444;
+	padding: 8px;
+	margin: 4px;
+}
 .uislider {
 	-webkit-appearance: none;  /* Override default CSS styles */
 	appearance: none;
@@ -126,6 +135,10 @@ b {
 	font-weight: bold;
 	height: 25px;
 	padding-right: 4px;
+}
+
+h1 {
+	margin: 4px;
 }
 			
 ::-moz-selection { /* Code for Firefox */

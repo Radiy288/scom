@@ -1,0 +1,110 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>BG - SCCOL Docs</title>
+		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
+		<style>
+			html{
+				overflow-y: auto;
+			}
+			p, big {
+				margin: 4px;
+				white-space: pre-wrap;
+				margin-bottom: 0.5em;
+			}
+			big{
+				
+			}
+			.left-container{
+				position: fixed;
+				height: 100%;
+				width: 9em;
+				background: #212121;
+				margin-right: 4px;
+				padding: 4px;
+				overflow-y: auto;
+				min-width: 200px;
+			}
+			.main-container{
+				float: right;
+				width: calc(100% - 216px);
+			}
+			.navlink{
+				margin-left: 16px;
+				cursor: url('../../link.png'), auto;
+				padding: 4px;
+				display: block;
+				background: #191919;
+				border: 1px solid #424242;
+			}
+			.menu{
+				transition: all 1s ease;
+			}
+			li{
+				margin-left: 1em;
+			}
+			a {
+				cursor: url('../../link.png'), auto;
+			}
+			blockquote {
+				white-space: pre-wrap;
+				padding: 4px;
+			}
+		</style>
+		<script src="../../cmds.js"></script>
+		<script>
+			var cmdNav;
+			function Start(){
+				cmdNav = document.getElementById("commands");
+				for (let c in commands){
+					let cmdLink = document.createElement("a");
+					cmdLink.innerText = c.toUpperCase();
+					cmdLink.href = c+'.html';
+					if(c == '//'){
+						cmdLink.href = 'comment.html';
+					}
+					cmdLink.className = "navlink option";
+					cmdNav.appendChild(cmdLink);
+				}
+			}
+		</script>
+	</head>
+	<body onload="Start()">
+		<nav class="left-container">
+			<a href="/docs/sccol/"><img src="../../sccol_logo.png"></a>
+			<p class=option style="padding: 2px;" onclick="if(cmdNav.style.display == 'block'){cmdNav.style.display = 'none';}else{cmdNav.style.display = 'block';}"><small>▼</small><big>COMMANDS</big></p>
+			<div id="commands" style="display: none" class=menu></div>
+			<hr>
+			<p class=option style="padding: 2px;" onclick="if(constants.style.display == 'block'){constants.style.display = 'none';}else{constants.style.display = 'block';}"><small>▼</small><big>VARIABLES</big></p>
+			<div id="constants" style="display: none" class=menu>
+				<a href="d2r.html" class="navlink option">D2R</a>
+				<a href="pi.html" class="navlink option">PI</a>
+				<a href="r.html" class="navlink option">R</a>
+				<a href="r2d.html" class="navlink option">R2D</a>
+			</div>
+			<hr>
+			<p class=option style="padding: 2px;" onclick="if(operators.style.display == 'block'){operators.style.display = 'none';}else{operators.style.display = 'block';}"><small>▼</small><big>OPERATORS</big></p>
+			<div id="operators" style="display: none" class=menu>
+				<a href="add.html" class="navlink option">$+</a>
+				<a href="subtract.html" class="navlink option">$-</a>
+				<a href="multiply.html" class="navlink option">$*</a>
+				<a href="divide.html" class="navlink option">$/</a>
+				<a href="modulo.html" class="navlink option">$%</a>
+			</div>
+		</nav>
+		<div class="main-container">
+			@<a href="/docs/sccol/#COMMANDS">Commands</a>
+			<h1>BG {col}</h1>
+			<hr>
+			<big>Description:</big>
+			<p> Sets the background color to a specified color.</p>
+			<big>Arguments:</big>
+			<p> <i>STR/INT {col}</i> - the specified color. Can be a hexademical value or a string.</p>
+			<hr>
+			<big>Example of usage:</big>
+			<blockquote class=quote>BG RED</blockquote>
+			<big>Output:</big>
+			<blockquote class=quote style="background: RED"> </blockquote>
+		</div>
+	</body>
+</html>

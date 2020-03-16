@@ -1,0 +1,238 @@
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>SCCOL Docs</title>
+		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
+		<style>
+			html{
+				overflow-y: auto;
+			}
+			p, big {
+				margin: 4px;
+				white-space: pre-wrap;
+				margin-bottom: 0.5em;
+			}
+			big{
+				
+			}
+			.left-container{
+				position: fixed;
+				height: 100%;
+				width: 9em;
+				background: #212121;
+				margin-right: 4px;
+				padding: 4px;
+				overflow-y: auto;
+				min-width: 200px;
+			}
+			.main-container{
+				float: right;
+				width: calc(100% - 216px);
+			}
+			.navlink{
+				margin-left: 16px;
+				cursor: url('../../link.png'), auto;
+				padding: 4px;
+				display: block;
+				background: #191919;
+				border: 1px solid #424242;
+			}
+			.menu{
+				transition: all 1s ease;
+			}
+			li{
+				margin-left: 1em;
+			}
+			a {
+				cursor: url('../../link.png'), auto;
+			}
+		</style>
+		<script src="../../cmds.js"></script>
+		<script>
+			var cmdNav;
+			function Start(){
+				cmdNav = document.getElementById("commands");
+				for (let c in commands){
+					let cmdLink = document.createElement("a");
+					cmdLink.innerText = c.toUpperCase();
+					cmdLink.href = c+'.html';
+					if(c == '//'){
+						cmdLink.href = 'comment.html';
+					}
+					cmdLink.className = "navlink option";
+					cmdNav.appendChild(cmdLink);
+					let findStr = c.charAt(0).toUpperCase();
+					console.log(findStr);
+					let cmdContainer = document.getElementById(findStr);
+					let cmdA = document.createElement("li");
+					let cmdL = document.createElement("a");
+					cmdL.href = cmdLink.href;
+					cmdL.innerText = c.toUpperCase();
+					cmdA.appendChild(cmdL);
+					cmdContainer.appendChild(cmdA);
+				}
+			}
+		</script>
+	</head>
+	<body onload="Start()">
+		<nav class="left-container">
+			<a href="/docs/sccol/"><img src="../../sccol_logo.png"></a>
+			<p class=option style="padding: 2px;" onclick="if(cmdNav.style.display == 'block'){cmdNav.style.display = 'none';}else{cmdNav.style.display = 'block';}"><small>▼</small><big>COMMANDS</big></p>
+			<div id="commands" style="display: none" class=menu></div>
+			<hr>
+			<p class=option style="padding: 2px;" onclick="if(constants.style.display == 'block'){constants.style.display = 'none';}else{constants.style.display = 'block';}"><small>▼</small><big>VARIABLES</big></p>
+			<div id="constants" style="display: none" class=menu>
+				<a href="d2r.html" class="navlink option">D2R</a>
+				<a href="pi.html" class="navlink option">PI</a>
+				<a href="r.html" class="navlink option">R</a>
+				<a href="r2d.html" class="navlink option">R2D</a>
+			</div>
+			<hr>
+			<p class=option style="padding: 2px;" onclick="if(operators.style.display == 'block'){operators.style.display = 'none';}else{operators.style.display = 'block';}"><small>▼</small><big>OPERATORS</big></p>
+			<div id="operators" style="display: none" class=menu>
+				<a href="add.html" class="navlink option">$+</a>
+				<a href="subtract.html" class="navlink option">$-</a>
+				<a href="multiply.html" class="navlink option">$*</a>
+				<a href="divide.html" class="navlink option">$/</a>
+				<a href="modulo.html" class="navlink option">$%</a>
+			</div>
+		</nav>
+		<div class="main-container">
+			<h1>SCCOL (S-COM Command-Oriented Language) 1.0</h1>
+			<small>© SCP Technologies Ltd 1999-2004, SCP Foundation 1982-2004</small>
+			<hr>
+			<p> First used in S-COM SOFTWARE versions as far as 0.1, being the base of every process and task, SCCOL now serves as a way to automate tasks and make an office worker's job easier and faster.</p>
+			<p> <b>SCCOL</b> stands for S-COM Command-Oriented Language, which describes its core function - being executed via calling specific commands. While the language may seem pretty basic, it is capable of completing a lot of tasks and a lot can be done with it.</p>
+			<p> This documentation serves as a guide to SCCOL 1.0 for beginners, and as a reference for experienced users.</p>
+			<hr>
+			<big>Requirements:</big>
+			<ul>
+				<li>Security clearance level 1+;</li>
+				<li>SCP PC™️-9090+ (64MB+ RAM, 2GHz+ CPU).</li>
+				<li>S-COM SOFTWARE 1.0 - 1.5;</li>
+				<li>(S-COM SOFTWARE 0.7 - 0.9.6,<span style="color: red"> NOT EVERYTHING MAY BE COMPATIBLE</span>);</li>
+				<li>(User-made SCCOL compiler: WCOL, unSCL, etc,<span style="color: red"> NOT EVERYTHING MAY BE COMPATIBLE</span>);</li>
+			</ul>
+			<hr>
+			<big>Overview</big>
+			<p> SCCOL was first introduced in the first public version of S-COM SOFTWARE - 0.1 in 1982. It served as a small set of commands to operate the S-COM, by then, only a communication program. Then, in version 0.6 (1988) S-COM switched to being and OS overlay to make on-site communications and file operations more easy and secure. By then, SCCOL was already a full set of commands, which could be used to operate an OS.</p>
+			<p> SCCOL began expanding in version 0.7 (1993) and started including the ability to run batch algorithm files with multiple commands listed inside. As the programming industry grew and evolved, so did the Foundation and its needs to be able to keep users up-to-date with more software than the S-COM provided. This is when SCCOL finally began forming as a full and complete programming language. It started including many mandatory features, such as procedures, mathematical commands and functions and etc.</p>
+			<p> Now SCCOL serves as a full programming language, made easier to use for an average Foundation worker. Here you will find <a href="#COMMANDS">command</a>, <a href="#VARIABLES">variable</a> and <a href="#OPERATORS">operator</a> references as well as syntax information and examples to help you understand how to work in SCCOL.</p>
+			<hr>
+			<big id="COMMANDS">Commands</big>
+			<p> The source of SCCOL, these are used to do pretty much everything.</p>
+			<nav>
+				<a href="#A">A</a>
+				<a href="#B">B</a>
+				<a href="#C">C</a>
+				<a href="#D">D</a>
+				<a href="#E">E</a>
+				<a href="#F">F</a>
+				<a href="#G">G</a>
+				<a href="#H">H</a>
+				<a href="#I">I</a>
+				<a href="#J">J</a>
+				<a href="#K">K</a>
+				<a href="#L">L</a>
+				<a href="#M">M</a>
+				<a href="#N">N</a>
+				<a href="#O">O</a>
+				<a href="#P">P</a>
+				<a href="#Q">Q</a>
+				<a href="#R">R</a>
+				<a href="#S">S</a>
+				<a href="#T">T</a>
+				<a href="#U">U</a>
+				<a href="#V">V</a>
+				<a href="#W">W</a>
+				<a href="#X">X</a>
+				<a href="#Y">Y</a>
+				<a href="#Z">Z</a>
+			</nav>
+			<br>
+			<div>
+			<div id="/">
+				<big>/</big>
+			</div>
+			<div id="A">
+				<big>A</big>
+			</div>
+			<div id="B">
+				<big>B</big>
+			</div>
+			<div id="C">
+				<big>C</big>
+			</div>
+			<div id="D">
+				<big>D</big>
+			</div>
+			<div id="E">
+				<big>E</big>
+			</div>
+			<div id="F">
+				<big>F</big>
+			</div>
+			<div id="G">
+				<big>G</big>
+			</div>
+			<div id="H">
+				<big>H</big>
+			</div>
+			<div id="I">
+				<big>I</big>
+			</div>
+			<div id="J">
+				<big>J</big>
+			</div>
+			<div id="K">
+				<big>K</big>
+			</div>
+			<div id="L">
+				<big>L</big>
+			</div>
+			<div id="M">
+				<big>M</big>
+			</div>
+			<div id="N">
+				<big>N</big>
+			</div>
+			<div id="O">
+				<big>O</big>
+			</div>
+			<div id="P">
+				<big>P</big>
+			</div>
+			<div id="Q">
+				<big>Q</big>
+			</div>
+			<div id="R">
+				<big>R</big>
+			</div>
+			<div id="S">
+				<big>S</big>
+			</div>
+			<div id="T">
+				<big>T</big>
+			</div>
+			<div id="U">
+				<big>U</big>
+			</div>
+			<div id="V">
+				<big>V</big>
+			</div>
+			<div id="W">
+				<big>W</big>
+			</div>
+			<div id="X">
+				<big>X</big>
+			</div>
+			<div id="Y">
+				<big>Y</big>
+			</div>
+			<div id="Z">
+				<big>Z</big>
+			</div>
+		</div>
+		</div>
+	</body>
+</html>

@@ -157,7 +157,7 @@ async function Compile(str){
 	str = Operate('-', str, new RegExp("([\$]\-)", "g"));
 	str = Operate('*', str, new RegExp("([\$][\*])", "g"));
 	str = Operate('/', str, new RegExp("([\$]\/)", "g"));
-	
+	str = Operate('%', str, new RegExp("([\$]\%)", "g"));
 	
 	//FUNCTION PARSING
 	let prs="", subPrs="", read="";
@@ -187,7 +187,7 @@ async function Compile(str){
 				prs+=str.charAt(i);
 			}
 			if(prs == ""){
-				Print(" S-COM Command-Oriented Language (SCCOL) v0.9. © SCP Foundation 1982-2004.");
+				Print(" S-COM Command-Oriented Language (SCCOL) v1.0. © SCP Foundation 1982-2004.");
 				Print(" "+navigator.platform+Define(navigator.oscpu)+" "+navigator.language+". "+Define(navigator.vendor));
 				Print(" "+Define(navigator.userAgent));
 				Print(" Display: "+screen.width.toString()+"x"+screen.height.toString()+", "+screen.colorDepth.toString()+" bit.");
@@ -722,6 +722,9 @@ function Operate(op, str, regexp){
 			}
 			if(op='/'){
 				str = str.replace('('+prs+'$/'+subPrs+')', parseFloat(prs)/parseFloat(subPrs));
+			}
+			if(op='%'){
+				str = str.replace('('+prs+'$%'+subPrs+')', parseFloat(prs)%parseFloat(subPrs));
 			}
 		}
 	}

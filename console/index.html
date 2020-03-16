@@ -61,6 +61,10 @@
 				Print("Welcome to the S-COM Command Oriented Language (SCCOL) console. To proceed please enter a command.");
 				Print("© SCP Technologies Ltd 1999-2004\nSCP Foundation 1982-2004.");
 				Print("%$YEnter [CMDS] to view the list of available commands.");
+				let log = document.createElement('p');
+				log.className = 'consoleLog';
+				log.innerHTML = "<a href='https://youtu.be/dQw4w9WgXcQ'>Click here to open the SCCOL documentation.</a>";
+				windowContent.insertBefore(log, prefixP);
 			}
 			function OnInput(){
 				consoleInput.style.height = 'auto';
