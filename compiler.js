@@ -99,8 +99,21 @@ async function Compile(str){
 	str = str.replace(/\|\|SEMICOLON\|\|/g, ';');
 	
 	//RANDOM NUMBER PARSING
-	let rndCount = (str.match(/(\%\^R)/g) || []).length;
-	for(let i=0; i<rndCount; i++){
+	let constCount;
+	constCount = (str.match(/(\%\^D2R)/g) || []).length;
+	for(let i=0; i<constCount; i++){
+		str = str.replace("%^D2R", 0.0174532924);
+	}
+	constCount = (str.match(/(\%\^R2D)/g) || []).length;
+	for(let i=0; i<constCount; i++){
+		str = str.replace("%^R2D", 57.29578);
+	}
+	constCount = (str.match(/(\%\^PI)/g) || []).length;
+	for(let i=0; i<constCount; i++){
+		str = str.replace("%^PI", Math.PI);
+	}
+	constCount = (str.match(/(\%\^R)/g) || []).length;
+	for(let i=0; i<constCount; i++){
 		str = str.replace("%^R", Math.random());
 	}
 	
@@ -482,9 +495,6 @@ async function Compile(str){
 			
 		case "int":
 			for (let i=4; i<str.length; i++){
-				if(str.charAt(i) == ' '){
-					break;
-				}
 				prs+=str.charAt(i);
 			}
 			if(prs == ''){
@@ -495,7 +505,48 @@ async function Compile(str){
 				Error('Unexpected buffer block number type.');
 				break;
 			}
+			if(buffer[parseInt(prs)] == null){
+				Error('Buffer block value undefined.');
+				break;
+			}
+			if(isNaN(buffer[parseInt(prs)])){
+				buffer[parseInt(prs)] = buffer[parseInt(prs)].charCodeAt();
+				break;
+			}
 			buffer[parseInt(prs)] = Math.floor(buffer[parseInt(prs)]);
+			break;
+			
+		case "char":
+			for (let i=5; i<str.length; i++){
+				if(str.charAt(i) == ' '){
+					break;
+				}
+				prs+=str.charAt(i);
+			}
+			for (let i=6+prs.length; i<str.length; i++){
+				subPrs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid buffer block number.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected buffer block number type.');
+				break;
+			}
+			if(buffer[parseInt(prs)] == null){
+				Error('Buffer block value undefined.');
+				break;
+			}
+			if(subPrs != ''){
+				if(isNaN(subPrs)){
+					Error('Unexpected char index type.');
+					break;
+				}
+				buffer[parseInt(prs)] = buffer[parseInt(prs)].charAt(parseInt(subPrs));
+				break;
+			}
+			buffer[parseInt(prs)] = String.fromCharCode(parseInt(buffer[parseInt(prs)]));
 			break;
 			
 		case "wait":
@@ -513,6 +564,100 @@ async function Compile(str){
 			paused = true;
 			await Sleep(parseInt(prs));
 			break;
+			
+		case "sin":
+			for (let i=4; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid buffer block number.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected buffer block number type.');
+				break;
+			}
+			if(isNaN(buffer[parseInt(prs)])){
+				Error('Unexpected buffer block value type.');
+				break;
+			}
+			if(buffer[parseInt(prs)] == null){
+				Error('Buffer block value undefined.');
+				break;
+			}
+			buffer[parseInt(prs)] = parseFloat(Math.sin(buffer[parseInt(prs)]).toFixed(6));
+			break;
+			
+		case "cos":
+			for (let i=4; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid buffer block number.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected buffer block number type.');
+				break;
+			}
+			if(isNaN(buffer[parseInt(prs)])){
+				Error('Unexpected buffer block value type.');
+				break;
+			}
+			if(buffer[parseInt(prs)] == null){
+				Error('Buffer block value undefined.');
+				break;
+			}
+			buffer[parseInt(prs)] = parseFloat(Math.cos(buffer[parseInt(prs)]).toFixed(6));
+			break;
+			
+		case "abs":
+			for (let i=4; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid buffer block number.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected buffer block number type.');
+				break;
+			}
+			if(isNaN(buffer[parseInt(prs)])){
+				Error('Unexpected buffer block value type.');
+				break;
+			}
+			if(buffer[parseInt(prs)] == null){
+				Error('Buffer block value undefined.');
+				break;
+			}
+			buffer[parseInt(prs)] = Math.abs(buffer[parseInt(prs)]);
+			break;
+			
+		case "frac":
+			for (let i=5; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid buffer block number.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected buffer block number type.');
+				break;
+			}
+			if(isNaN(buffer[parseInt(prs)])){
+				Error('Unexpected buffer block value type.');
+				break;
+			}
+			if(buffer[parseInt(prs)] == null){
+				Error('Buffer block value undefined.');
+				break;
+			}
+			let frac = parseFloat((buffer[parseInt(prs)] % 1).toFixed(6));
+			buffer[parseInt(prs)] = frac;
+			break;
+			
 			
 		case "js":
 			js = true;
