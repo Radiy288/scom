@@ -12,7 +12,7 @@
 	],
 	"manifest_version": 2,
 	"default_locale": "en",
-	"start_url": "/scom/s-messenger.html",
+	"start_url": "/scom/s-messenger/",
 	"background_color": "#000",
 	"display": "standalone",
 	"theme_color": "#898989"
