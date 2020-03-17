@@ -22,6 +22,7 @@ window.addEventListener('keyup',function(event){
 
 async function CompileBatch(str){
 	if(js){
+		str = str.replace(/SCCOL\;/g, 'js = false;');
 		str = str.replace(/sccol\;/g, 'js = false;');
 		eval(str);
 	}
@@ -55,7 +56,10 @@ async function CompileBatch(str){
 			}
 		});*/
 		for(let index=0; index<cmds.length; index++){
-			await CleanCompile(cmds[index]);
+			if(await CleanCompile(cmds[index]) == "STOP"){
+				Input(true);
+				return;
+			};
 		}
 		//console.log("DONE");
 		Input(true);
@@ -75,6 +79,7 @@ async function CleanCompile(str){
 	if(openedFunction){
 		if(str.toLowerCase() == 'end'){
 			openedFunction = "";
+			return true;
 		}
 		else{
 			functions[openedFunction] += str+';';
@@ -82,6 +87,9 @@ async function CleanCompile(str){
 		}
 	}
 	else{
+		if(str.toLowerCase() == 'end'){
+			return "STOP";
+		}
 		await Compile(str);
 	}
 	return true;
@@ -370,9 +378,6 @@ async function Compile(str){
 				}
 			});
 			break;
-			
-		case "end":
-			Exit();
 			
 		case "call":
 			for (let i=5; i<str.length; i++){

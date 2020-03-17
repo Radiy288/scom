@@ -27,7 +27,7 @@ var commands = {
 	"char": {
 		"name": "CHAR {num} (index)",
 		"info_short": "Converts memory buffer block value to character.",
-		"info": "Converts a real number to a character or to a character at positiong (index) in a string in the specified memory buffer block.\n{num} - the specified memory buffer block number to get the value from and then assign to.\n(index) - the optionally specified position of the character in the string to set the value to.",
+		"info": "Converts a real number to a character or gets a character at position (index) in a string in the specified memory buffer block.\n{num} - the specified memory buffer block number to get the value from and then assign to.\n(index) - the optionally specified position of the character in the string to set the value to.",
 		"example": "  SET 0 Hello, World!;\n  CHAR 0 7;"
 	},
 	"clr": {
@@ -50,8 +50,8 @@ var commands = {
 	},
 	"end": {
 		"name": "END",
-		"info_short": "Ends current procedure declaration or exits the console.",
-		"info": "Ends current procedure declaration, started using the [PROC {name}] command, or, if used outside of a procedure declaration exits the console.",
+		"info_short": "Ends current procedure declaration or terminates the code.",
+		"info": "Ends current procedure declaration, started using the [PROC {name}] command, or, if used outside of a procedure terminates the code execution.",
 		"example": "  PROC MAIN;\n    SAY Hello, World!;\n  END;"
 	},
 	"frac": {
@@ -144,4 +144,5 @@ var commands = {
 		"info": "Pauses the console for the specified amount of milliseconds.\n{ms} - the specified amount of milliseconds.",
 		"example": "  WAIT 1000;"
 	},
-}
+};
+var constants = ["D2R", "E", "PI", "R", "R2D"]
