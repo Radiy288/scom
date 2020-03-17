@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>BG - SCCOL Docs</title>
+		<title>JS - SCCOL Docs</title>
 		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
 		<style>
 			html{
@@ -102,17 +102,21 @@
 		</nav>
 		<div class="main-container">
 			@<a href="/docs/sccol/#COMMANDS">Commands</a>
-			<h1>BG {col}</h1>
+			<h1>JS</h1>
 			<hr>
 			<big>Description:</big>
-			<p> Sets the background color to a specified color.</p>
-			<big>Arguments:</big>
-			<p> <i>STR/INT {col}</i> - the specified color. Can be a hexademical value or a string.</p>
+			<p> Initiates JavaScript mode. All input will then be interpreted as JavaScript code. To exit - use the <a href="sccol.html" class=quote>SCCOL</a> command.</p>
 			<hr>
 			<big>Example of usage:</big>
-			<blockquote class=quote>BG RED</blockquote>
+			<blockquote class=quote>JS
+**command submit**</blockquote>
+			<blockquote class=quote>Print("This text is being printed through JavaScript mode.");</blockquote>
 			<big>Output:</big>
-			<blockquote class=quote style="background: RED"> </blockquote>
+			<blockquote class=quote>This text is being printed through JavaScript mode.</blockquote>
+			<hr>
+			<big>Note:</big>
+			<p><span class=quote>JS</span> should be written and executed as a single command. Switching to JavaScript mode mid-execution will not work. <a href="internal.html"><span class=quote>INTERNAL</span></a> should be used instead.</p>
+			<p>For more info on the console JavaScript functions read <a href="javascript.html">this</a>.</p>
 		</div>
 	</body>
 </html>

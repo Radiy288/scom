@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>BG - SCCOL Docs</title>
+		<title>KEY - SCCOL Docs</title>
 		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
 		<style>
 			html{
@@ -102,17 +102,18 @@
 		</nav>
 		<div class="main-container">
 			@<a href="/docs/sccol/#COMMANDS">Commands</a>
-			<h1>BG {col}</h1>
+			<h1>KEY {num}</h1>
 			<hr>
 			<big>Description:</big>
-			<p> Sets the background color to a specified color.</p>
+			<p> Waits for a keypress, then sets the Unicode value of the keypress to the specified memory buffer block. You may use the <a href="char.html" class=quote>CHAR</a> command to convert the value to a character.</p>
 			<big>Arguments:</big>
-			<p> <i>STR/INT {col}</i> - the specified color. Can be a hexademical value or a string.</p>
+			<p> <i>INT {num}</i> - the specified memory block number to assign to.</p>
 			<hr>
 			<big>Example of usage:</big>
-			<blockquote class=quote>BG RED</blockquote>
+			<blockquote class=quote>KEY 0;
+SAY %^0;</blockquote>
 			<big>Output:</big>
-			<blockquote class=quote style="background: RED"> </blockquote>
+			<blockquote class=quote>**user input**</blockquote>
 		</div>
 	</body>
 </html>

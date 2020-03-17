@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>BG - SCCOL Docs</title>
+		<title>IF - SCCOL Docs</title>
 		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
 		<style>
 			html{
@@ -102,17 +102,29 @@
 		</nav>
 		<div class="main-container">
 			@<a href="/docs/sccol/#COMMANDS">Commands</a>
-			<h1>BG {col}</h1>
+			<h1>IF {(expr)} {cmd}</h1>
 			<hr>
 			<big>Description:</big>
-			<p> Sets the background color to a specified color.</p>
+			<p> Checks to see if the specified expression returns true, and if it does, executes the specified command.</p>
 			<big>Arguments:</big>
-			<p> <i>STR/INT {col}</i> - the specified color. Can be a hexademical value or a string.</p>
+			<p> <i>EXPRESSION {(expr)}</i> - the specified expression.</p>
+			<p> <i>COMMAND {cmd}</i> - the specified command to execute.</p>
 			<hr>
 			<big>Example of usage:</big>
-			<blockquote class=quote>BG RED</blockquote>
+			<blockquote class=quote>SET 0 0;
+PROC MAIN;
+  SAY %^0;
+  SET 0 (%^0 $+ 1);
+  IF (%^0 < 5) CALL MAIN;
+END;
+CALL MAIN;
+</blockquote>
 			<big>Output:</big>
-			<blockquote class=quote style="background: RED"> </blockquote>
+			<blockquote class=quote>0
+1
+2
+3
+4</blockquote>
 		</div>
 	</body>
 </html>

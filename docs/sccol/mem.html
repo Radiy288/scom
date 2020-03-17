@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>BG - SCCOL Docs</title>
+		<title>MEM - SCCOL Docs</title>
 		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
 		<style>
 			html{
@@ -102,17 +102,25 @@
 		</nav>
 		<div class="main-container">
 			@<a href="/docs/sccol/#COMMANDS">Commands</a>
-			<h1>BG {col}</h1>
+			<h1>MEM (proc)</h1>
 			<hr>
 			<big>Description:</big>
-			<p> Sets the background color to a specified color.</p>
+			<p> Displays the memory buffer, all declared procedures, or a single one's code on screen, if the procedure is specified.</p>
 			<big>Arguments:</big>
-			<p> <i>STR/INT {col}</i> - the specified color. Can be a hexademical value or a string.</p>
+			<p> <i>PROCEDURE (proc)</i> - the optionally specified procedure to display the code of.</p>
 			<hr>
 			<big>Example of usage:</big>
-			<blockquote class=quote>BG RED</blockquote>
+			<blockquote class=quote>SET 0 SCP;
+PROC MAIN;
+  SAY Secure. Contain. Protect.;
+END;
+MEM;
+MEM MAIN;</blockquote>
 			<big>Output:</big>
-			<blockquote class=quote style="background: RED"> </blockquote>
+			<blockquote class=quote>0: SCP
+MAIN;
+MAIN:
+ SAY Secure. Contain. Protect.;</blockquote>
 		</div>
 	</body>
 </html>

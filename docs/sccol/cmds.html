@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>BG - SCCOL Docs</title>
+		<title>CLR - SCCOL Docs</title>
 		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
 		<style>
 			html{
@@ -102,17 +102,38 @@
 		</nav>
 		<div class="main-container">
 			@<a href="/docs/sccol/#COMMANDS">Commands</a>
-			<h1>BG {col}</h1>
+			<h1>CMDS</h1>
 			<hr>
 			<big>Description:</big>
-			<p> Sets the background color to a specified color.</p>
-			<big>Arguments:</big>
-			<p> <i>STR/INT {col}</i> - the specified color. Can be a hexademical value or a string.</p>
+			<p> Displays all available commands on screen.</p>
 			<hr>
 			<big>Example of usage:</big>
-			<blockquote class=quote>BG RED</blockquote>
+			<blockquote class=quote>CMDS;</blockquote>
 			<big>Output:</big>
-			<blockquote class=quote style="background: RED"> </blockquote>
+			<blockquote class=quote>// (str)		Declares a comment.
+ABS {num}		Sets a memory buffer block to its absolute value.
+BG {col}		Sets background color.
+CALL {proc}		Calls a previously declared procedure.
+CHAR {num} (index)	Converts memory buffer block value to character.
+CLR			Clears the screen of all text.
+CMDS			Displays all available commands.
+COS {num}		Sets a memory buffer block to its cosine value (radians).
+END			Ends current procedure declaration or exits the console.
+FRAC {num}		Sets a memory buffer block value to its decimal remainder.
+FREE {num/start} (end)	Frees a single or a range of memory buffer blocks.
+GET {num}		Waits for user input to set its string to a memory buffer block.
+IF {(expr)} {cmd}	If an expression returns true, executes a command.
+INFO (cmd)		Displays client information or command information.
+INT {num}		Converts memory buffer block value to integer.
+JS			Initiates JavaScript mode.
+KEY {num}		Waits for a keypress to set its value to a memory buffer block.
+MEM (proc)		Displays the memory buffer or procedure code.
+PROC {name}		Starts the declaration of a procedure.
+SAY {str}		Displays a string of text.
+SCCOL			Initiates SCCOL mode.
+SET {num} {val}		Sets a memory buffer block to a value.
+SIN {num}		Sets a memory buffer block to its sine value (radians).
+WAIT {ms}		Pauses for an amount of milliseconds.</blockquote>
 		</div>
 	</body>
 </html>

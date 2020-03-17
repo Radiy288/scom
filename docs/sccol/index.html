@@ -1,6 +1,5 @@
 <html>
 	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>SCCOL Docs</title>
 		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
 		<style>
@@ -49,9 +48,10 @@
 		</style>
 		<script src="../../cmds.js"></script>
 		<script>
-			var cmdNav;
+			var cmdNav, conNav;
 			function Start(){
 				cmdNav = document.getElementById("commands");
+				conNav = document.getElementById("constants");
 				for (let c in commands){
 					let cmdLink = document.createElement("a");
 					cmdLink.innerText = c.toUpperCase();
@@ -71,21 +71,27 @@
 					cmdA.appendChild(cmdL);
 					cmdContainer.appendChild(cmdA);
 				}
+				for (let i=0; i<constants.length; i++){
+					let cmdLink = document.createElement("a");
+					cmdLink.innerText = constants[i];
+					cmdLink.href = constants[i].toLowerCase()+'.html';
+					cmdLink.className = "navlink option";
+					conNav.appendChild(cmdLink);
+				}
 			}
 		</script>
 	</head>
 	<body onload="Start()">
 		<nav class="left-container">
 			<a href="/docs/sccol/"><img src="../../sccol_logo.png"></a>
+			<a href="basics.html" class=option style="margin: 0; padding: 2px;"><big>BASICS</big></a>
+			<hr>
 			<p class=option style="padding: 2px;" onclick="if(cmdNav.style.display == 'block'){cmdNav.style.display = 'none';}else{cmdNav.style.display = 'block';}"><small>▼</small><big>COMMANDS</big></p>
 			<div id="commands" style="display: none" class=menu></div>
 			<hr>
-			<p class=option style="padding: 2px;" onclick="if(constants.style.display == 'block'){constants.style.display = 'none';}else{constants.style.display = 'block';}"><small>▼</small><big>VARIABLES</big></p>
+			<p class=option style="padding: 2px;" onclick="if(conNav.style.display == 'block'){conNav.style.display = 'none';}else{conNav.style.display = 'block';}"><small>▼</small><big>VARIABLES</big></p>
 			<div id="constants" style="display: none" class=menu>
-				<a href="d2r.html" class="navlink option">D2R</a>
-				<a href="pi.html" class="navlink option">PI</a>
-				<a href="r.html" class="navlink option">R</a>
-				<a href="r2d.html" class="navlink option">R2D</a>
+				
 			</div>
 			<hr>
 			<p class=option style="padding: 2px;" onclick="if(operators.style.display == 'block'){operators.style.display = 'none';}else{operators.style.display = 'block';}"><small>▼</small><big>OPERATORS</big></p>
@@ -96,6 +102,8 @@
 				<a href="divide.html" class="navlink option">$/</a>
 				<a href="modulo.html" class="navlink option">$%</a>
 			</div>
+			<hr>
+			<a href="examples.html" class=option style="margin: 0; margin-bottom: 4px; padding: 2px;"><big>EXAMPLES</big></a>
 		</nav>
 		<div class="main-container">
 			<h1>SCCOL (S-COM Command-Oriented Language) 1.0</h1>

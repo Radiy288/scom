@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>BG - SCCOL Docs</title>
+		<title>PROC - SCCOL Docs</title>
 		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
 		<style>
 			html{
@@ -102,17 +102,28 @@
 		</nav>
 		<div class="main-container">
 			@<a href="/docs/sccol/#COMMANDS">Commands</a>
-			<h1>BG {col}</h1>
+			<h1>PROC {name}</h1>
 			<hr>
 			<big>Description:</big>
-			<p> Sets the background color to a specified color.</p>
+			<p> Starts the declaration of a procedure with the specified name, which will later be used as the procedure's identifier. All code after this command will be used as the procedure's code. Declaration must be ended with the <a href="end.html" class=quote>END</a> command.</p>
 			<big>Arguments:</big>
-			<p> <i>STR/INT {col}</i> - the specified color. Can be a hexademical value or a string.</p>
+			<p> <i>STR {name}</i> - the specified procedure's name. Will be used to call the procedure after declaring it using the <a href="call.html" class=quote>CALL</a> command.</p>
 			<hr>
 			<big>Example of usage:</big>
-			<blockquote class=quote>BG RED</blockquote>
+			<blockquote class=quote>SET 0 0;
+PROC MAIN;
+  SAY %^0;
+  SET 0 (%^0 $+ 1);
+  IF (%^0 < 5) CALL MAIN;
+END;
+CALL MAIN;
+</blockquote>
 			<big>Output:</big>
-			<blockquote class=quote style="background: RED"> </blockquote>
+			<blockquote class=quote>0
+1
+2
+3
+4</blockquote>
 		</div>
 	</body>
 </html>

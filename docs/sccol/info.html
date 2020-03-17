@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title>BG - SCCOL Docs</title>
+		<title>INFO - SCCOL Docs</title>
 		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
 		<style>
 			html{
@@ -102,17 +102,24 @@
 		</nav>
 		<div class="main-container">
 			@<a href="/docs/sccol/#COMMANDS">Commands</a>
-			<h1>BG {col}</h1>
+			<h1>INFO (cmd)</h1>
 			<hr>
 			<big>Description:</big>
-			<p> Sets the background color to a specified color.</p>
-			<big>Arguments:</big>
-			<p> <i>STR/INT {col}</i> - the specified color. Can be a hexademical value or a string.</p>
+			<p> Displays detailed information about the client, or, if specified, about a command.</p>
 			<hr>
 			<big>Example of usage:</big>
-			<blockquote class=quote>BG RED</blockquote>
+			<blockquote class=quote>INFO;
+INFO CMDS;</blockquote>
 			<big>Output:</big>
-			<blockquote class=quote style="background: RED"> </blockquote>
+			<blockquote class=quote> S-COM Command-Oriented Language (SCCOL) v**SCCOL version**. © SCP Foundation 1982-**copyright end year**.
+ **parent OS** **language**. **vendor**.
+ **client agent**
+ Display: **screen resolution**, **screen color depth**.
+
+CMDS
+Displays all available commands on screen.
+Example of usage: 
+  CMDS;</blockquote>
 		</div>
 	</body>
 </html>
