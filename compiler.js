@@ -1,4 +1,7 @@
 var buffer = [];
+var context = new AudioContext();
+var channelBuffer = [context.createOscillator(), context.createOscillator(), context.createOscillator(), context.createOscillator(), context.createOscillator(), context.createOscillator()]; //0, 1 - SQUARE, 2 - SINE, 3 - TRIANGLE, 4 - SAWTOOTH, 5 - NOISE;
+var gainBuffer = [context.createGain(), context.createGain(), context.createGain(), context.createGain(), context.createGain(), context.createGain()];
 var functions = {};
 var openedFunction;
 var paused = false;
@@ -83,7 +86,7 @@ async function CleanCompile(str){
 		}
 		else{
 			functions[openedFunction] += str+';';
-			console.log(str+';');
+			//console.log(str+';');
 		}
 	}
 	else{
@@ -125,8 +128,21 @@ async function Compile(str){
 		str = str.replace("%^R", Math.random());
 	}
 	
+	//VARIABLE BY VARIABLE VALUE PARSING
+	let varCount = (str.match(/(\%\^\^)/g) || []).length;
+	for(let i=0; i<varCount; i++){
+		let prs="";
+		for(let j=str.indexOf("%^^")+3; j<str.length; j++){
+			if(isNaN(str.charAt(j)) || str.charAt(j) == ' '){
+				break;
+			}
+			prs+=str.charAt(j);
+		}
+		str = str.replace("%^^"+prs, buffer[buffer[parseInt(prs)]]);
+	}
+	
 	//VARIABLE PARSING
-	let varCount = (str.match(/(\%\^)/g) || []).length;
+	varCount = (str.match(/(\%\^)/g) || []).length;
 	for(let i=0; i<varCount; i++){
 		let prs="";
 		for(let j=str.indexOf("%^")+2; j<str.length; j++){
@@ -392,10 +408,29 @@ async function Compile(str){
 				break;
 			}
 			//CompileBatch(functions[prs]);
-			let func = functions[prs].split(';');
+			var func = functions[prs].split(';');
 			for(let i=0; i<func.length; i++){
 				await CleanCompile(func[i]);
 			}
+			break;
+			
+		case "acall":
+			for (let i=6; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs == ""){
+				Error('Invalid procedure name.');
+				break;
+			}
+			if(!functions.hasOwnProperty(prs)){
+				Error('No "'+prs+'" procedure found.');
+				break;
+			}
+			CompileBatch(functions[prs]);
+			/*var func = functions[prs].split(';');
+			for(let i=0; i<func.length; i++){
+				CleanCompile(func[i]);
+			}*/
 			break;
 			
 		case "internal":
@@ -663,6 +698,152 @@ async function Compile(str){
 			buffer[parseInt(prs)] = frac;
 			break;
 			
+		case "length":
+			for (let i=7; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid buffer block number.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected buffer block number type.');
+				break;
+			}
+			if(buffer[parseInt(prs)] == null){
+				Error('Buffer block value undefined.');
+				break;
+			}
+			buffer[parseInt(prs)] = buffer[parseInt(prs)].length;
+			break;
+			
+		case "wave":
+			for (let i=5; i<str.length; i++){
+				if(str.charAt(i) == ' '){
+					break;
+				}
+				prs+=str.charAt(i);
+			}
+			for (let i=6+prs.length; i<str.length; i++){
+				subPrs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid channel number.');
+				break;
+			}
+			if(subPrs == ''){
+				Error('Invalid frequency value.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected channel number type.');
+				break;
+			}
+			if(isNaN(subPrs)){
+				Error('Unexpected frequency value type.');
+				break;
+			}
+			prs = parseInt(prs);
+			subPrs = parseFloat(subPrs);
+			try{
+				let o = channelBuffer[prs];
+				o.stop();
+			}
+			catch(e){
+				Error(e.toString());
+			}
+			channelBuffer[prs] = context.createOscillator();
+			o = channelBuffer[prs];
+			switch (prs){
+				case 0:
+					o.type = 'square';
+					break;
+				case 1:
+					o.type = 'square';
+					break;
+				case 2:
+					o.type = 'sine';
+					break;	
+				case 3:
+					o.type = 'triangle';
+					break;
+				case 4:
+					o.type = 'sawtooth';
+					break;
+				default:
+					Error('Channel number out of range.');
+					break;
+			}
+			let g = gainBuffer[prs];
+			o.frequency.value = subPrs
+			o.connect(g);
+			g.connect(context.destination);
+			try{
+				o.start();
+			}
+			catch(e){
+				Error(e.toString());
+			}
+			
+			//g.gain.exponentialRampToValueAtTime(0, context.currentTime + 0.5);
+			break;
+			
+		case "stop":
+			for (let i=5; i<str.length; i++){
+				prs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid channel number.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected channel number type.');
+				break;
+			}
+			prs = parseInt(prs);
+			try{
+				channelBuffer[prs].stop();
+			}
+			catch(e){
+				Error(e.toString());
+			}
+			break;
+			
+		case "gain":
+			for (let i=5; i<str.length; i++){
+				if(str.charAt(i) == ' '){
+					break;
+				}
+				prs+=str.charAt(i);
+			}
+			for (let i=6+prs.length; i<str.length; i++){
+				subPrs+=str.charAt(i);
+			}
+			if(prs == ''){
+				Error('Invalid channel number.');
+				break;
+			}
+			if(subPrs == ''){
+				Error('Invalid gain value.');
+				break;
+			}
+			if(isNaN(prs)){
+				Error('Unexpected channel number type.');
+				break;
+			}
+			if(isNaN(subPrs)){
+				Error('Unexpected gain value type.');
+				break;
+			}
+			prs = parseInt(prs);
+			subPrs = parseFloat(subPrs);
+			try{
+				gainBuffer[prs].gain.exponentialRampToValueAtTime(subPrs, context.currentTime + 0.4);
+			}
+			catch(e){
+				Error(e.toString());
+			}
+			break;
 			
 		case "js":
 			js = true;
@@ -714,6 +895,16 @@ function Operate(op, str, regexp){
 				break;
 			}
 			subPrs+=str.charAt(j);
+		}
+		if(op='-'){
+			if(isNaN(prs) && !isNaN(subPrs)){
+				str = str.replace('('+prs+'$-'+subPrs+')', prs.substring(0, prs.length-parseInt(subPrs)-1));
+				return str;
+			}
+			if(!isNaN(prs) && isNaN(subPrs)){
+				str = str.replace('('+prs+'$-'+subPrs+')', subPrs.substring(parseInt(prs)));
+				return str;
+			}
 		}
 		if(isNaN(prs) || isNaN(subPrs)){
 			Error('Unexpected type found when using "'+op+'" operator.');
