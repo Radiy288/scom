@@ -1,0 +1,65 @@
+CLR;
+GET 0;		// INPUT;
+SET 1 %^0;	// CHAR;
+SET 2 0;	// I;
+SET 3 %^0;// LENGTH;
+LENGTH 3;
+SET 4 |;	// OUTPUT;
+
+PROC READ;
+  SET 1 %^0;
+  CHAR 1 %^2;
+  
+  IF ('%^1' == 'A') SET 1 Ъ;
+  IF ('%^1' == 'E') SET 1 Ъ;
+  IF ('%^1' == 'I') SET 1 Ъ;
+  IF ('%^1' == 'O') SET 1 Ъ;
+  IF ('%^1' == 'U') SET 1 Ъ;
+  IF ('%^1' == 'a') SET 1 ъ;
+  IF ('%^1' == 'e') SET 1 ъ;
+  IF ('%^1' == 'i') SET 1 ъ;
+  IF ('%^1' == 'o') SET 1 ъ;
+  IF ('%^1' == 'u') SET 1 ъ;
+  
+  IF ('%^1' == 'А') SET 1 Ъ;
+  IF ('%^1' == 'Е') SET 1 Ъ;
+  IF ('%^1' == 'Ё') SET 1 Ъ;
+  IF ('%^1' == 'И') SET 1 Ъ;
+  IF ('%^1' == 'О') SET 1 Ъ;
+  IF ('%^1' == 'У') SET 1 Ъ;
+  IF ('%^1' == 'Э') SET 1 Ъ;
+  IF ('%^1' == 'Ю') SET 1 Ъ;
+  IF ('%^1' == 'Я') SET 1 Ъ;
+  IF ('%^1' == 'а') SET 1 ъ;
+  IF ('%^1' == 'е') SET 1 ъ;
+  IF ('%^1' == 'ё') SET 1 ъ;
+  IF ('%^1' == 'и') SET 1 ъ;
+  IF ('%^1' == 'о') SET 1 ъ;
+  IF ('%^1' == 'у') SET 1 ъ;
+  IF ('%^1' == 'э') SET 1 ъ;
+  IF ('%^1' == 'ю') SET 1 ъ;
+  IF ('%^1' == 'я') SET 1 ъ;
+  
+  IF ('%^1' == 'І') SET 1 Ъ;
+  IF ('%^1' == 'Ї') SET 1 Ъ;
+  IF ('%^1' == 'Є') SET 1 Ъ;
+  IF ('%^1' == 'і') SET 1 ъ;
+  IF ('%^1' == 'ї') SET 1 ъ;
+  IF ('%^1' == 'є') SET 1 ъ;
+  
+  SET 4 %^4%^1;
+  SET 2 (%^2 $+ 1);
+  IF (%^2 < %^3) CALL READ;
+  IF (%^2 == %^3) CALL FINISH;
+END;
+PROC FINISH;
+  SAY %^4;
+  FREE 0;
+  FREE 1;
+  FREE 2;
+  FREE 3;
+  FREE 4;
+  FREE READ;
+  FREE FINISH;
+END;
+CALL READ;
