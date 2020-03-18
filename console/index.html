@@ -58,13 +58,46 @@
 				}
 				ConsolePrefix();
 				consoleInput.focus();
-				Print("Welcome to the S-COM Command Oriented Language (SCCOL) console. To proceed please enter a command.");
-				Print("© SCP Technologies Ltd 1999-2004\nSCP Foundation 1982-2004.");
-				Print("%$YEnter [CMDS] to view the list of available commands.");
-				let log = document.createElement('p');
-				log.className = 'consoleLog';
-				log.innerHTML = "<a href='../docs/sccol/'>Click here to open the SCCOL documentation.</a>";
-				windowContent.insertBefore(log, prefixP);
+				if(location.search.substring(1) != ""){
+					var inputString = location.search.substring(1);
+					try{
+						inputString = decodeURI(inputString);
+						let rawFile = new XMLHttpRequest();
+						rawFile.open("GET", inputString, true);
+						rawFile.onreadystatechange = function ()
+						{
+							if(rawFile.readyState === 4)
+							{
+								if(rawFile.status === 200 || rawFile.status == 0)
+								{
+									var allText = rawFile.responseText;
+									consoleInput.value = allText;
+									//console.log(allText);
+									var ev = {
+										"keyCode": 13,
+										"shiftKey": false
+									}
+									OnEnter(ev);
+									OnInter(ev);
+								}
+							}
+						}
+						rawFile.send(null);
+					}
+					catch(e){
+						Error(e.toString());
+						console.log(e);
+					}
+				}
+				else{
+					Print("Welcome to the S-COM Command Oriented Language (SCCOL) console. To proceed please enter a command.");
+					Print("© SCP Technologies Ltd 1999-2004\nSCP Foundation 1982-2004.");
+					Print("%$YEnter [CMDS] to view the list of available commands.");
+					let log = document.createElement('p');
+					log.className = 'consoleLog';
+					log.innerHTML = "<a href='../docs/sccol/'>Click here to open the SCCOL documentation.</a>";
+					windowContent.insertBefore(log, prefixP);
+				}
 			}
 			function OnInput(){
 				consoleInput.style.height = 'auto';
@@ -80,7 +113,9 @@
 						return;
 					}
 					if(prefixP.style.display != "none"){
-						Print(prefix+str);
+						if(location.search.substring(1) == ""){
+							Print(prefix+str);
+						}
 						story.push(str);
 						try{
 							if(js){
