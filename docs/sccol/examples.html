@@ -14,28 +14,6 @@
 			big{
 				
 			}
-			.left-container{
-				position: fixed;
-				height: 100%;
-				width: 9em;
-				background: #212121;
-				margin-right: 4px;
-				padding: 4px;
-				overflow-y: auto;
-				min-width: 200px;
-			}
-			.main-container{
-				float: right;
-				width: calc(100% - 216px);
-			}
-			.navlink{
-				margin-left: 16px;
-				cursor: url('../../link.png'), auto;
-				padding: 4px;
-				display: block;
-				background: #191919;
-				border: 1px solid #424242;
-			}
 			.menu{
 				transition: all 1s ease;
 			}
@@ -45,35 +23,10 @@
 			a {
 				cursor: url('../../link.png'), auto;
 			}
-			blockquote {
-				white-space: pre-wrap;
-				padding: 4px;
-			}
 		</style>
 		<script src="../../cmds.js"></script>
+		<script src="navbar.js"></script>
 		<script>
-			var cmdNav, conNav;
-			function Start(){
-				cmdNav = document.getElementById("commands");
-				conNav = document.getElementById("constants");
-				for (let c in commands){
-					let cmdLink = document.createElement("a");
-					cmdLink.innerText = c.toUpperCase();
-					cmdLink.href = c+'.html';
-					if(c == '//'){
-						cmdLink.href = 'comment.html';
-					}
-					cmdLink.className = "navlink option";
-					cmdNav.appendChild(cmdLink);
-				}
-				for (let i=0; i<constants.length; i++){
-					let cmdLink = document.createElement("a");
-					cmdLink.innerText = constants[i];
-					cmdLink.href = constants[i].toLowerCase()+'.html';
-					cmdLink.className = "navlink option";
-					conNav.appendChild(cmdLink);
-				}
-			}
 			function Spoiler(idstr){
 				let el = document.getElementById(idstr);
 				if(el){
@@ -87,33 +40,10 @@
 		</script>
 	</head>
 	<body onload="Start()">
-		<nav class="left-container">
-			<a href="/docs/sccol/"><img src="../../sccol_logo.png"></a>
-			<a href="basics.html" class=option style="margin: 0; padding: 2px;"><big>BASICS</big></a>
-			<hr>
-			<p class=option style="padding: 2px;" onclick="if(cmdNav.style.display == 'block'){cmdNav.style.display = 'none';}else{cmdNav.style.display = 'block';}"><small>▼</small><big>COMMANDS</big></p>
-			<div id="commands" style="display: none" class=menu></div>
-			<hr>
-			<p class=option style="padding: 2px;" onclick="if(conNav.style.display == 'block'){conNav.style.display = 'none';}else{conNav.style.display = 'block';}"><small>▼</small><big>VARIABLES</big></p>
-			<div id="constants" style="display: none" class=menu>
-				
-			</div>
-			<hr>
-			<p class=option style="padding: 2px;" onclick="if(operators.style.display == 'block'){operators.style.display = 'none';}else{operators.style.display = 'block';}"><small>▼</small><big>OPERATORS</big></p>
-			<div id="operators" style="display: none" class=menu>
-				<a href="add.html" class="navlink option">$+</a>
-				<a href="subtract.html" class="navlink option">$-</a>
-				<a href="multiply.html" class="navlink option">$*</a>
-				<a href="divide.html" class="navlink option">$/</a>
-				<a href="modulo.html" class="navlink option">$%</a>
-			</div>
-			<hr>
-			<a href="examples.html" class=option style="margin: 0; margin-bottom: 4px; padding: 2px;"><big>EXAMPLES</big></a>
-		</nav>
 		<div class="main-container">
 			<h1>EXAMPLES</h1>
 			<hr>
-			<p>This page contains some examples of programming on SCCOL to help you better understand how to use it.</p>
+			<p> This page contains some examples of programming on SCCOL to help you better understand how to use it.</p>
 			<ul>
 				<li><a href="#Pbottles">24 BOTTLES</a></li>
 				<li><a href="#PbgColor">BACKGROUND RANDOMIZER</a></li>
@@ -128,12 +58,12 @@ PROC VERSE;
   SAY %^0 bottles of SCP-207-1.;
   SAY Take one down, pass it around;
   SET 0 (%^0 $- 1);
-  IF (%^0 > 0) SAY %^0 bottles of SCP-207-1 on the wall.;
-  IF (%^0 > 0) CALL VERSE;
+  IF (%^0$>0) SAY %^0 bottles of SCP-207-1 on the wall.;
+  IF (%^0$>0) CALL VERSE;
   
-  IF (%^0 == 0) SAY [REDACTED];
-  IF (%^0 == 0) FREE 0;
-  IF (%^0 == 0) FREE VERSE;
+  IF (%^0$=0) SAY [REDACTED];
+  IF (%^0$=0) FREE 0;
+  IF (%^0$=0) FREE VERSE;
 END;
 CALL VERSE;</blockquote>
 			<hr>
@@ -146,12 +76,12 @@ PROC MAIN;
   INT 1;
   BG #%^1;
   KEY 0;
-  IF (%^0 == 27) BG BLACK;
-  IF (%^0 == 27) CLR;
+  IF (%^0$=27) BG BLACK;
+  IF (%^0$=27) CLR;
   
-  IF (%^0 != 27) CALL MAIN;
+  IF (%^0$!=27) CALL MAIN;
 
-  IF (%^0 == 27) CALL FINISH;
+  IF (%^0$=27) CALL FINISH;
 END;
 PROC FINISH;
   FREE 0 1;
@@ -183,13 +113,13 @@ PROC CALC;
   SET 3 (%^2 $* 2); // I*2;
   SET 4 (%^3 $+ 1); // I*2+1;
   SET 5 (4 $/ %^4); // 4 / (I*2+1);
-  IF (%^2 % 2 == 0) SET 1 (%^1 $+ %^5);
-  IF (%^2 % 2 != 0) SET 1 (%^1 $- %^5);
+  IF ((%^2$%2)$=0) SET 1 (%^1 $+ %^5);
+  IF ((%^2$%2)$!=0) SET 1 (%^1 $- %^5);
   WAIT 1;
-  IF (%^2 < %^0) SET 2 (%^2 $+ 1);
-  IF (%^2 < %^0) CALL CALC;
-  IF (%^2 % 16 == 1) CLR;
-  IF (%^2 % 16 == 1) SAY %^1;
+  IF (%^2$<%^0) SET 2 (%^2 $+ 1);
+  IF (%^2$<%^0) CALL CALC;
+  IF ((%^2$%16)$=1) CLR;
+  IF ((%^2$%16)$=1) SAY %^1;
 END;
 CALL CALC;</blockquote>
 		</div>

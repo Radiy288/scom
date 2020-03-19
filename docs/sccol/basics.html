@@ -1,0 +1,88 @@
+<html>
+	<head>
+		<title>BASICS - SCCOL Docs</title>
+		<link rel="stylesheet" type="text/css" href="../../commonStyles.css">
+		<style>
+			html{
+				overflow-y: auto;
+			}
+			p, big {
+				margin: 4px;
+				white-space: pre-wrap;
+				margin-bottom: 0.5em;
+			}
+			big{
+				
+			}
+			.menu{
+				transition: all 1s ease;
+			}
+			li{
+				margin-left: 1em;
+			}
+			a {
+				cursor: url('../../link.png'), auto;
+			}
+		</style>
+		<script src="../../cmds.js"></script>
+		<script src="navbar.js"></script>
+	</head>
+	<body onload="Start()">
+		<div class="main-container">
+			<h1>BASICS</h1>
+			<hr>
+			<p> As the name describes, SCCOL is a command-oriented language, meaning that the core base of it is executing commands and their arguments. Commands here are used to do pretty much everything - from displaying text on screen to writing complex programs and algorithms.</p>
+			<hr>
+			<big>Syntax</big>
+			<p> Because the language is command-oriented, the syntax isn't very complex. Most commands may require additional arguments that are separated by spaces. In the command info they are lowercase and are surrounded by either braces {}, or parentheses (). When an argument is surrounded with braces, that means it is a required argument and the command won't be executed without you specifying it. When an argument is surrounded with parentheses, that means it is optional and the command can be executed without it.</p>
+			<p> Each command can be executed as a single command, or in an algorithm of ones. When executing in an algorithm, all commands should be separated with semicolons (;). A semicolon can be put at the end of the command when executing as a single one, but it is optional.</p>
+			<p> Here you can see that entering and submitting a single command doesn't require a semicolon:</p>
+			<blockquote class=quote>SAY Hello, World!</blockquote>
+			<p> Output:</p>
+			<blockquote class=quote>Hello, World!</blockquote>
+			<p> If we wan't to include a semicolon in our string we can do that using either <span class=quote>\;</span> or <span class=quote>||SEMICOLON||:</span></p>
+			<blockquote class=quote>SAY ||SEMICOLON||Hello, World!\;</blockquote>
+			<p> Output:</p>
+			<blockquote class=quote>;Hello, World!;</blockquote>
+			<hr>
+			<big>Memory buffer</big>
+			<p> In SCCOL there are no variables. Instead, there are memory buffer blocks. They can store a real number or a string and can be accessed at any time. They can't have a callable name, instead they are numbered and their value can be passed via the %^ prefix.</p>
+			<p> For example, here is a piece of code that assigns to the memory buffer block 0 and then displays its value:</p>
+			<blockquote class=quote>SET 0 Block 0;	// This sets block 0 to a string "Block 0";
+SAY %^0;	// Displays block 0's value;</blockquote>
+			<p> Output:</p>
+			<blockquote class=quote>Block 0</blockquote>
+			<p> The %^ prefix can also be used to get a predefined global variable/constant (for example: <a href="pi.html" class=quote>%^PI</a> will return 3.141592653589793). For the list of all available variables look <a href="/scom/docs/sccol/#VARIABLES">here</a>.</p>
+			<hr>
+			<big>Operators</big>
+			<p> To do mathematical calculations and use the <a class=quote href="if.html">IF</a> command there exist certain operators and certain rules in using them. They can be used anywhere when specifying a value and are compiled before commands. For the complete list of available operators look <a href="/scom/docs/sccol/#OPERATORS">here</a>.</p>
+			<p> All of the operators are called using the $ symbol as a prefix and must be surrounded by parentheses. While it is possible to do multiple calculations at a time, it is not recommended, as there is a specific order in which they are compiled.</p>
+			<p> Let's say we need to get the value of 65 * π / 180. In SCCOL it would look like this:</p>
+			<blockquote class=quote>SET 0 (65 $* <a href="pi.html">%^PI</a>);	// Though you should use <a href="d2r.html">%^D2R</a> to convert degrees to radians;
+SAY (%^0 $/ 180);</blockquote>
+			<p> Output:</p>
+			<blockquote class=quote>1.1344640137963142</blockquote>
+			<p> So there were two operations done here, 65 was multiplied by a predefined global constant PI and set to memory buffer block 0 and then memory buffer block 0's value (65 * π) was divided by 180 in the <a href="say.html">SAY</a> command execution.</p>
+			<hr>
+			<big>Procedures</big>
+			<p> For executing the same commands over and over there exist procedures. You can declare them using the <a href="proc.html" class=quote>PROC</a> and <a href="end.html" class=quote>END</a> commands. The <a href="proc.html" class=quote>PROC</a> command will require a name for the procedure that can later be used as an identifier to call it using the <a href="call.html" class=quote>CALL</a> command.</p>
+			<p> Here is an example of using procedures:</p>
+			<blockquote class=quote>SET 0 0;
+PROC MAIN;
+  SAY %^0;
+  SET 0 (%^0$+1);
+  IF (%^0$<5) CALL MAIN;
+END;
+CALL MAIN;</blockquote>
+			<p> Output:</p>
+			<blockquote class=quote>0
+1
+2
+3
+4</blockquote>
+			<hr>
+			<big>Value "types"</big>
+			<p> There aren't any defined value types in SCCOL, but essentially, all of them split into real numbers (REAL) and strings (STR). When an argument requires a string, most of the time a real number can be passed without issues. There are also some types like INT, COMMAND, EXPRESSION, PROCEDURE, but for most of them they just check the memory for definitions.</p>
+		</div>
+	</body>
+</html>

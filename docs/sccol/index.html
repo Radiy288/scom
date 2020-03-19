@@ -14,28 +14,6 @@
 			big{
 				
 			}
-			.left-container{
-				position: fixed;
-				height: 100%;
-				width: 9em;
-				background: #212121;
-				margin-right: 4px;
-				padding: 4px;
-				overflow-y: auto;
-				min-width: 200px;
-			}
-			.main-container{
-				float: right;
-				width: calc(100% - 216px);
-			}
-			.navlink{
-				margin-left: 16px;
-				cursor: url('../../link.png'), auto;
-				padding: 4px;
-				display: block;
-				background: #191919;
-				border: 1px solid #424242;
-			}
 			.menu{
 				transition: all 1s ease;
 			}
@@ -48,63 +26,26 @@
 		</style>
 		<script src="../../cmds.js"></script>
 		<script>
-			var cmdNav, conNav;
-			function Start(){
-				cmdNav = document.getElementById("commands");
-				conNav = document.getElementById("constants");
+			function Load(){
 				for (let c in commands){
-					let cmdLink = document.createElement("a");
-					cmdLink.innerText = c.toUpperCase();
-					cmdLink.href = c+'.html';
-					if(c == '//'){
-						cmdLink.href = 'comment.html';
-					}
-					cmdLink.className = "navlink option";
-					cmdNav.appendChild(cmdLink);
 					let findStr = c.charAt(0).toUpperCase();
-					console.log(findStr);
 					let cmdContainer = document.getElementById(findStr);
 					let cmdA = document.createElement("li");
 					let cmdL = document.createElement("a");
-					cmdL.href = cmdLink.href;
+					cmdL.href = c+'.html';
+					if(c == '//'){
+						cmdL.href = 'comment.html';
+					}
 					cmdL.innerText = c.toUpperCase();
 					cmdA.appendChild(cmdL);
 					cmdContainer.appendChild(cmdA);
-				}
-				for (let i=0; i<constants.length; i++){
-					let cmdLink = document.createElement("a");
-					cmdLink.innerText = constants[i];
-					cmdLink.href = constants[i].toLowerCase()+'.html';
-					cmdLink.className = "navlink option";
-					conNav.appendChild(cmdLink);
+					//console.log(findStr);
 				}
 			}
 		</script>
+		<script src="navbar.js"></script>
 	</head>
-	<body onload="Start()">
-		<nav class="left-container">
-			<a href="/docs/sccol/"><img src="../../sccol_logo.png"></a>
-			<a href="basics.html" class=option style="margin: 0; padding: 2px;"><big>BASICS</big></a>
-			<hr>
-			<p class=option style="padding: 2px;" onclick="if(cmdNav.style.display == 'block'){cmdNav.style.display = 'none';}else{cmdNav.style.display = 'block';}"><small>▼</small><big>COMMANDS</big></p>
-			<div id="commands" style="display: none" class=menu></div>
-			<hr>
-			<p class=option style="padding: 2px;" onclick="if(conNav.style.display == 'block'){conNav.style.display = 'none';}else{conNav.style.display = 'block';}"><small>▼</small><big>VARIABLES</big></p>
-			<div id="constants" style="display: none" class=menu>
-				
-			</div>
-			<hr>
-			<p class=option style="padding: 2px;" onclick="if(operators.style.display == 'block'){operators.style.display = 'none';}else{operators.style.display = 'block';}"><small>▼</small><big>OPERATORS</big></p>
-			<div id="operators" style="display: none" class=menu>
-				<a href="add.html" class="navlink option">$+</a>
-				<a href="subtract.html" class="navlink option">$-</a>
-				<a href="multiply.html" class="navlink option">$*</a>
-				<a href="divide.html" class="navlink option">$/</a>
-				<a href="modulo.html" class="navlink option">$%</a>
-			</div>
-			<hr>
-			<a href="examples.html" class=option style="margin: 0; margin-bottom: 4px; padding: 2px;"><big>EXAMPLES</big></a>
-		</nav>
+	<body onload="Start(); Load()">
 		<div class="main-container">
 			<h1>SCCOL (S-COM Command-Oriented Language) 1.0</h1>
 			<small>© SCP Technologies Ltd 1999-2004, SCP Foundation 1982-2004</small>
@@ -126,6 +67,9 @@
 			<p> SCCOL was first introduced in the first public version of S-COM SOFTWARE - 0.1 in 1982. It served as a small set of commands to operate the S-COM, by then, only a communication program. Then, in version 0.6 (1988) S-COM switched to being and OS overlay to make on-site communications and file operations more easy and secure. By then, SCCOL was already a full set of commands, which could be used to operate an OS.</p>
 			<p> SCCOL began expanding in version 0.7 (1993) and started including the ability to run batch algorithm files with multiple commands listed inside. As the programming industry grew and evolved, so did the Foundation and its needs to be able to keep users up-to-date with more software than the S-COM provided. This is when SCCOL finally began forming as a full and complete programming language. It started including many mandatory features, such as procedures, mathematical commands and functions and etc.</p>
 			<p> Now SCCOL serves as a full programming language, made easier to use for an average Foundation worker. Here you will find <a href="#COMMANDS">command</a>, <a href="#VARIABLES">variable</a> and <a href="#OPERATORS">operator</a> references as well as syntax information and examples to help you understand how to work in SCCOL.</p>
+			<hr>
+			<big id="NOTE">Note</big>
+			<p> If you are new to SCCOL, you should read about the <a href="basics.html">basics</a> of the language, such as the way it works, the syntax and etc. You should also check some <a href="examples.html">examples</a> to understand how SCCOL works in action.</p>
 			<hr>
 			<big id="COMMANDS">Commands</big>
 			<p> The source of SCCOL, these are used to do pretty much everything.</p>

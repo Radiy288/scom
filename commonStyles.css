@@ -24,6 +24,21 @@ p {
 	margin: 0;
 }
 
+.left-container{
+	position: fixed;
+	height: 100%;
+	width: 9em;
+	background: #212121;
+	margin-right: 4px;
+	padding: 4px;
+	overflow-y: auto;
+	min-width: 200px;
+}
+.main-container{
+	float: right;
+	width: calc(100% - 216px);
+}
+
 .windowBorder {
 	min-height: 24px;
 	max-height: 24px;
@@ -97,6 +112,7 @@ b {
 .quote {
 	background: #444;
 	border-left-style: solid;
+	white-space: pre-wrap;
 }
 .codeblock {
 	background: #444;
@@ -169,4 +185,13 @@ h1 {
 
 ::-webkit-scrollbar-thumb:hover {
 	background: #555; 
+}
+
+.navlink{
+	margin-left: 16px;
+	cursor: url('../../link.png'), auto;
+	padding: 4px;
+	display: block;
+	background: #191919;
+	border: 1px solid #424242;
 }

@@ -182,6 +182,12 @@ async function Compile(str){
 	str = Operate('*', str, new RegExp("([\$][\*])", "g"));
 	str = Operate('/', str, new RegExp("([\$]\/)", "g"));
 	str = Operate('%', str, new RegExp("([\$]\%)", "g"));
+	str = Operate('=<', str, new RegExp("([\$]\=\<)", "g"));
+	str = Operate('=>', str, new RegExp("([\$]\=\>)", "g"));
+	str = Operate('<', str, new RegExp("([\$]\<)", "g"));
+	str = Operate('>', str, new RegExp("([\$]\>)", "g"));
+	str = Operate('=', str, new RegExp("([\$]\=)", "g"));
+	str = Operate('!=', str, new RegExp("([\$]\!\=)", "g"));
 	
 	//FUNCTION PARSING
 	let prs="", subPrs="", read="";
@@ -231,8 +237,8 @@ async function Compile(str){
 			for (let c in commands){
 				let cName = commands[c].name;
 				let cInfo = commands[c].info_short;
-				for(let i=0; i<32-cName.length; i++){
-					cName += ' ';
+				for(let i=0; i<Math.round(2-cName.length/32); i++){
+					cName += '	';
 				}
 				Print(cName+cInfo);
 			}
@@ -463,15 +469,7 @@ async function Compile(str){
 			for (let i=str.indexOf('(')+2+prs.length; i<str.length; i++){
 				subPrs+=str.charAt(i);
 			}
-			let result;
-			try{
-				result = Boolean(eval(prs));
-			}
-			catch(e){
-				Error(e.toString());
-				result = false;
-			}
-			if(result){
+			if(prs.toLowerCase() == "true"){
 				CompileBatch(subPrs);
 			}
 			break;
@@ -890,13 +888,14 @@ function Operate(op, str, regexp){
 			}
 			prs=str.charAt(j)+prs;
 		}
-		for(let j=str.indexOf("$"+op)+2; j<str.length; j++){
+		for(let j=str.indexOf("$"+op)+1+op.length; j<str.length; j++){
 			if(str.charAt(j) == ')'){
 				break;
 			}
 			subPrs+=str.charAt(j);
 		}
-		if(op='-'){
+		//console.log("LEFT SIDE: "+prs+"\nRIGHT SIDE: "+subPrs);
+		if(op=='-'){
 			if(isNaN(prs) && !isNaN(subPrs)){
 				str = str.replace('('+prs+'$-'+subPrs+')', prs.substring(0, prs.length-parseInt(subPrs)-1));
 				return str;
@@ -906,21 +905,53 @@ function Operate(op, str, regexp){
 				return str;
 			}
 		}
+		if(op=='='){
+			if(prs == subPrs){
+				str = str.replace('('+prs+'$='+subPrs+')', "(TRUE)");
+			}
+			return str;
+		}
+		if(op=='!='){
+			if(prs != subPrs){
+				str = str.replace('('+prs+'$!='+subPrs+')', "(TRUE)");
+			}
+			return str;
+		}
 		if(isNaN(prs) || isNaN(subPrs)){
 			Error('Unexpected type found when using "'+op+'" operator.');
 		}
 		else{
-			if(op='-'){
+			if(op=='-'){
 				str = str.replace('('+prs+'$-'+subPrs+')', parseFloat(prs)-parseFloat(subPrs));
 			}
-			if(op='*'){
+			if(op=='*'){
 				str = str.replace('('+prs+'$*'+subPrs+')', parseFloat(prs)*parseFloat(subPrs));
 			}
-			if(op='/'){
+			if(op=='/'){
 				str = str.replace('('+prs+'$/'+subPrs+')', parseFloat(prs)/parseFloat(subPrs));
 			}
-			if(op='%'){
+			if(op=='%'){
 				str = str.replace('('+prs+'$%'+subPrs+')', parseFloat(prs)%parseFloat(subPrs));
+			}
+			if(op=='=<'){
+				if(parseFloat(prs) <= parseFloat(subPrs)){
+					str = str.replace('('+prs+'$=<'+subPrs+')', "(TRUE)");
+				}
+			}
+			if(op=='<'){
+				if(parseFloat(prs) < parseFloat(subPrs)){
+					str = str.replace('('+prs+'$<'+subPrs+')', "(TRUE)");
+				}
+			}
+			if(op=='=>'){
+				if(parseFloat(prs) >= parseFloat(subPrs)){
+					str = str.replace('('+prs+'$=>'+subPrs+')', "(TRUE)");
+				}
+			}
+			if(op=='>'){
+				if(parseFloat(prs) > parseFloat(subPrs)){
+					str = str.replace('('+prs+'$>'+subPrs+')', "(TRUE)");
+				}
 			}
 		}
 	}
