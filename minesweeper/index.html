@@ -13,6 +13,7 @@
 				padding: 3px;
 				margin: 6px;
 				margin-top: 0;
+
 			}
 			.Display{
 				display: inline-block;
@@ -162,14 +163,15 @@
 						}
 					}
 					for (let i=0; i<flagSquares.length; ++i){
-						if (!flagSquares[i].mine){
-							flagSquares[i].src = "buttonPressed.png";
-							let mSpr = sprite.cloneNode(true);
-							mSpr.src = "buttonNoMine.png";
-							mSpr.style.left = flagSquares[i].offsetLeft;
-							mSpr.style.top = flagSquares[i].offsetTop;
-							field.appendChild(mSpr);
-						}
+						if (flagSquares[i] != null)
+							if (!flagSquares[i].mine){
+								flagSquares[i].src = "buttonPressed.png";
+								let mSpr = sprite.cloneNode(true);
+								mSpr.src = "buttonNoMine.png";
+								mSpr.style.left = flagSquares[i].offsetLeft;
+								mSpr.style.top = flagSquares[i].offsetTop;
+								field.appendChild(mSpr);
+							}
 					}
 					squares[x][y].src = "buttonLose.png";
 					return;
