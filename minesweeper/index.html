@@ -1,0 +1,237 @@
+<HTML>
+	<HEAD>
+		<TITLE>Minesweeper</TITLE>
+		<STYLE>
+			BODY {
+				margin: 0;
+				background-color: #C0C0C0;
+				image-rendering: pixelated;
+			}
+			.MineField{
+				display: inline-block;
+				position: relative;
+				padding: 3px;
+				margin: 6px;
+				margin-top: 0;
+			}
+			.Display{
+				display: inline-block;
+				position: relative;
+				padding: 2px;
+				height: 33px;
+				margin: 6px;
+			}
+			.FieldBorder{
+				position: absolute;
+				margin: -3px;
+			}
+			.DisplayBorder{
+				position: absolute;
+				margin: -2px;
+			}
+			.Button{
+				display: inline-block;
+				position: relative;
+				z-index: 1;
+			}
+		</STYLE>
+		<SCRIPT>
+			var width = 24, height = 24; mines = 96;
+			var button = document.createElement("IMG"); button.src = "button.png"; button.className = "Button"; button.setAttribute('draggable', false);
+			var sprite = document.createElement("IMG"); sprite.style = "position: absolute; z-index:2;"; sprite.setAttribute('draggable', false);
+			var field, face;
+			var mouseDown = false, gameStarted = false, gameEnded = false;
+			var squares = [[]], mineSquares = []; flagSquares = [];
+			window.onmouseup = function(){mouseDown = false;}
+			
+			function Start(){
+				field = document.getElementById("MineField");
+				face = document.getElementById("Face");
+				
+				field.innerHTML = "";
+				squares = [[]];
+				mineSquares = [];
+				flagSquares = [];
+				gameStarted = false;
+				gameEnded = false;
+				mouseDown = false;
+				face.setAttribute('draggable', false);
+				squares = new Array(width);
+				for (let i=0; i<height; ++i)
+					squares[i] = new Array(width);
+				for (let y=0; y<height; ++y){
+					for (let x=0; x<width; ++x){
+						let btn = button.cloneNode(true);
+						btn.xx = x; btn.yy = y;
+						btn.mine = false;
+						btn.flagged = false;
+						btn.pressed = false;
+						btn.onmousedown = ButtonDown;
+						btn.onmouseup = ButtonUp;
+						btn.onmouseenter = ButtonEnter;
+						btn.onmouseleave = ButtonLeave;
+						field.appendChild(btn);
+						squares[x][y] = btn;
+					}
+					field.appendChild(document.createElement("BR"));
+				}
+			}
+			
+			function ButtonDown(event){
+				if (!gameEnded){
+					switch (event.button){
+						case 0:
+							event.target.src = "buttonPressed.png";
+							mouseDown = true;
+							break;
+						case 2:
+							if (!event.target.pressed){
+								event.target.flagged = true;
+								event.target.pressed = true
+								let spr = sprite.cloneNode(true);
+								spr.src = "buttonFlag.png";
+								spr.xx = event.target.xx; spr.yy = event.target.yy;
+								spr.number = flagSquares.length;
+								flagSquares[flagSquares.length] = event.target;
+								spr.onmousedown = function(event){
+									if (event.button == 2 && !gameEnded){
+										squares[event.target.xx][event.target.yy].pressed = false;
+										squares[event.target.xx][event.target.yy].flagged = false;
+										event.target.remove();
+										flagSquares[event.target.number] = null;
+									}
+								};
+								spr.style.left = event.target.offsetLeft;
+								spr.style.top = event.target.offsetTop;
+								field.appendChild(spr);
+							}
+							break;
+					}
+				}
+			}
+			function ButtonUp(event){
+				if (!gameStarted){
+					gameStarted = true;
+					for (let i=0; i<mines; ++i){
+						var x = Math.floor(Math.random()*width);
+						var y = Math.floor(Math.random()*height);
+						while ((x==event.target.xx && y==event.target.yy) || squares[x][y].mine){
+							x = Math.floor(Math.random()*width);
+							y = Math.floor(Math.random()*height);
+						}
+						squares[x][y].mine = true;
+						mineSquares[mineSquares.length] = squares[x][y];
+					}
+				}
+				if (!gameEnded){
+					switch (event.button){
+						case 0:
+							OpenSquare(event.target.xx, event.target.yy);
+							break;
+						case 2:
+							
+							break;
+					}
+				}
+			}
+			function ButtonEnter(event){
+				if (mouseDown && !gameEnded)
+					event.target.src = "buttonPressed.png";
+			}
+			function ButtonLeave(event){
+				if (!event.target.pressed)
+					event.target.src = "button.png";
+			}
+			
+			function OpenSquare(x, y){
+				squares[x][y].src = "buttonPressed.png";
+				squares[x][y].pressed = true;
+				
+				var mine = 0;
+				var spr;
+				if (squares[x][y].mine){
+					gameEnded = true;
+					for (let i=0; i<mineSquares.length; ++i){
+						if (!mineSquares[i].flagged){
+							mineSquares[i].src = "buttonPressed.png";
+							let mSpr = sprite.cloneNode(true);
+							mSpr.src = "buttonMine.png";
+							mSpr.style.left = mineSquares[i].offsetLeft;
+							mSpr.style.top = mineSquares[i].offsetTop;
+							field.appendChild(mSpr);
+						}
+					}
+					for (let i=0; i<flagSquares.length; ++i){
+						if (!flagSquares[i].mine){
+							flagSquares[i].src = "buttonPressed.png";
+							let mSpr = sprite.cloneNode(true);
+							mSpr.src = "buttonNoMine.png";
+							mSpr.style.left = flagSquares[i].offsetLeft;
+							mSpr.style.top = flagSquares[i].offsetTop;
+							field.appendChild(mSpr);
+						}
+					}
+					squares[x][y].src = "buttonLose.png";
+					return;
+				}
+				if (x>0 && y>0) if (squares[x-1][y-1].mine) ++mine;
+				if (x>0) if (squares[x-1][y].mine) ++mine;
+				if (x>0 && y<height-1) if (squares[x-1][y+1].mine) ++mine;
+				if (y<height-1) if (squares[x][y+1].mine) ++mine;
+				if (x<width-1 && y<height-1) if (squares[x+1][y+1].mine) ++mine;
+				if (x<width-1) if (squares[x+1][y].mine) ++mine;
+				if (x<width-1 && y>0) if (squares[x+1][y-1].mine) ++mine;
+				if (y>0) if (squares[x][y-1].mine) ++mine;
+				if (mine > 0){
+					spr = sprite.cloneNode(true);
+					spr.src = "button"+mine.toString()+".png";
+				}
+				else{
+					//console.log("No mines at "+x.toString()+", "+y.toString());
+					if (x>0 && y>0) if (!squares[x-1][y-1].pressed) OpenSquare(x-1, y-1);
+					if (x>0) if (!squares[x-1][y].pressed) OpenSquare(x-1, y);
+					if (x>0 && y<height-1) if (!squares[x-1][y+1].pressed) OpenSquare(x-1, y+1);
+					if (y<height-1) if (!squares[x][y+1].pressed) OpenSquare(x, y+1);
+					if (x<width-1 && y<height-1) if (!squares[x+1][y+1].pressed) OpenSquare(x+1, y+1);
+					if (x<width-1) if (!squares[x+1][y].pressed) OpenSquare(x+1, y);
+					if (x<width-1 && y>0) if (!squares[x+1][y-1].pressed) OpenSquare(x+1, y-1);
+					if (y>0) if (!squares[x][y-1].pressed) OpenSquare(x, y-1);
+				}
+				if (spr){
+					spr.style.left = squares[x][y].offsetLeft;
+					spr.style.top = squares[x][y].offsetTop;
+					field.appendChild(spr);
+				}
+			}
+		
+			function FaceDown(event){
+				if (event.button == 0)
+					Face.src = "buttonFacePress.png";
+			}
+			function FaceUp(event){
+				if (event.button == 0){
+					Face.src = "buttonFace.png";
+					Start();
+				}
+			}
+		</SCRIPT>
+	</HEAD>
+	<BODY onload=Start()>
+		<DIV class=Display style="width:386px;">
+			<DIV class=DisplayBorder style="width: 100%; height: 100%; background: #FFF;"></DIV>
+			<DIV class=DisplayBorder style="width: calc(100% - 2px); height: calc(100% - 2px); background: #808080;"></DIV>
+			<DIV class=DisplayBorder style="width: calc(100% - 4px); height: calc(100% - 4px); margin: 0; background: #C0C0C0;"></DIV>
+			<IMG class=DisplayBorder style="left: calc(100% - 2px); margin: -2px; margin-left: 0;" src="borderSmallCorner.png">
+			<IMG class=DisplayBorder style="top: calc(100% - 2px); margin: -2px; margin-top: 0;" src="borderSmallCorner.png">
+			<IMG id=Face style="position: relative; margin:auto; margin-top: 4px; display: block;" src="buttonFace.png" onmousedown=FaceDown(event) onmouseup=FaceUp(event)>
+		</DIV>
+		<BR>
+		<DIV class=MineField oncontextmenu="return false">
+			<DIV class=FieldBorder style="width: 100%; height: 100%; background: #FFF;"></DIV>
+			<DIV class=FieldBorder style="width: calc(100% - 3px); height: calc(100% - 3px); background: #808080;"></DIV>
+			<IMG class=FieldBorder style="left: calc(100% - 3px); margin-left: 0;" src="borderCorner.png">
+			<IMG class=FieldBorder style="top: calc(100% - 3px); margin-top: 0;" src="borderCorner.png">
+			<DIV id=MineField></DIV>
+		</DIV>
+	</BODY>
+</HTML>
