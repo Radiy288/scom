@@ -35,20 +35,41 @@
 				position: relative;
 				z-index: 1;
 			}
+			.DisplayElement{
+				position: absolute;
+				margin: 4px;
+				display: inline-block;
+				padding: 1px;
+			}
+			.DisplayNumber{
+				position: relative;
+				display: inline-block;
+				z-index: 1;
+				margin: 1px;
+			}
 		</STYLE>
 		<SCRIPT>
-			var width = 24, height = 24; mines = 96;
+			var width = 16, height = 16; mines = 40;
 			var button = document.createElement("IMG"); button.src = "button.png"; button.className = "Button"; button.setAttribute('draggable', false);
 			var sprite = document.createElement("IMG"); sprite.style = "position: absolute; z-index:2;"; sprite.setAttribute('draggable', false);
-			var field, face;
-			var mouseDown = false, gameStarted = false, gameEnded = false;
+			var field, face, display, m1, m2, m3, t1, t2, t3;
+			var mouseDown = false, gameStarted = false, gameEnded = false, faceSprite = "buttonFace.png", seconds = 0, secondTimer;
 			var squares = [[]], mineSquares = []; flagSquares = [];
-			window.onmouseup = function(){mouseDown = false;}
+			//window.onmousedown = function(event){if (event.button < 2 && !gameEnded) face.src = "buttonFaceTurn.png";}
+			window.onmouseup = function(event){mouseDown = false; if (event.button < 2 && !gameEnded) face.src = "buttonFace.png";}
 			
 			function Start(){
+				faceSprite = "buttonFace.png";
 				field = document.getElementById("MineField");
 				face = document.getElementById("Face");
+				display = document.getElementById("Display");
+				m1 = document.getElementById("M1"); m2 = document.getElementById("M2"); m3 = document.getElementById("M3");
+				t1 = document.getElementById("T1"); t2 = document.getElementById("T2"); t3 = document.getElementById("T3");
+				seconds = 0;
 				
+				clearTimeout(secondTimer);
+				SetMinesDisplay(mines);
+				SetTimerDisplay(seconds);
 				field.innerHTML = "";
 				squares = [[]];
 				mineSquares = [];
@@ -76,12 +97,14 @@
 					}
 					field.appendChild(document.createElement("BR"));
 				}
+				display.style.width = field.offsetWidth+2;
 			}
 			
 			function ButtonDown(event){
 				if (!gameEnded){
 					switch (event.button){
 						case 0:
+							face.src = "buttonFaceTurn.png";
 							event.target.src = "buttonPressed.png";
 							mouseDown = true;
 							break;
@@ -94,12 +117,14 @@
 								spr.xx = event.target.xx; spr.yy = event.target.yy;
 								spr.number = flagSquares.length;
 								flagSquares[flagSquares.length] = event.target;
+								TestWin();
 								spr.onmousedown = function(event){
 									if (event.button == 2 && !gameEnded){
 										squares[event.target.xx][event.target.yy].pressed = false;
 										squares[event.target.xx][event.target.yy].flagged = false;
 										event.target.remove();
-										flagSquares[event.target.number] = null;
+										flagSquares.splice(event.target.number, 1);
+										TestWin();
 									}
 								};
 								spr.style.left = event.target.offsetLeft;
@@ -123,6 +148,7 @@
 						squares[x][y].mine = true;
 						mineSquares[mineSquares.length] = squares[x][y];
 					}
+					Timer();
 				}
 				if (!gameEnded){
 					switch (event.button){
@@ -152,6 +178,8 @@
 				var spr;
 				if (squares[x][y].mine){
 					gameEnded = true;
+					face.src = "buttonFaceLose.png";
+					faceSprite = "buttonFaceLose.png";
 					for (let i=0; i<mineSquares.length; ++i){
 						if (!mineSquares[i].flagged){
 							mineSquares[i].src = "buttonPressed.png";
@@ -212,20 +240,82 @@
 			}
 			function FaceUp(event){
 				if (event.button == 0){
-					Face.src = "buttonFace.png";
+					Face.src = faceSprite;
 					Start();
+				}
+			}
+			function FaceLeave(){
+				Face.src = faceSprite;
+			}
+			
+			function TestWin(){
+				SetMinesDisplay(mines-flagSquares.length);
+				if (flagSquares.length == mines){
+					let win = true;
+					for (let i=0; i<mines; ++i){
+						if (!flagSquares[i].mine){
+							win = false;
+							break;
+						}
+					}
+					if (win){
+						gameEnded = true;
+						faceSprite = "buttonFaceWin.png";
+						face.src = "buttonFaceWin.png";
+					}
+				}
+			}
+			function Clamp(value, min, max){
+				if (value < min) return min;
+				if (value > max) return max;
+				return value;
+			}
+			function Pad(d) {
+				let ds, pd;
+				if (d<0){
+					ds = Clamp(Math.abs(d), 0, 99).toString();
+					pd = "-0";
+				}
+				else{
+					ds = Clamp(Math.abs(d), 0, 999).toString();
+					pd = "000";
+				}
+				return pd.substring(0, 3 - ds.length) + ds;
+			}
+			function SetMinesDisplay(value){
+				m1.src = "number"+Pad(value)[0]+".png";
+				m2.src = "number"+Pad(value)[1]+".png";
+				m3.src = "number"+Pad(value)[2]+".png";
+			}
+			function SetTimerDisplay(value){
+				t1.src = "number"+Pad(value)[0]+".png";
+				t2.src = "number"+Pad(value)[1]+".png";
+				t3.src = "number"+Pad(value)[2]+".png";
+			}
+			function Timer(){
+				if (!gameEnded && gameStarted){
+					SetTimerDisplay(++seconds);
+					secondTimer = setTimeout(Timer, 1000);
 				}
 			}
 		</SCRIPT>
 	</HEAD>
 	<BODY onload=Start()>
-		<DIV class=Display style="width:386px;">
+		<DIV id=Display class=Display style="width:386px;">
 			<DIV class=DisplayBorder style="width: 100%; height: 100%; background: #FFF;"></DIV>
 			<DIV class=DisplayBorder style="width: calc(100% - 2px); height: calc(100% - 2px); background: #808080;"></DIV>
 			<DIV class=DisplayBorder style="width: calc(100% - 4px); height: calc(100% - 4px); margin: 0; background: #C0C0C0;"></DIV>
 			<IMG class=DisplayBorder style="left: calc(100% - 2px); margin: -2px; margin-left: 0;" src="borderSmallCorner.png">
 			<IMG class=DisplayBorder style="top: calc(100% - 2px); margin: -2px; margin-top: 0;" src="borderSmallCorner.png">
-			<IMG id=Face style="position: relative; margin:auto; margin-top: 4px; display: block;" src="buttonFace.png" onmousedown=FaceDown(event) onmouseup=FaceUp(event)>
+			<DIV class=DisplayElement>
+				<IMG style="position: absolute; margin: -1px;" src="counter.png">
+				<IMG id=M1 class=DisplayNumber src="number0.png"><IMG id=M2 class=DisplayNumber src="number0.png"><IMG id=M3 class=DisplayNumber src="number0.png">
+			</DIV>
+			<DIV class=DisplayElement style="right: 2px;">
+				<IMG style="position: absolute; margin: -1px;" src="counter.png">
+				<IMG id=T1 class=DisplayNumber src="number0.png"><IMG id=T2 class=DisplayNumber src="number0.png"><IMG id=T3 class=DisplayNumber src="number0.png">
+			</DIV>
+			<IMG id=Face class=DisplayElement style="margin: 0; margin-top: 3px; left: calc(50% - 13px);" src="buttonFace.png" onmousedown=FaceDown(event) onmouseup=FaceUp(event) onmouseleave=FaceLeave()>
 		</DIV>
 		<BR>
 		<DIV class=MineField oncontextmenu="return false">
