@@ -1,0 +1,48 @@
+<HTML>
+	<HEAD>
+		<TITLE>Fastest Mine Sweepers</TITLE>
+		<STYLE>
+			BODY{
+				background-color: #F0F0F0;
+				margin: 0;
+				white-space: nowrap;
+				font-family: "Tahoma", Geneva, sans-serif;
+				font-size: 11px;
+				font-smooth: never;
+				-webkit-font-smoothing : none;
+			}
+			BUTTON{
+				position: absolute;
+				padding: 0;
+				font-family: "Tahoma", Geneva, sans-serif;
+				font-size: 11px;
+				font-smooth: never;
+				-webkit-font-smoothing : none;
+			}
+			P{
+				position: absolute;
+				margin: 0;
+			}
+			SPAN{
+				position: absolute;
+			}
+		</STYLE>
+		<SCRIPT>
+			function Start(){
+				document.getElementById("Time1").innerText = window.opener.Time1+" seconds";
+				document.getElementById("Time2").innerText = window.opener.Time2+" seconds";
+				document.getElementById("Time3").innerText = window.opener.Time3+" seconds";
+				document.getElementById("Name1").innerText = window.opener.Name1;
+				document.getElementById("Name2").innerText = window.opener.Name2;
+				document.getElementById("Name3").innerText = window.opener.Name3;
+			}
+		</SCRIPT>
+	</HEAD>
+	<BODY onload=Start()>
+		<P style="left:15px; top:23;">Beginner:<SPAN id=Time1 style="left:75px;">999 seconds</SPAN><SPAN id=Name1 style="left:158px;">Anonymous</SPAN></P>
+		<P style="left:15px; top:39;">Intermediate:<SPAN id=Time2 style="left:75px;">999 seconds</SPAN><SPAN id=Name2 style="left:158px;">Anonymous</SPAN></P>
+		<P style="left:15px; top:55;">Expert:<SPAN id=Time3 style="left:75px;">999 seconds</SPAN><SPAN id=Name3 style="left:158px;">Anonymous</SPAN></P>
+		<BUTTON style="left:174px; top:90px; width:43px; height:18px;" onclick="window.close()">OK</BUTTON>
+		<BUTTON style="left:39px; top:90px; width:73px; height:18px;">Reset Scores</BUTTON>
+	</BODY>
+</HTML>

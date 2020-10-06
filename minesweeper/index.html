@@ -1,26 +1,44 @@
 <HTML>
 	<HEAD>
 		<TITLE>Minesweeper</TITLE>
+		<LINK rel='icon' href='favicon.png'>
 		<STYLE>
 			BODY {
 				margin: 0;
 				background-color: #C0C0C0;
 				image-rendering: pixelated;
 			}
+			HR{
+				border: none;
+				background-color: #ADAA9C;
+				Height: 1px;
+				margin: 2px;
+			}
+			
 			.MineField{
 				display: inline-block;
 				position: relative;
 				padding: 3px;
 				margin: 6px;
 				margin-top: 0;
-
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				-ms-user-select:none;
+				user-select:none;
+				-o-user-select:none;
 			}
 			.Display{
-				display: inline-block;
+				display: block;
 				position: relative;
 				padding: 2px;
 				height: 33px;
+				min-width: 146px;
 				margin: 6px;
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				-ms-user-select:none;
+				user-select:none;
+				-o-user-select:none;
 			}
 			.FieldBorder{
 				position: absolute;
@@ -47,28 +65,134 @@
 				z-index: 1;
 				margin: 1px;
 			}
+			.MenuTab{
+				display: inline-block;
+				padding: 6px;
+				padding-top: 2px;
+				padding-bottom: 4px;
+				font-family: "Tahoma", Geneva, sans-serif;
+				font-size: 11px;
+				font-smooth: never;
+				-webkit-font-smoothing : none;
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				-ms-user-select:none;
+				user-select:none;
+				-o-user-select:none;
+			}
+			.MenuTab:hover{
+				background: #3169C6;
+				color: #FFF;
+			}
+			.PopupMenu{
+				position: absolute;
+				border: 1px solid #ADAA9C;
+				padding: 1px;
+				z-index: 3;
+				background: #FFF;
+				display: none;
+			}
+			.PopupTab{
+				display: block;
+				padding: 3px;
+				padding-left: 18px;
+				padding-right: 42px;
+				font-family: "Tahoma", Geneva, sans-serif;
+				font-size: 11px;
+				font-smooth: never;
+				-webkit-font-smoothing : none;
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				-ms-user-select:none;
+				user-select:none;
+				-o-user-select:none;
+			}
+			.PopupTab:hover{
+				background: #CE9639;
+				-webkit-filter: invert(100%);
+				filter: invert(100%);
+			}
+			.HotKey{
+				position: absolute;
+				right: 21;
+			}
+			.Checkmark{
+				position: absolute;
+				left: 0;
+			}
 		</STYLE>
 		<SCRIPT>
-			var width = 16, height = 16; mines = 40;
+			var Width = "16", Height = "16", Mines = "40", ColorSuffix = "";
 			var button = document.createElement("IMG"); button.src = "button.png"; button.className = "Button"; button.setAttribute('draggable', false);
 			var sprite = document.createElement("IMG"); sprite.style = "position: absolute; z-index:2;"; sprite.setAttribute('draggable', false);
-			var field, face, display, m1, m2, m3, t1, t2, t3;
-			var mouseDown = false, gameStarted = false, gameEnded = false, faceSprite = "buttonFace.png", seconds = 0, secondTimer;
-			var squares = [[]], mineSquares = []; flagSquares = [];
-			//window.onmousedown = function(event){if (event.button < 2 && !gameEnded) face.src = "buttonFaceTurn.png";}
-			window.onmouseup = function(event){mouseDown = false; if (event.button < 2 && !gameEnded) face.src = "buttonFace.png";}
+			var field, face, display, m1, m2, m3, t1, t2, t3, checkBeginner, checkIntermediate, checkExpert, checkCustom, checkMarks, checkColor, checkSound, popupGame, popupHelp;
+			var audBeep, audLose, audWin;
+			var mouseDown = false, wheelDown = false, gameStarted = false, gameEnded = false, faceSprite = "buttonFace.png", seconds = 0, secondTimer;
+			var squares = [[]], mineSquares = []; flagSquares = [], openSquares = 0;
+			
+			var Color = "1", Difficulty = "0", Mark = "1", Name1 = "Anonymous", Name2 = "Anonymous", Name3 = "Anonymous", Sound = "0", Time1 = "999", Time2 = "999", Time3 = "999";
+			
+			window.onmousedown = function(event){
+				if (event.button == 0 || event.button == 2){
+					if (!popupGame.contains(event.target))
+						popupGame.style.display = "none";
+					if (!popupHelp.contains(event.target))
+						popupHelp.style.display = "none";
+				}
+			}
+			window.onmouseup = function(event){
+				mouseDown = false; wheelDown = false;
+				if (event.button < 2 && !gameEnded)
+					face.src = "buttonFace"+ColorSuffix+".png";
+				if (event.button == 1)
+					MiddleTest(event);
+			}
+			window.onkeydown = function(event){
+				if (event.key == "F2")
+					NewGame();
+				if (event.key == "F1")
+					event.preventDefault();
+			}
 			
 			function Start(){
-				faceSprite = "buttonFace.png";
+				faceSprite = "buttonFace"+ColorSuffix+".png";
 				field = document.getElementById("MineField");
 				face = document.getElementById("Face");
 				display = document.getElementById("Display");
 				m1 = document.getElementById("M1"); m2 = document.getElementById("M2"); m3 = document.getElementById("M3");
 				t1 = document.getElementById("T1"); t2 = document.getElementById("T2"); t3 = document.getElementById("T3");
-				seconds = 0;
+				checkBeginner = document.getElementById("CheckBeginner"); checkIntermediate = document.getElementById("CheckIntermediate"); checkExpert = document.getElementById("CheckExpert"); checkCustom = document.getElementById("CheckCustom");
+				checkMarks = document.getElementById("CheckMarks"); checkColor = document.getElementById("CheckColor"); checkSound = document.getElementById("CheckSound");
+				audBeep = document.getElementById("AudioBeep"); audLose = document.getElementById("AudioLose"); audWin = document.getElementById("AudioWin");
+				popupGame = document.getElementById("PopupGame"); popupHelp = document.getElementById("PopupHelp");
 				
+				Width = GetCookie("Width", "9");
+				Height = GetCookie("Height", "9");
+				Mines = GetCookie("Mines", "10");
+				Difficulty = GetCookie("Difficulty", "0");
+				ChangeDifficulty(Difficulty);
+				Color = GetCookie("Color", "1");
+				ChangeColor(Color);
+				Mark = GetCookie("Mark", "1");
+				ChangeMark(Mark);
+				Name1 = GetCookie("Name1", "Anonymous");
+				Name2 = GetCookie("Name2", "Anonymous");
+				Name3 = GetCookie("Name3", "Anonymous");
+				Sound = GetCookie("Sound", "0");
+				ChangeSound(Sound);
+				Time1 = GetCookie("Time1", "999");
+				Time2 = GetCookie("Time2", "999");
+				Time3 = GetCookie("Time3", "999");
+				
+				NewGame();
+			}
+			function NewGame(){
+				popupGame.style.display = "none";
+				faceSprite = "buttonFace"+ColorSuffix+".png";
+				face.src = faceSprite;
 				clearTimeout(secondTimer);
-				SetMinesDisplay(mines);
+				seconds = 0;
+				SetMinesDisplay(Mines);
 				SetTimerDisplay(seconds);
 				field.innerHTML = "";
 				squares = [[]];
@@ -77,12 +201,14 @@
 				gameStarted = false;
 				gameEnded = false;
 				mouseDown = false;
+				wheelDown = false;
+				openSquares = Width*Height;
 				face.setAttribute('draggable', false);
-				squares = new Array(width);
-				for (let i=0; i<height; ++i)
-					squares[i] = new Array(width);
-				for (let y=0; y<height; ++y){
-					for (let x=0; x<width; ++x){
+				squares = new Array(Width);
+				for (let i=0; i<Width; ++i)
+					squares[i] = new Array(Height);
+				for (let y=0; y<Height; ++y){
+					for (let x=0; x<Width; ++x){
 						let btn = button.cloneNode(true);
 						btn.xx = x; btn.yy = y;
 						btn.mine = false;
@@ -92,28 +218,54 @@
 						btn.onmouseup = ButtonUp;
 						btn.onmouseenter = ButtonEnter;
 						btn.onmouseleave = ButtonLeave;
+						btn.sprite = "button"+ColorSuffix+".png";
+						btn.spritePressed = "buttonPressed"+ColorSuffix+".png";
 						field.appendChild(btn);
+						//console.log(x,y);
 						squares[x][y] = btn;
 					}
 					field.appendChild(document.createElement("BR"));
 				}
-				display.style.width = field.offsetWidth+2;
 			}
 			
 			function ButtonDown(event){
 				if (!gameEnded){
 					switch (event.button){
 						case 0:
-							face.src = "buttonFaceTurn.png";
-							event.target.src = "buttonPressed.png";
+							face.src = "buttonFaceTurn"+ColorSuffix+".png";
+							if(!event.target.pressed){
+								event.target.src = event.target.spritePressed;
+							}
 							mouseDown = true;
+							break;
+						case 1:
+							face.src = "buttonFaceTurn"+ColorSuffix+".png";
+							let o = event.target;
+							let x = o.xx, y = o.yy;
+							if(!o.flagged)
+								o.src = o.spritePressed;
+							if (x>0 && y>0) if(!squares[x-1][y-1].flagged) squares[x-1][y-1].src = squares[x-1][y-1].spritePressed;
+							if (x>0) if(!squares[x-1][y].flagged) squares[x-1][y].src = squares[x-1][y].spritePressed;
+							if (x>0 && y<Height-1) if(!squares[x-1][y+1].flagged) squares[x-1][y+1].src = squares[x-1][y+1].spritePressed;
+							if (y<Height-1) if(!squares[x][y+1].flagged) squares[x][y+1].src = squares[x][y+1].spritePressed;
+							if (x<Width-1 && y<Height-1) if(!squares[x+1][y+1].flagged) squares[x+1][y+1].src = squares[x+1][y+1].spritePressed;
+							if (x<Width-1) if(!squares[x+1][y].flagged) squares[x+1][y].src = squares[x+1][y].spritePressed;
+							if (x<Width-1 && y>0) if(!squares[x+1][y-1].flagged) squares[x+1][y-1].src = squares[x+1][y-1].spritePressed;
+							if (y>0) if(!squares[x][y-1].flagged) squares[x][y-1].src = squares[x][y-1].spritePressed;
+							wheelDown = true;
 							break;
 						case 2:
 							if (!event.target.pressed){
+								if (event.target.sprite == "buttonMark"+ColorSuffix+".png"){
+									event.target.src = "button"+ColorSuffix+".png";
+									event.target.sprite = "button"+ColorSuffix+".png";
+									event.target.spritePressed = "buttonPressed"+ColorSuffix+".png";
+									return;
+								}
 								event.target.flagged = true;
 								event.target.pressed = true
 								let spr = sprite.cloneNode(true);
-								spr.src = "buttonFlag.png";
+								spr.src = "buttonFlag"+ColorSuffix+".png";
 								spr.xx = event.target.xx; spr.yy = event.target.yy;
 								spr.number = flagSquares.length;
 								flagSquares[flagSquares.length] = event.target;
@@ -122,9 +274,14 @@
 									if (event.button == 2 && !gameEnded){
 										squares[event.target.xx][event.target.yy].pressed = false;
 										squares[event.target.xx][event.target.yy].flagged = false;
-										event.target.remove();
 										flagSquares.splice(event.target.number, 1);
 										TestWin();
+										if (Mark == "1"){
+											squares[event.target.xx][event.target.yy].src = "buttonMark"+ColorSuffix+".png";
+											squares[event.target.xx][event.target.yy].sprite = "buttonMark"+ColorSuffix+".png";
+											squares[event.target.xx][event.target.yy].spritePressed = "buttonMarkPressed"+ColorSuffix+".png";
+										}
+										event.target.remove();
 									}
 								};
 								spr.style.left = event.target.offsetLeft;
@@ -138,22 +295,35 @@
 			function ButtonUp(event){
 				if (!gameStarted){
 					gameStarted = true;
-					for (let i=0; i<mines; ++i){
-						var x = Math.floor(Math.random()*width);
-						var y = Math.floor(Math.random()*height);
+					for (let i=0; i<Mines; ++i){
+						var x = Math.floor(Math.random()*Width);
+						var y = Math.floor(Math.random()*Height);
 						while ((x==event.target.xx && y==event.target.yy) || squares[x][y].mine){
-							x = Math.floor(Math.random()*width);
-							y = Math.floor(Math.random()*height);
+							x = Math.floor(Math.random()*Width);
+							y = Math.floor(Math.random()*Height);
 						}
 						squares[x][y].mine = true;
 						mineSquares[mineSquares.length] = squares[x][y];
 					}
-					Timer();
+					if (event.button < 2)
+						Timer();
 				}
 				if (!gameEnded){
 					switch (event.button){
 						case 0:
 							OpenSquare(event.target.xx, event.target.yy);
+							break;
+						case 1:
+							let x = event.target.xx, y = event.target.yy;
+							if (!event.target.pressed) event.target.src = event.target.sprite;
+							if (x>0 && y>0) if(!squares[x-1][y-1].pressed) squares[x-1][y-1].src = squares[x-1][y-1].sprite;
+							if (x>0) if(!squares[x-1][y].pressed) squares[x-1][y].src = squares[x-1][y].sprite;
+							if (x>0 && y<Height-1) if(!squares[x-1][y+1].pressed) squares[x-1][y+1].src = squares[x-1][y+1].sprite;
+							if (y<Height-1) if(!squares[x][y+1].pressed) squares[x][y+1].src = squares[x][y+1].sprite;
+							if (x<Width-1 && y<Height-1) if(!squares[x+1][y+1].pressed) squares[x+1][y+1].src = squares[x+1][y+1].sprite;
+							if (x<Width-1) if(!squares[x+1][y].pressed) squares[x+1][y].src = squares[x+1][y].sprite;
+							if (x<Width-1 && y>0) if(!squares[x+1][y-1].pressed) squares[x+1][y-1].src = squares[x+1][y-1].sprite;
+							if (y>0) if(!squares[x][y-1].pressed) squares[x][y-1].src = squares[x][y-1].sprite;
 							break;
 						case 2:
 							
@@ -162,86 +332,153 @@
 				}
 			}
 			function ButtonEnter(event){
-				if (mouseDown && !gameEnded)
-					event.target.src = "buttonPressed.png";
+				if (!gameEnded){
+					if (mouseDown && !event.target.pressed)
+						event.target.src = event.target.spritePressed;
+					if (wheelDown){
+						let x = event.target.xx, y = event.target.yy;
+						if(!event.target.flagged) event.target.src = event.target.spritePressed;
+						if (x>0 && y>0) if(!squares[x-1][y-1].flagged) squares[x-1][y-1].src = squares[x-1][y-1].spritePressed;
+						if (x>0) if(!squares[x-1][y].flagged) squares[x-1][y].src = squares[x-1][y].spritePressed;
+						if (x>0 && y<Height-1) if(!squares[x-1][y+1].flagged) squares[x-1][y+1].src = squares[x-1][y+1].spritePressed;
+						if (y<Height-1) if(!squares[x][y+1].flagged) squares[x][y+1].src = squares[x][y+1].spritePressed;
+						if (x<Width-1 && y<Height-1) if(!squares[x+1][y+1].flagged) squares[x+1][y+1].src = squares[x+1][y+1].spritePressed;
+						if (x<Width-1) if(!squares[x+1][y].flagged) squares[x+1][y].src = squares[x+1][y].spritePressed;
+						if (x<Width-1 && y>0) if(!squares[x+1][y-1].flagged) squares[x+1][y-1].src = squares[x+1][y-1].spritePressed;
+						if (y>0) if(!squares[x][y-1].flagged) squares[x][y-1].src = squares[x][y-1].spritePressed;
+					}
+				}
 			}
 			function ButtonLeave(event){
-				if (!event.target.pressed)
-					event.target.src = "button.png";
+				if (!event.target.pressed){
+					event.target.src = event.target.sprite;
+				}
+				if (wheelDown){
+					let x = event.target.xx, y = event.target.yy;
+					if (x>0 && y>0) if(!squares[x-1][y-1].pressed) squares[x-1][y-1].src = squares[x-1][y-1].sprite;
+					if (x>0) if(!squares[x-1][y].pressed) squares[x-1][y].src = squares[x-1][y].sprite;
+					if (x>0 && y<Height-1) if(!squares[x-1][y+1].pressed) squares[x-1][y+1].src = squares[x-1][y+1].sprite;
+					if (y<Height-1) if(!squares[x][y+1].pressed) squares[x][y+1].src = squares[x][y+1].sprite;
+					if (x<Width-1 && y<Height-1) if(!squares[x+1][y+1].pressed) squares[x+1][y+1].src = squares[x+1][y+1].sprite;
+					if (x<Width-1) if(!squares[x+1][y].pressed) squares[x+1][y].src = squares[x+1][y].sprite;
+					if (x<Width-1 && y>0) if(!squares[x+1][y-1].pressed) squares[x+1][y-1].src = squares[x+1][y-1].sprite;
+					if (y>0) if(!squares[x][y-1].pressed) squares[x][y-1].src = squares[x][y-1].sprite;
+				}
+			}
+			
+			function MiddleTest(event){
+				if (event.target.quality != undefined){
+					let flag = 0;
+					let x = event.target.xx, y = event.target.yy;
+					if (x>0 && y>0) if(squares[x-1][y-1].flagged) ++flag;
+					if (x>0) if(squares[x-1][y].flagged) ++flag;
+					if (x>0 && y<Height-1) if(squares[x-1][y+1].flagged) ++flag;
+					if (y<Height-1) if(squares[x][y+1].flagged) ++flag;
+					if (x<Width-1 && y<Height-1) if(squares[x+1][y+1].flagged) ++flag;
+					if (x<Width-1) if(squares[x+1][y].flagged) ++flag;
+					if (x<Width-1 && y>0) if(squares[x+1][y-1].flagged) ++flag;
+					if (y>0) if(squares[x][y-1].flagged) ++flag;
+					if (flag == event.target.quality){
+						if (x>0 && y>0) if(!squares[x-1][y-1].pressed) OpenSquare(x-1, y-1);
+						if (x>0) if(!squares[x-1][y].pressed) OpenSquare(x-1, y);
+						if (x>0 && y<Height-1) if(!squares[x-1][y+1].pressed) OpenSquare(x-1, y+1);
+						if (y<Height-1) if(!squares[x][y+1].pressed) OpenSquare(x, y+1);
+						if (x<Width-1 && y<Height-1) if(!squares[x+1][y+1].pressed) OpenSquare(x+1, y+1);
+						if (x<Width-1) if(!squares[x+1][y].pressed) OpenSquare(x+1, y);
+						if (x<Width-1 && y>0) if(!squares[x+1][y-1].pressed) OpenSquare(x+1, y-1);
+						if (y>0) if(!squares[x][y-1].pressed) OpenSquare(x, y-1);
+					}
+				}
 			}
 			
 			function OpenSquare(x, y){
-				squares[x][y].src = "buttonPressed.png";
-				squares[x][y].pressed = true;
-				
-				var mine = 0;
-				var spr;
-				if (squares[x][y].mine){
-					gameEnded = true;
-					face.src = "buttonFaceLose.png";
-					faceSprite = "buttonFaceLose.png";
-					for (let i=0; i<mineSquares.length; ++i){
-						if (!mineSquares[i].flagged){
-							mineSquares[i].src = "buttonPressed.png";
-							let mSpr = sprite.cloneNode(true);
-							mSpr.src = "buttonMine.png";
-							mSpr.style.left = mineSquares[i].offsetLeft;
-							mSpr.style.top = mineSquares[i].offsetTop;
-							field.appendChild(mSpr);
-						}
-					}
-					for (let i=0; i<flagSquares.length; ++i){
-						if (flagSquares[i] != null)
-							if (!flagSquares[i].mine){
-								flagSquares[i].src = "buttonPressed.png";
+				if (!squares[x][y].pressed){
+					squares[x][y].src = "buttonPressed"+ColorSuffix+".png";
+					squares[x][y].pressed = true;
+					--openSquares;
+					squares[x][y].sprite = "button"+ColorSuffix+".png";
+					squares[x][y].spritePressed = "buttonPressed"+ColorSuffix+".png";
+					TestWin();
+					
+					var mine = 0;
+					var spr;
+					if (squares[x][y].mine){
+						gameEnded = true;
+						face.src = "buttonFaceLose"+ColorSuffix+".png";
+						faceSprite = "buttonFaceLose"+ColorSuffix+".png";
+						for (let i=0; i<mineSquares.length; ++i){
+							if (!mineSquares[i].flagged && mineSquares[i] != squares[x][y]){
+								mineSquares[i].src = "buttonPressed"+ColorSuffix+".png";
 								let mSpr = sprite.cloneNode(true);
-								mSpr.src = "buttonNoMine.png";
-								mSpr.style.left = flagSquares[i].offsetLeft;
-								mSpr.style.top = flagSquares[i].offsetTop;
+								mSpr.src = "buttonMine"+ColorSuffix+".png";
+								mSpr.style.left = mineSquares[i].offsetLeft;
+								mSpr.style.top = mineSquares[i].offsetTop;
 								field.appendChild(mSpr);
 							}
+						}
+						for (let i=0; i<flagSquares.length; ++i){
+							if (flagSquares[i] != null)
+								if (!flagSquares[i].mine){
+									flagSquares[i].src = "buttonPressed"+ColorSuffix+".png";
+									let mSpr = sprite.cloneNode(true);
+									mSpr.src = "buttonNoMine"+ColorSuffix+".png";
+									mSpr.style.left = flagSquares[i].offsetLeft;
+									mSpr.style.top = flagSquares[i].offsetTop;
+									field.appendChild(mSpr);
+								}
+						}
+						squares[x][y].src = "buttonLose"+ColorSuffix+".png";
+						if (Sound == "1")
+							audLose.play();
+						return;
 					}
-					squares[x][y].src = "buttonLose.png";
-					return;
-				}
-				if (x>0 && y>0) if (squares[x-1][y-1].mine) ++mine;
-				if (x>0) if (squares[x-1][y].mine) ++mine;
-				if (x>0 && y<height-1) if (squares[x-1][y+1].mine) ++mine;
-				if (y<height-1) if (squares[x][y+1].mine) ++mine;
-				if (x<width-1 && y<height-1) if (squares[x+1][y+1].mine) ++mine;
-				if (x<width-1) if (squares[x+1][y].mine) ++mine;
-				if (x<width-1 && y>0) if (squares[x+1][y-1].mine) ++mine;
-				if (y>0) if (squares[x][y-1].mine) ++mine;
-				if (mine > 0){
-					spr = sprite.cloneNode(true);
-					spr.src = "button"+mine.toString()+".png";
-				}
-				else{
-					//console.log("No mines at "+x.toString()+", "+y.toString());
-					if (x>0 && y>0) if (!squares[x-1][y-1].pressed) OpenSquare(x-1, y-1);
-					if (x>0) if (!squares[x-1][y].pressed) OpenSquare(x-1, y);
-					if (x>0 && y<height-1) if (!squares[x-1][y+1].pressed) OpenSquare(x-1, y+1);
-					if (y<height-1) if (!squares[x][y+1].pressed) OpenSquare(x, y+1);
-					if (x<width-1 && y<height-1) if (!squares[x+1][y+1].pressed) OpenSquare(x+1, y+1);
-					if (x<width-1) if (!squares[x+1][y].pressed) OpenSquare(x+1, y);
-					if (x<width-1 && y>0) if (!squares[x+1][y-1].pressed) OpenSquare(x+1, y-1);
-					if (y>0) if (!squares[x][y-1].pressed) OpenSquare(x, y-1);
-				}
-				if (spr){
-					spr.style.left = squares[x][y].offsetLeft;
-					spr.style.top = squares[x][y].offsetTop;
-					field.appendChild(spr);
+					if (x>0 && y>0) if (squares[x-1][y-1].mine) ++mine;
+					if (x>0) if (squares[x-1][y].mine) ++mine;
+					if (x>0 && y<Height-1) if (squares[x-1][y+1].mine) ++mine;
+					if (y<Height-1) if (squares[x][y+1].mine) ++mine;
+					if (x<Width-1 && y<Height-1) if (squares[x+1][y+1].mine) ++mine;
+					if (x<Width-1) if (squares[x+1][y].mine) ++mine;
+					if (x<Width-1 && y>0) if (squares[x+1][y-1].mine) ++mine;
+					if (y>0) if (squares[x][y-1].mine) ++mine;
+					if (mine > 0){
+						spr = sprite.cloneNode(true);
+						spr.xx = x; spr.yy = y;
+						spr.pressed = true;
+						spr.flagged = true;
+						spr.quality = mine;
+						spr.onmousedown = ButtonDown;
+						spr.onmouseup = ButtonUp;
+						spr.onmouseenter = ButtonEnter;
+						spr.onmouseleave = ButtonLeave;
+						spr.src = "button"+mine.toString()+ColorSuffix+".png";
+					}
+					else{
+						//console.log("No Mines at "+x.toString()+", "+y.toString());
+						if (x>0 && y>0) if (!squares[x-1][y-1].pressed) OpenSquare(x-1, y-1);
+						if (x>0) if (!squares[x-1][y].pressed) OpenSquare(x-1, y);
+						if (x>0 && y<Height-1) if (!squares[x-1][y+1].pressed) OpenSquare(x-1, y+1);
+						if (y<Height-1) if (!squares[x][y+1].pressed) OpenSquare(x, y+1);
+						if (x<Width-1 && y<Height-1) if (!squares[x+1][y+1].pressed) OpenSquare(x+1, y+1);
+						if (x<Width-1) if (!squares[x+1][y].pressed) OpenSquare(x+1, y);
+						if (x<Width-1 && y>0) if (!squares[x+1][y-1].pressed) OpenSquare(x+1, y-1);
+						if (y>0) if (!squares[x][y-1].pressed) OpenSquare(x, y-1);
+					}
+					if (spr){
+						spr.style.left = squares[x][y].offsetLeft;
+						spr.style.top = squares[x][y].offsetTop;
+						field.appendChild(spr);
+					}
 				}
 			}
 		
 			function FaceDown(event){
 				if (event.button == 0)
-					Face.src = "buttonFacePress.png";
+					Face.src = "buttonFacePress"+ColorSuffix+".png";
 			}
 			function FaceUp(event){
 				if (event.button == 0){
 					Face.src = faceSprite;
-					Start();
+					NewGame();
 				}
 			}
 			function FaceLeave(){
@@ -249,10 +486,10 @@
 			}
 			
 			function TestWin(){
-				SetMinesDisplay(mines-flagSquares.length);
-				if (flagSquares.length == mines){
+				SetMinesDisplay(Mines-flagSquares.length);
+				if (flagSquares.length == Mines && openSquares == Mines){
 					let win = true;
-					for (let i=0; i<mines; ++i){
+					for (let i=0; i<Mines; ++i){
 						if (!flagSquares[i].mine){
 							win = false;
 							break;
@@ -260,8 +497,11 @@
 					}
 					if (win){
 						gameEnded = true;
-						faceSprite = "buttonFaceWin.png";
-						face.src = "buttonFaceWin.png";
+						faceSprite = "buttonFaceWin"+ColorSuffix+".png";
+						face.src = "buttonFaceWin"+ColorSuffix+".png";
+						
+						if (Sound == "1")
+							audWin.play();
 					}
 				}
 			}
@@ -282,48 +522,260 @@
 				}
 				return pd.substring(0, 3 - ds.length) + ds;
 			}
+			function SetCookie(cname, cvalue, exdays) {
+				var d = new Date();
+				d.setTime(d.getTime() + (exdays*24*60*60*1000));
+				var expires = "expires="+ d.toUTCString();
+				document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+			}
+			function GetCookie(cname, cdefault) {
+				var name = cname + "=";
+				var decodedCookie = decodeURIComponent(document.cookie);
+				var ca = decodedCookie.split(';');
+				for(var i = 0; i <ca.length; i++) {
+					var c = ca[i];
+					while (c.charAt(0) == ' ') {
+						c = c.substring(1);
+					}
+					if (c.indexOf(name) == 0) {
+						return c.substring(name.length, c.length);
+					}
+				}
+				SetCookie(cname, cdefault, 365);
+				return cdefault;
+			}
 			function SetMinesDisplay(value){
-				m1.src = "number"+Pad(value)[0]+".png";
-				m2.src = "number"+Pad(value)[1]+".png";
-				m3.src = "number"+Pad(value)[2]+".png";
+				m1.src = "number"+Pad(value)[0]+ColorSuffix+".png";
+				m2.src = "number"+Pad(value)[1]+ColorSuffix+".png";
+				m3.src = "number"+Pad(value)[2]+ColorSuffix+".png";
 			}
 			function SetTimerDisplay(value){
-				t1.src = "number"+Pad(value)[0]+".png";
-				t2.src = "number"+Pad(value)[1]+".png";
-				t3.src = "number"+Pad(value)[2]+".png";
+				t1.src = "number"+Pad(value)[0]+ColorSuffix+".png";
+				t2.src = "number"+Pad(value)[1]+ColorSuffix+".png";
+				t3.src = "number"+Pad(value)[2]+ColorSuffix+".png";
 			}
 			function Timer(){
 				if (!gameEnded && gameStarted){
 					SetTimerDisplay(++seconds);
+					if (Sound == "1")
+						audBeep.play();
 					secondTimer = setTimeout(Timer, 1000);
 				}
+			}
+		
+			function ChangeColor(color){
+				popupGame.style.display = "none";
+				Color = color;
+				//console.log(color);
+				if (color == "1"){
+					ColorSuffix = "";
+					checkColor.style.display = "block";
+					button.src = "button.png";
+					if (faceSprite.search("MONO.png") != -1) faceSprite = faceSprite.replace("MONO.png", ".png");
+					let c = field.childNodes;
+					for (let i=0; i<c.length; ++i)
+						if (c[i].src != undefined)
+							if (c[i].src.search("MONO.png") != -1){
+								c[i].src = c[i].src.replace("MONO.png", ".png");
+								if (c[i].sprite != undefined){
+									c[i].sprite = c[i].sprite.replace("MONO.png", ".png");
+									c[i].spritePressed = c[i].spritePressed.replace("MONO.png", ".png");
+								}
+							}
+					if (m1.src.search("MONO.png") != -1) m1.src = m1.src.replace("MONO.png", ".png");
+					if (m2.src.search("MONO.png") != -1) m2.src = m2.src.replace("MONO.png", ".png");
+					if (m3.src.search("MONO.png") != -1) m3.src = m3.src.replace("MONO.png", ".png");
+					if (t1.src.search("MONO.png") != -1) t1.src = t1.src.replace("MONO.png", ".png");
+					if (t2.src.search("MONO.png") != -1) t2.src = t2.src.replace("MONO.png", ".png");
+					if (t3.src.search("MONO.png") != -1) t3.src = t3.src.replace("MONO.png", ".png");
+					
+					if (face.src.search("MONO.png") != -1) face.src = face.src.replace("MONO.png", ".png");
+					let borders = document.getElementsByName("BorderChange");
+					for (let i=0; i<borders.length; ++i)
+						borders[i].style.backgroundColor = "#808080";
+				}
+				else{
+					ColorSuffix = "MONO";
+					checkColor.style.display = "none";
+					button.src = "buttonMONO.png";
+					if (faceSprite.search("MONO.png") == -1) faceSprite = faceSprite.replace(".png", "MONO.png");
+					let c = field.childNodes;
+					for (let i=0; i<c.length; ++i)
+						if (c[i].src != undefined)
+							if (c[i].src.search("MONO.png") == -1){
+								c[i].src = c[i].src.replace(".png", "MONO.png");
+								if (c[i].sprite != undefined){
+									c[i].sprite = c[i].sprite.replace(".png", "MONO.png");
+									c[i].spritePressed = c[i].spritePressed.replace(".png", "MONO.png");
+								}
+							}
+					if (m1.src.search("MONO.png") == -1) m1.src = m1.src.replace(".png", "MONO.png");
+					if (m2.src.search("MONO.png") == -1) m2.src = m2.src.replace(".png", "MONO.png");
+					if (m3.src.search("MONO.png") == -1) m3.src = m3.src.replace(".png", "MONO.png");
+					if (t1.src.search("MONO.png") == -1) t1.src = t1.src.replace(".png", "MONO.png");
+					if (t2.src.search("MONO.png") == -1) t2.src = t2.src.replace(".png", "MONO.png");
+					if (t3.src.search("MONO.png") == -1) t3.src = t3.src.replace(".png", "MONO.png");
+					
+					if (face.src.search("MONO.png") == -1) face.src = face.src.replace(".png", "MONO.png");
+					let borders = document.getElementsByName("BorderChange");
+					for (let i=0; i<borders.length; ++i)
+						borders[i].style.backgroundColor = "#000";
+				}
+				SetCookie("Color", Color, 365);
+			}
+			function ChangeDifficulty(value){
+				Difficulty = value;
+				switch(value){
+					case "0":
+						checkBeginner.style.display = "block";
+						checkIntermediate.style.display = "none";
+						checkExpert.style.display = "none";
+						checkCustom.style.display = "none";
+						Width = "9"; Height = "9"; Mines = "10";
+						break;
+					case "1":
+						checkBeginner.style.display = "none";
+						checkIntermediate.style.display = "block";
+						checkExpert.style.display = "none";
+						checkCustom.style.display = "none";
+						Width = "16"; Height = "16"; Mines = "40";
+						break;
+					case "2":
+						checkBeginner.style.display = "none";
+						checkIntermediate.style.display = "none";
+						checkExpert.style.display = "block";
+						checkCustom.style.display = "none";
+						Width = "30"; Height = "16"; Mines = "99";
+						break;
+					case "3":
+						window.Width = Width;
+						window.Height = Height;
+						window.Mines = Mines;
+						if (popupGame.style.display == "block")
+							window.open("custom.html", "custom", "left=0,top=0,width=195,height=138,scrollbars=0,resizable=0,menubar=0,toolbar=0,location=0,status=0")
+						else{
+							checkBeginner.style.display = "none";
+							checkIntermediate.style.display = "none";
+							checkExpert.style.display = "none";
+							checkCustom.style.display = "block";
+						}
+						break;
+				}
+				popupGame.style.display = "none";
+				SetCookie("Difficulty", Difficulty, 365);
+				SetCookie("Width", Width, 365);
+				SetCookie("Height", Height, 365);
+				SetCookie("Mines", Mines, 365);
+				NewGame();
+			}
+			function ChangeMark(mark){
+				popupGame.style.display = "none";
+				Mark = mark;
+				if (mark == "1"){
+					checkMarks.style.display = "block";
+				}
+				else{
+					checkMarks.style.display = "none";
+				}
+				SetCookie("Mark", Mark, 365);
+			}
+			function ChangeSize(width, height, mines){
+				popupGame.style.display = "none";
+				popupHelp.style.display = "none";
+				checkBeginner.style.display = "none";
+				checkIntermediate.style.display = "none";
+				checkExpert.style.display = "none";
+				checkCustom.style.display = "block";
+				Difficulty = 3;
+				Width = width;
+				Height = height;
+				Mines = mines;
+				SetCookie("Difficulty", Difficulty, 365);
+				SetCookie("Width", Width, 365);
+				SetCookie("Height", Height, 365);
+				SetCookie("Mines", Mines, 365);
+				NewGame();
+			}
+			function ChangeSound(sound){
+				popupGame.style.display = "none";
+				Sound = sound;
+				if (sound == "1"){
+					checkSound.style.display = "block";
+				}
+				else{
+					checkSound.style.display = "none";
+				}
+				SetCookie("Sound", Sound, 365);
+			}
+			function OpenScore(){
+				popupGame.style.display = "none";
+				window.Time1 = Time1;
+				window.Time2 = Time2;
+				window.Time3 = Time3;
+				window.Name1 = Name1;
+				window.Name2 = Name2;
+				window.Name3 = Name3;
+				window.open("score.html", "score", "left=0,top=42,width=255,height=122,scrollbars=0,resizable=0,menubar=0,toolbar=0,location=0,status=0");
+			}
+			function Exit(){
+				popupGame.style.display = "none";
+				window.close();
 			}
 		</SCRIPT>
 	</HEAD>
 	<BODY onload=Start()>
-		<DIV id=Display class=Display style="width:386px;">
-			<DIV class=DisplayBorder style="width: 100%; height: 100%; background: #FFF;"></DIV>
-			<DIV class=DisplayBorder style="width: calc(100% - 2px); height: calc(100% - 2px); background: #808080;"></DIV>
-			<DIV class=DisplayBorder style="width: calc(100% - 4px); height: calc(100% - 4px); margin: 0; background: #C0C0C0;"></DIV>
-			<IMG class=DisplayBorder style="left: calc(100% - 2px); margin: -2px; margin-left: 0;" src="borderSmallCorner.png">
-			<IMG class=DisplayBorder style="top: calc(100% - 2px); margin: -2px; margin-top: 0;" src="borderSmallCorner.png">
-			<DIV class=DisplayElement>
-				<IMG style="position: absolute; margin: -1px;" src="counter.png">
-				<IMG id=M1 class=DisplayNumber src="number0.png"><IMG id=M2 class=DisplayNumber src="number0.png"><IMG id=M3 class=DisplayNumber src="number0.png">
-			</DIV>
-			<DIV class=DisplayElement style="right: 2px;">
-				<IMG style="position: absolute; margin: -1px;" src="counter.png">
-				<IMG id=T1 class=DisplayNumber src="number0.png"><IMG id=T2 class=DisplayNumber src="number0.png"><IMG id=T3 class=DisplayNumber src="number0.png">
-			</DIV>
-			<IMG id=Face class=DisplayElement style="margin: 0; margin-top: 3px; left: calc(50% - 13px);" src="buttonFace.png" onmousedown=FaceDown(event) onmouseup=FaceUp(event) onmouseleave=FaceLeave()>
+		<AUDIO id="AudioBeep"><SOURCE src="beep.wav"></AUDIO>
+		<AUDIO id="AudioLose"><SOURCE src="lose.wav"></AUDIO>
+		<AUDIO id="AudioWin"><SOURCE src="win.wav"></AUDIO>
+	
+		<DIV style="background: #EFEBDE"><DIV class=MenuTab onclick="popupGame.style.display = 'block';">Game</DIV><DIV class=MenuTab onclick="popupHelp.style.display = 'block';">Help</DIV></DIV>
+		<DIV id=PopupGame class=PopupMenu>
+			<DIV class=PopupTab onclick=NewGame()>New<SPAN class=HotKey>F2</SPAN></DIV>
+			<HR>
+			<DIV class=PopupTab onclick="ChangeDifficulty('0')"><IMG id=CheckBeginner class=Checkmark src="check.png">Beginner</DIV>
+			<DIV class=PopupTab onclick="ChangeDifficulty('1')"><IMG id=CheckIntermediate class=Checkmark src="check.png">Intermediate</DIV>
+			<DIV class=PopupTab onclick="ChangeDifficulty('2')"><IMG id=CheckExpert class=Checkmark src="check.png">Expert</DIV>
+			<DIV class=PopupTab onclick="ChangeDifficulty('3')"><IMG id=CheckCustom class=Checkmark src="check.png">Custom...</DIV>
+			<HR>
+			<DIV class=PopupTab onclick="if (Mark == '1') ChangeMark('0'); else ChangeMark('1');"><IMG id=CheckMarks class=Checkmark src="check.png">Marks (?)</DIV>
+			<DIV class=PopupTab onclick="if (Color == '1') ChangeColor('0'); else ChangeColor('1');"><IMG id=CheckColor class=Checkmark src="check.png">Color</DIV>
+			<DIV class=PopupTab onclick="if (Sound == '1') ChangeSound('0'); else ChangeSound('1');"><IMG id=CheckSound class=Checkmark src="check.png">Sound</DIV>
+			<HR>
+			<DIV class=PopupTab onclick=OpenScore()>Best Times...</DIV>
+			<HR>
+			<DIV class=PopupTab onclick=Exit()>Exit</DIV>
 		</DIV>
-		<BR>
-		<DIV class=MineField oncontextmenu="return false">
-			<DIV class=FieldBorder style="width: 100%; height: 100%; background: #FFF;"></DIV>
-			<DIV class=FieldBorder style="width: calc(100% - 3px); height: calc(100% - 3px); background: #808080;"></DIV>
-			<IMG class=FieldBorder style="left: calc(100% - 3px); margin-left: 0;" src="borderCorner.png">
-			<IMG class=FieldBorder style="top: calc(100% - 3px); margin-top: 0;" src="borderCorner.png">
-			<DIV id=MineField></DIV>
+		<DIV id=PopupHelp class=PopupMenu style="left: 40px;">
+			<DIV class=PopupTab>Contents<SPAN class=HotKey>F1</SPAN></DIV>
+			<DIV class=PopupTab>Search for Help on...</DIV>
+			<DIV class=PopupTab>Using Help</DIV>
+			<HR>
+			<DIV class=PopupTab>About Minesweeper...</DIV>
+		</DIV>
+		<DIV style="position: relative; display: inline-block;">
+			<DIV id=Display class=Display>
+				<DIV class=DisplayBorder style="Width: 100%; Height: 100%; background: #FFF;"></DIV>
+				<DIV name=BorderChange class=DisplayBorder style="Width: calc(100% - 2px); Height: calc(100% - 2px); background: #808080;"></DIV>
+				<DIV class=DisplayBorder style="Width: calc(100% - 4px); Height: calc(100% - 4px); margin: 0; background: #C0C0C0;"></DIV>
+				<DIV name=BorderChange class=DisplayBorder style="left: calc(100% - 2px); margin: -2px; margin-left: 0;"><IMG src="borderSmallCorner.png"></DIV>
+				<DIV name=BorderChange class=DisplayBorder style="top: calc(100% - 2px); margin: -2px; margin-top: 0;"><IMG src="borderSmallCorner.png"></DIV>
+				<DIV class=DisplayElement>
+					<IMG style="position: absolute; margin: -1px;" draggable=false src="counter.png">
+					<IMG id=M1 class=DisplayNumber draggable=false src="number0.png"><IMG id=M2 class=DisplayNumber draggable=false src="number0.png"><IMG id=M3 class=DisplayNumber draggable=false src="number0.png">
+				</DIV>
+				<DIV class=DisplayElement style="right: 2px;">
+					<IMG style="position: absolute; margin: -1px;" draggable=false src="counter.png">
+					<IMG id=T1 class=DisplayNumber draggable=false src="number0.png"><IMG id=T2 class=DisplayNumber draggable=false src="number0.png"><IMG id=T3 class=DisplayNumber draggable=false src="number0.png">
+				</DIV>
+				<IMG id=Face class=DisplayElement style="margin: 0; margin-top: 3px; left: calc(50% - 13px);" src="buttonFace.png" onmousedown=FaceDown(event) onmouseup=FaceUp(event) onmouseleave=FaceLeave()>
+			</DIV>
+			<DIV class=MineField oncontextmenu="return false">
+				<DIV class=FieldBorder style="Width: 100%; Height: 100%; background: #FFF;"></DIV>
+				<DIV name=BorderChange class=FieldBorder style="Width: calc(100% - 3px); Height: calc(100% - 3px); background: #808080;"></DIV>
+				<DIV name=BorderChange class=FieldBorder style="left: calc(100% - 3px); margin-left: 0;"><IMG src="borderCorner.png"></DIV>
+				<DIV name=BorderChange class=FieldBorder style="top: calc(100% - 3px); margin-top: 0;"><IMG src="borderCorner.png"></DIV>
+				<DIV id=MineField></DIV>
+			</DIV>
 		</DIV>
 	</BODY>
 </HTML>

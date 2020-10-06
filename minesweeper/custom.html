@@ -1,0 +1,64 @@
+<HTML>
+	<HEAD>
+		<TITLE>Custom Field</TITLE>
+		<STYLE>
+			BODY{
+				background-color: #F0F0F0;
+				margin: 0;
+				white-space: nowrap;
+				font-family: "Tahoma", Geneva, sans-serif;
+				font-size: 11px;
+				font-smooth: never;
+				-webkit-font-smoothing : none;
+			}
+			BUTTON{
+				position: absolute;
+				padding: 0;
+				font-family: "Tahoma", Geneva, sans-serif;
+				font-size: 11px;
+				font-smooth: never;
+				-webkit-font-smoothing : none;
+			}
+			INPUT{
+				position: absolute;
+				left:45px;
+				width: 38px;
+				height: 20px;
+				margin-top: -3px;
+				padding-top: 0;
+				font-family: "Tahoma", Geneva, sans-serif;
+				font-size: 11px;
+				font-smooth: never;
+				-webkit-font-smoothing : none;
+			}
+			P{
+				position: absolute;
+				margin: 0;
+			}
+		</STYLE>
+		<SCRIPT>
+			function Start(){
+				document.getElementById("Height").value = window.opener.Height;
+				document.getElementById("Width").value = window.opener.Width;
+				document.getElementById("Mines").value = window.opener.Mines;
+			}
+			function Clamp(value, min, max){
+				if (value < min) return min;
+				if (value > max) return max;
+				return value;
+			}
+			function Exit(){
+				let width = document.getElementById("Width").value, height = document.getElementById("Height").value, mines = document.getElementById("Mines").value;
+				window.opener.ChangeSize(Clamp(width, 9, 32767), Clamp(height, 2, 32767), Clamp(mines, 1, width*height-1));
+				window.close();
+			}
+		</SCRIPT>
+	</HEAD>
+	<BODY onload=Start()>
+		<P style="left:15px; top:35;">Height:<INPUT id=Height></P>
+		<P style="left:15px; top:59;">Width:<INPUT id=Width></P>
+		<P style="left:15px; top:83;">Mines:<INPUT id=Mines></P>
+		<BUTTON style="left:121px; top:34px; width:58px; height:24px;" onclick=Exit()>OK</BUTTON>
+		<BUTTON style="left:121px; top:76px; width:58px; height:24px;" onclick="window.close()">Cancel</BUTTON>
+	</BODY>
+</HTML>
