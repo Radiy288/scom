@@ -7,12 +7,44 @@
 				margin: 0;
 				background-color: #C0C0C0;
 				image-rendering: pixelated;
+				font-family: "Tahoma", Geneva, sans-serif;
+				font-size: 11px;
+				font-smooth: never;
+			}
+			BUTTON{
+				position: absolute;
+				left: 52px;
+				top: 119px;
+				width: 52px;
+				height: 24px;
+				padding: 0;
+				font-family: "Tahoma", Geneva, sans-serif;
+				font-size: 11px;
+				font-smooth: never;
+				-webkit-font-smoothing : none;
+			}
+			INPUT{
+				position: absolute;
+				left: 21px;
+				top: 86px;
+				width: 117px;
+				height: 20px;
+				padding-top: 0;
+				font-family: "Tahoma", Geneva, sans-serif;
+				font-size: 11px;
+				font-smooth: never;
+				-webkit-font-smoothing : none;
 			}
 			HR{
 				border: none;
 				background-color: #ADAA9C;
 				Height: 1px;
 				margin: 2px;
+			}
+			P{
+				position: absolute;
+				text-align: center;
+				width: 151px;
 			}
 			
 			.MineField{
@@ -97,9 +129,6 @@
 				padding: 3px;
 				padding-left: 18px;
 				padding-right: 42px;
-				font-family: "Tahoma", Geneva, sans-serif;
-				font-size: 11px;
-				font-smooth: never;
 				-webkit-font-smoothing : none;
 				-moz-user-select: none;
 				-webkit-user-select: none;
@@ -120,14 +149,26 @@
 				position: absolute;
 				left: 0;
 			}
+			.Message{
+				display: none;
+				position: absolute;
+				z-index: 3;
+				margin-left: -3px;
+				top: 43px;
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				-ms-user-select:none;
+				user-select:none;
+				-o-user-select:none;
+			}
 		</STYLE>
 		<SCRIPT>
 			var Width = "16", Height = "16", Mines = "40", ColorSuffix = "";
 			var button = document.createElement("IMG"); button.src = "button.png"; button.className = "Button"; button.setAttribute('draggable', false);
 			var sprite = document.createElement("IMG"); sprite.style = "position: absolute; z-index:2;"; sprite.setAttribute('draggable', false);
-			var field, face, display, m1, m2, m3, t1, t2, t3, checkBeginner, checkIntermediate, checkExpert, checkCustom, checkMarks, checkColor, checkSound, popupGame, popupHelp;
+			var field, face, display, m1, m2, m3, t1, t2, t3, checkBeginner, checkIntermediate, checkExpert, checkCustom, checkMarks, checkColor, checkSound, popupGame, popupHelp, winMessage, inputName;
 			var audBeep, audLose, audWin;
-			var mouseDown = false, wheelDown = false, gameStarted = false, gameEnded = false, faceSprite = "buttonFace.png", seconds = 0, secondTimer;
+			var mouseDown = false, wheelDown = false, gameStarted = false, gameEnded = false, faceSprite = "buttonFace.png", seconds = 0, secondTimer, lastFinishTime;
 			var squares = [[]], mineSquares = []; flagSquares = [], openSquares = 0;
 			
 			var Color = "1", Difficulty = "0", Mark = "1", Name1 = "Anonymous", Name2 = "Anonymous", Name3 = "Anonymous", Sound = "0", Time1 = "999", Time2 = "999", Time3 = "999";
@@ -165,6 +206,8 @@
 				checkMarks = document.getElementById("CheckMarks"); checkColor = document.getElementById("CheckColor"); checkSound = document.getElementById("CheckSound");
 				audBeep = document.getElementById("AudioBeep"); audLose = document.getElementById("AudioLose"); audWin = document.getElementById("AudioWin");
 				popupGame = document.getElementById("PopupGame"); popupHelp = document.getElementById("PopupHelp");
+				winMessage = document.getElementById("WinMessage");
+				inputName = document.getElementById("InputName");
 				
 				Width = GetCookie("Width", "9");
 				Height = GetCookie("Height", "9");
@@ -395,10 +438,8 @@
 				if (!squares[x][y].pressed){
 					squares[x][y].src = "buttonPressed"+ColorSuffix+".png";
 					squares[x][y].pressed = true;
-					--openSquares;
 					squares[x][y].sprite = "button"+ColorSuffix+".png";
 					squares[x][y].spritePressed = "buttonPressed"+ColorSuffix+".png";
-					TestWin();
 					
 					var mine = 0;
 					var spr;
@@ -432,6 +473,8 @@
 							audLose.play();
 						return;
 					}
+					--openSquares;
+					TestWin();
 					if (x>0 && y>0) if (squares[x-1][y-1].mine) ++mine;
 					if (x>0) if (squares[x-1][y].mine) ++mine;
 					if (x>0 && y<Height-1) if (squares[x-1][y+1].mine) ++mine;
@@ -487,7 +530,7 @@
 			
 			function TestWin(){
 				SetMinesDisplay(Mines-flagSquares.length);
-				if (flagSquares.length == Mines && openSquares == Mines){
+				/*if (flagSquares.length == Mines && openSquares == Mines){
 					let win = true;
 					for (let i=0; i<Mines; ++i){
 						if (!flagSquares[i].mine){
@@ -503,6 +546,44 @@
 						if (Sound == "1")
 							audWin.play();
 					}
+				}*/
+				if (openSquares == mineSquares.length){
+					for (let i=0; i<Mines; ++i){
+						if (!mineSquares[i].flagged){
+							let spr = sprite.cloneNode(true);
+							spr.src = "buttonFlag"+ColorSuffix+".png";
+							spr.style.left = mineSquares[i].offsetLeft;
+							spr.style.top = mineSquares[i].offsetTop;
+							field.appendChild(spr);
+						}
+					}
+					SetMinesDisplay(0);
+					gameEnded = true;
+					faceSprite = "buttonFaceWin"+ColorSuffix+".png";
+					face.src = "buttonFaceWin"+ColorSuffix+".png";
+					lastFinishTime = Clamp(seconds, 0, 999);
+					switch(Difficulty){
+						case "0":
+							if(lastFinishTime < Time1){
+								document.getElementById("LevelMessage").innerText = "for beginner level."
+								winMessage.style.display = "block";
+							}
+							break;
+						case "1":
+							if(lastFinishTime < Time2){
+								document.getElementById("LevelMessage").innerText = "for intermediate level."
+								winMessage.style.display = "block";
+							}
+							break;
+						case "2":
+							if(lastFinishTime < Time3){
+								document.getElementById("LevelMessage").innerText = "for expert level."
+								winMessage.style.display = "block";
+							}
+							break;
+					}
+					if (Sound == "1")
+						audWin.play();
 				}
 			}
 			function Clamp(value, min, max){
@@ -707,6 +788,35 @@
 				}
 				SetCookie("Sound", Sound, 365);
 			}
+			function ConfirmName(){
+				switch (Difficulty){
+					case "0":
+						Name1 = inputName.value;
+						Time1 = lastFinishTime;
+						SetCookie("Name1", Name1, 365);
+						SetCookie("Time1", Time1, 365);
+						break;
+					case "1":
+						Name2 = inputName.value;
+						Time2 = lastFinishTime;
+						SetCookie("Name2", Name2, 365);
+						SetCookie("Time2", Time2, 365);
+						break;
+					case "2":
+						Name3 = inputName.value;
+						Time3 = lastFinishTime;
+						SetCookie("Name3", Name3, 365);
+						SetCookie("Time3", Time3, 365);
+						break;
+				}
+				OpenScore();
+				winMessage.style.display = "none";
+			}
+			function InputPress(event){
+				if (event.key == "Enter"){
+					ConfirmName();
+				}
+			}
 			function OpenScore(){
 				popupGame.style.display = "none";
 				window.Time1 = Time1;
@@ -752,29 +862,41 @@
 			<HR>
 			<DIV class=PopupTab>About Minesweeper...</DIV>
 		</DIV>
-		<DIV style="position: relative; display: inline-block;">
-			<DIV id=Display class=Display>
-				<DIV class=DisplayBorder style="Width: 100%; Height: 100%; background: #FFF;"></DIV>
-				<DIV name=BorderChange class=DisplayBorder style="Width: calc(100% - 2px); Height: calc(100% - 2px); background: #808080;"></DIV>
-				<DIV class=DisplayBorder style="Width: calc(100% - 4px); Height: calc(100% - 4px); margin: 0; background: #C0C0C0;"></DIV>
-				<DIV name=BorderChange class=DisplayBorder style="left: calc(100% - 2px); margin: -2px; margin-left: 0;"><IMG src="borderSmallCorner.png"></DIV>
-				<DIV name=BorderChange class=DisplayBorder style="top: calc(100% - 2px); margin: -2px; margin-top: 0;"><IMG src="borderSmallCorner.png"></DIV>
-				<DIV class=DisplayElement>
-					<IMG style="position: absolute; margin: -1px;" draggable=false src="counter.png">
-					<IMG id=M1 class=DisplayNumber draggable=false src="number0.png"><IMG id=M2 class=DisplayNumber draggable=false src="number0.png"><IMG id=M3 class=DisplayNumber draggable=false src="number0.png">
+		<DIV style="position: absolute; background-color: #FFF;">
+			<DIV style="position: relative; display: inline-block; background-color: #C0C0C0; margin-left: 3px; margin-top: 4px;">
+				<DIV id=WinMessage class=Message>
+					<IMG style="position: absolute;" src=message.png>
+					<P>You have the fastest time</P>
+					<BR>
+					<P id=LevelMessage>for beginner level.</P>
+					<BR>
+					<P>Please enter your name.</P>
+					<INPUT id=InputName onkeydown="InputPress(event)">
+					<BUTTON onclick=ConfirmName()>OK</BUTTON>
 				</DIV>
-				<DIV class=DisplayElement style="right: 2px;">
-					<IMG style="position: absolute; margin: -1px;" draggable=false src="counter.png">
-					<IMG id=T1 class=DisplayNumber draggable=false src="number0.png"><IMG id=T2 class=DisplayNumber draggable=false src="number0.png"><IMG id=T3 class=DisplayNumber draggable=false src="number0.png">
+				<DIV id=Display class=Display>
+					<DIV class=DisplayBorder style="Width: 100%; Height: 100%; background: #FFF;"></DIV>
+					<DIV name=BorderChange class=DisplayBorder style="Width: calc(100% - 2px); Height: calc(100% - 2px); background: #808080;"></DIV>
+					<DIV class=DisplayBorder style="Width: calc(100% - 4px); Height: calc(100% - 4px); margin: 0; background: #C0C0C0;"></DIV>
+					<DIV name=BorderChange class=DisplayBorder style="left: calc(100% - 2px); margin: -2px; margin-left: 0;"><IMG src="borderSmallCorner.png"></DIV>
+					<DIV name=BorderChange class=DisplayBorder style="top: calc(100% - 2px); margin: -2px; margin-top: 0;"><IMG src="borderSmallCorner.png"></DIV>
+					<DIV class=DisplayElement>
+						<IMG style="position: absolute; margin: -1px;" draggable=false src="counter.png">
+						<IMG id=M1 class=DisplayNumber draggable=false src="number0.png"><IMG id=M2 class=DisplayNumber draggable=false src="number0.png"><IMG id=M3 class=DisplayNumber draggable=false src="number0.png">
+					</DIV>
+					<DIV class=DisplayElement style="right: 2px;">
+						<IMG style="position: absolute; margin: -1px;" draggable=false src="counter.png">
+						<IMG id=T1 class=DisplayNumber draggable=false src="number0.png"><IMG id=T2 class=DisplayNumber draggable=false src="number0.png"><IMG id=T3 class=DisplayNumber draggable=false src="number0.png">
+					</DIV>
+					<IMG id=Face class=DisplayElement style="margin: 0; margin-top: 3px; left: calc(50% - 13px);" src="buttonFace.png" onmousedown=FaceDown(event) onmouseup=FaceUp(event) onmouseleave=FaceLeave()>
 				</DIV>
-				<IMG id=Face class=DisplayElement style="margin: 0; margin-top: 3px; left: calc(50% - 13px);" src="buttonFace.png" onmousedown=FaceDown(event) onmouseup=FaceUp(event) onmouseleave=FaceLeave()>
-			</DIV>
-			<DIV class=MineField oncontextmenu="return false">
-				<DIV class=FieldBorder style="Width: 100%; Height: 100%; background: #FFF;"></DIV>
-				<DIV name=BorderChange class=FieldBorder style="Width: calc(100% - 3px); Height: calc(100% - 3px); background: #808080;"></DIV>
-				<DIV name=BorderChange class=FieldBorder style="left: calc(100% - 3px); margin-left: 0;"><IMG src="borderCorner.png"></DIV>
-				<DIV name=BorderChange class=FieldBorder style="top: calc(100% - 3px); margin-top: 0;"><IMG src="borderCorner.png"></DIV>
-				<DIV id=MineField></DIV>
+				<DIV class=MineField oncontextmenu="return false">
+					<DIV class=FieldBorder style="Width: 100%; Height: 100%; background: #FFF;"></DIV>
+					<DIV name=BorderChange class=FieldBorder style="Width: calc(100% - 3px); Height: calc(100% - 3px); background: #808080;"></DIV>
+					<DIV name=BorderChange class=FieldBorder style="left: calc(100% - 3px); margin-left: 0;"><IMG src="borderCorner.png"></DIV>
+					<DIV name=BorderChange class=FieldBorder style="top: calc(100% - 3px); margin-top: 0;"><IMG src="borderCorner.png"></DIV>
+					<DIV id=MineField></DIV>
+				</DIV>
 			</DIV>
 		</DIV>
 	</BODY>

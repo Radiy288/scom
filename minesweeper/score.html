@@ -28,6 +28,27 @@
 			}
 		</STYLE>
 		<SCRIPT>
+			window.onkeydown = function(event){
+				if (event.key == "Enter")
+					window.close();
+				if (event.key == "Escape")
+					window.close();
+			}
+			function Reset(){
+				window.opener.Time1 = "999";
+				window.opener.Time2 = "999";
+				window.opener.Time3 = "999";
+				window.opener.Name1 = "Anonymous";
+				window.opener.Name2 = "Anonymous";
+				window.opener.Name3 = "Anonymous";
+				window.opener.SetCookie("Time1", "999", 365);
+				window.opener.SetCookie("Time2", "999", 365);
+				window.opener.SetCookie("Time3", "999", 365);
+				window.opener.SetCookie("Name1", "Anonymous", 365);
+				window.opener.SetCookie("Name2", "Anonymous", 365);
+				window.opener.SetCookie("Name3", "Anonymous", 365);
+				Start();
+			}
 			function Start(){
 				document.getElementById("Time1").innerText = window.opener.Time1+" seconds";
 				document.getElementById("Time2").innerText = window.opener.Time2+" seconds";
@@ -43,6 +64,6 @@
 		<P style="left:15px; top:39;">Intermediate:<SPAN id=Time2 style="left:75px;">999 seconds</SPAN><SPAN id=Name2 style="left:158px;">Anonymous</SPAN></P>
 		<P style="left:15px; top:55;">Expert:<SPAN id=Time3 style="left:75px;">999 seconds</SPAN><SPAN id=Name3 style="left:158px;">Anonymous</SPAN></P>
 		<BUTTON style="left:174px; top:90px; width:43px; height:18px;" onclick="window.close()">OK</BUTTON>
-		<BUTTON style="left:39px; top:90px; width:73px; height:18px;">Reset Scores</BUTTON>
+		<BUTTON style="left:39px; top:90px; width:73px; height:18px;" onclick=Reset()>Reset Scores</BUTTON>
 	</BODY>
 </HTML>

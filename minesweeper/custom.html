@@ -37,6 +37,12 @@
 			}
 		</STYLE>
 		<SCRIPT>
+			window.onkeydown = function(event){
+				if (event.key == "Enter")
+					Exit();
+				if (event.key == "Escape")
+					window.close();
+			}
 			function Start(){
 				document.getElementById("Height").value = window.opener.Height;
 				document.getElementById("Width").value = window.opener.Width;
@@ -55,9 +61,9 @@
 		</SCRIPT>
 	</HEAD>
 	<BODY onload=Start()>
-		<P style="left:15px; top:35;">Height:<INPUT id=Height></P>
-		<P style="left:15px; top:59;">Width:<INPUT id=Width></P>
-		<P style="left:15px; top:83;">Mines:<INPUT id=Mines></P>
+		<P style="left:15px; top:35;">Height:<INPUT type="number" id=Height></P>
+		<P style="left:15px; top:59;">Width:<INPUT type="number" id=Width></P>
+		<P style="left:15px; top:83;">Mines:<INPUT type="number" id=Mines></P>
 		<BUTTON style="left:121px; top:34px; width:58px; height:24px;" onclick=Exit()>OK</BUTTON>
 		<BUTTON style="left:121px; top:76px; width:58px; height:24px;" onclick="window.close()">Cancel</BUTTON>
 	</BODY>
