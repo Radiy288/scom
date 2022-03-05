@@ -1182,7 +1182,7 @@
 				username = un.value;
 				websocket = new WebSocket(ws.value);
 				websocket.onerror = function(event){
-					console.log(event);
+					console.log("Error event:", event);
 					error.innerHTML = "CONNECTION ERROR";
 					error.className = "";
 					error.style.opacity = 1;
@@ -1218,6 +1218,7 @@
 				};
 				websocket.onclose = function(event){
 					//SendMessage('message', 'server', username+' has left the session.');
+					console.log("Close event:", event);
 					Message('server', 'Disconnecting...');
 					setTimeout(function(){
 						ClearDropDowns();
