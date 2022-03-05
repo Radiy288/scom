@@ -137,7 +137,7 @@
 			}
 			//GLOBALVARS
 			//SERVER
-			const defaultServer = "wss://connect.websocket.in/v2/1?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImp0aSI6IjY0NWJkYzI2OGQ2NjkxMmY3MzI5MWM1YWE4YmY3YmI5YTkzMzEwOGUwYjRiYjA4NDgyOGI4YzliMzczMGVkNjhmMGI1MGQ2NGM5ODZhNmE4In0.eyJhdWQiOiI4IiwianRpIjoiNjQ1YmRjMjY4ZDY2OTEyZjczMjkxYzVhYThiZjdiYjlhOTMzMTA4ZTBiNGJiMDg0ODI4YjhjOWIzNzMwZWQ2OGYwYjUwZDY0Yzk4NmE2YTgiLCJpYXQiOjE1ODMxNzE1OTcsIm5iZiI6MTU4MzE3MTU5NywiZXhwIjoxNjE0NzA3NTk3LCJzdWIiOiI1OTgiLCJzY29wZXMiOltdfQ.KJGvQbVglNPlFE9S0ScLTdaLARCRwTvv8YzeL-HyUYMVX37YDU0fQy88iUH1uDhKf3sSq-ljdyplhn9ukMcY4pHGYneEPXnVJzRMM0O3NF-U97JL4FPcHjUmNkXwYV-o1AWo-B5h3NcGAeuhVDoJGDXbjP7pQt0YhtPzfU4rhGw-9JrKwvXNLmq5J3qHV-m3BkpE4QdXfR2KIHO_Rr78x_ufGkneRGCxkE5nyW2vVLrP-_BDCKIvaP7dS6oob_gRvjmVMJaRITNKsbJqpyZBnkDvdKzXjxlgcvDQh2ZXMFT63RCIBh3o29lr7BlmOQs5CXCz7Tq0EFp8o4iHyWdnXAqoBIzadT1_0hkRo6KojYhMtLNpXDuba-7QvPBO556Bp8VzT0QLPSBdl6_N--LcqrQ90UtJpkiJIVf4dQLfST8TIitTHiqGg6cJSUkqhDwIACSMG7Ah_b09zzciJ8n_ILCEhclGH66L81jvvpGtHfnCsocBPJ_coIECAuyxC074T2s4gdj0Jral9GYtjeb4JGCmgtgMul1-vwk8wjWK4tT2LGsdiUqbnovhK-wNLa2V4gQnzb2H1YgKmf1LKcmUOxZMpnJFfXm6rBw-N6HzKLfq0O8QztGOsseU9f7nzQZQZLeixXIWd9MLI9tDzvzxsxhZHMl9cVa1jyU_9lVkOlw";
+			const defaultServer = "wss://";
 			if(getCookie("server") == ""){
 				var server = defaultServer;
 			}
@@ -178,6 +178,13 @@
 			}
 			else{
 				var enableNTag = StringToBool(getCookie("enableNTag"));
+			}
+			//ENABLE HISTORY
+			if(getCookie("enableHistory") == ""){
+				var enableHistory = true;
+			}
+			else{
+				var enableHistory = StringToBool(getCookie("enableHistory"));
 			}
 			//CHECK FOR UPDATES
 			if(getCookie("checkNV") == ""){
@@ -342,6 +349,7 @@
 				assignCookie('cbType', enableTyping);
 				assignCookie('cbNL', enableNTag);
 				assignCookie('cbUpdate', checkNV);
+				assignCookie('cbHist', enableHistory);
 				document.getElementById("ws").value = server;
 				setTimeout(function(){
 					var anim = document.getElementById('serverInput'); 
@@ -1200,7 +1208,6 @@
 					setCookie('server', server, 365);
 					setCookie('username', username, 365);
 					SendMessage('message', 'server', username+' has joined the session.');
-					SendMessage('pinrequest', username, '');
 					var servers = document.getElementById("servers");
 					connected = true;
 					servers.className = "fade-quick";
@@ -1210,10 +1217,8 @@
 					Message('server', 'Successfully connected to a server. Online users:');
 					Message('server', username);
 					SendMessage('joincheck', username);
-					$.getJSON("https://api.ipify.org?format=json", 
-					function(data) { 
-						SendMessage('address', username, data.ip);
-					});
+					if(enableHistory)
+						SendMessage('history', username, '');
 					//history.pushState({'page_id': 1, 'user_id': 5}, 'S-Messenger', 's-messenger.html');
 				};
 				websocket.onclose = function(event){
@@ -1605,9 +1610,9 @@
 			</div>
 			<div id="servers" style="opacity: 0; position: absolute; width:100%;  height:100%; overflow-y: auto; overflow-x: hidden;">
 				<div>
-					<img id="scplogo" src="../scpf.png" class=scplogo onload="Load()" ondragstart="return false;">
-					<img id="scplogoleft" src="../scpsign.png" class="scplogo logoanim" style="transform: rotate(45deg) translate(-7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoleft'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
-					<img id="scplogoright" src="../scpsign.png" class="scplogo logoanim" style="transform: rotate(-45deg) translate(7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoright'); anim.style.transform = 'rotate(0deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
+					<img id="scplogo" src="../scpf.png" class=scplogo onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogo'); anim.style.transform = 'rotate(180deg)';}, 1200);" ondragstart="return false;"  style="transform: rotate(0deg); transition: transform 0.7s ease, height 0.6s ease;">
+					<img id="scplogoleft" src="../scpsign.png" class="scplogo logoanim" style="transform: rotate(135deg) translate(-7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoleft'); anim.style.transform = 'rotate(180deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
+					<img id="scplogoright" src="../scpsign.png" class="scplogo logoanim" style="transform: rotate(-135deg) translate(7%, 0px) scale(1.5);" onload="Load(); setTimeout(function(){var anim = document.getElementById('scplogoright'); anim.style.transform = 'rotate(-180deg) translate(0px,0px)'; anim.style.opacity = 1;}, 200);" ondragstart="return false;">
 				</div>
 				<div id="serverInput" style="opacity: 0; transition: opacity 0.6s linear;">
 					<h1 align=CENTER>S-Messenger</h1>
@@ -1618,6 +1623,7 @@
 					<p align=CENTER>Username</p>
 					<input id="un" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 50%; margin-bottom:8px;" placeholder="Enter username">
 					<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
+					<div style="display:block; margin-left: auto; margin-right: auto; text-align: center;"><button id="cbHist" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableHistory=false; setCookie('enableHistory', 'false', 365);}else{this.innerText='✓'; enableHistory=true; setCookie('enableHistory', 'true', 365);}">✓</button><span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Request history</span></div>
 					<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</h3>
 					<p id="versionShow" style="position: absolute; top: 2px; left: 4px;"></p>
 					<p style="position: absolute; top: 1.1em; left: 4px; max-width:50%;">© SCP Technologies Ltd 1999-2022<br>SCP Foundation 1982-2022<br>Generate. Collect. Deliver.<br><span onclick='document.getElementById("ws").value = "@S_Messenger TG"'>Hic manebimus optime.</span></p>
