@@ -1182,6 +1182,7 @@
 				username = un.value;
 				websocket = new WebSocket(ws.value);
 				websocket.onerror = function(event){
+					console.log(event);
 					error.innerHTML = "CONNECTION ERROR";
 					error.className = "";
 					error.style.opacity = 1;
