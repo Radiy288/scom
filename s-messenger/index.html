@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="viewport" content="width=device-width, initial-scale=0.9">
 		<title>S-Messenger</title>
 		<link rel="stylesheet" type="text/css" href="../commonStyles.css">
 		<style>
@@ -342,6 +342,7 @@
 					document.getElementById("windowBorder").style.display = "none";
 					document.getElementById("windowContent").style.height = "100%";
 				}
+				Resize();
 				PR.prettyPrint();
 				//SET COOKIES
 				assignCookie('cbNotif', enableNotify);
@@ -784,7 +785,9 @@
 					msg.style["max-width"] = "75%";
 					msg.style.float = "right";
 					msgBody.style.overflow = "auto";
-					msgSender.innerHTML = "<small>"+username+", "+time+"</small>";
+					const msgStat = document.createElement("small");
+					msgStat.innerText = username+", "+time;
+					msgSender.appendChild(msgStat);
 					msgSender.align = "RIGHT";
 				}
 				else{
@@ -796,7 +799,9 @@
 					msg.style["max-width"] = "75%";
 					msg.style.float = "left";
 					msgBody.style.overflow = "auto";
-					msgSender.innerHTML = "<small>"+sender+", "+time+"</small>";
+					const msgStat = document.createElement("small");
+					msgStat.innerText = sender+", "+time;
+					msgSender.appendChild(msgStat);
 					msgSender.align = "LEFT";
 				}
 				msg.appendChild(msgImg);
@@ -819,7 +824,9 @@
 					msgBody.style["min-width"] = "100%";
 					msg.style.float = "right";
 					msgBody.style.overflow = "auto";
-					msgSender.innerHTML = "<small>"+username+", "+time+"</small>";
+					const msgStat = document.createElement("small");
+					msgStat.innerText = username+", "+time;
+					msgSender.appendChild(msgStat);
 					msgSender.align = "RIGHT";
 				}
 				else if (sender === 'server'){
@@ -833,7 +840,9 @@
 					msgBody.style["min-width"] = "100%";
 					msg.style.float = "left";
 					msgBody.style.overflow = "auto";
-					msgSender.innerHTML = "<small>"+sender+", "+time+"</small>";
+					const msgStat = document.createElement("small");
+					msgStat.innerText = sender+", "+time;
+					msgSender.appendChild(msgStat);
 					msgSender.align = "LEFT";
 				}
 				msg.onclick = function(){
@@ -844,7 +853,7 @@
 					dropdown.style.position = "absolute";
 					
 					var optionQuote = document.createElement("p");
-					optionQuote.innerHTML = "Quote text";
+					optionQuote.innerText = "Quote text";
 					optionQuote.onclick = function(){
 						for(let i=0; i<lastElement.children.length; i++){
 							if(lastElement.children[i].className == "messageText"){
@@ -856,10 +865,10 @@
 						}
 					};
 					var optionDelete = document.createElement("p");
-					optionDelete.innerHTML = "Delete message";
+					optionDelete.innerText = "Delete message";
 					optionDelete.onclick = function(){lastElement.parentNode.removeChild(lastElement); ClearDropDowns();};
 					var optionCopy = document.createElement("p");
-					optionCopy.innerHTML = "Copy text";
+					optionCopy.innerText = "Copy text";
 					optionCopy.onclick = function(){
 						for(let i=0; i<lastElement.children.length; i++){
 							if(lastElement.children[i].className == "messageText"){
@@ -875,14 +884,14 @@
 						}
 					};
 					var optionTag = document.createElement("p");
-					optionTag.innerHTML = "Send private";
+					optionTag.innerText = "Send private";
 					optionTag.onclick = function(){
 						document.getElementById("chatInput").value = '@'+lastElement.children[1].innerText.split(",")[0]+'@ '+document.getElementById("chatInput").value;
 						document.getElementById("chatInput").focus();
 						ClearDropDowns();
 					};
 					var optionCancel = document.createElement("p");
-					optionCancel.innerHTML = "Cancel";
+					optionCancel.innerText = "Cancel";
 					optionCancel.onclick = function(){ClearDropDowns();};
 
 					
@@ -941,7 +950,10 @@
 							}
 							prs+=msgText.innerHTML.charAt(j);
 						}
-						msgText.innerHTML = msgText.innerHTML.replace("[frame]"+prs+"[/frame]", '<iframe style="width: 50vw; height: 35vh; max-width: 100%" src="'+prs+'" allowfullscreen></iframe>');
+						msgText.innerHTML = msgText.innerHTML.replace("[frame]"+prs+"[/frame]", '<iframe id="BBTEMP" allowfullscreen style="width: 50vw; height: 35vh; max-width: 100%"></iframe>');
+						let msgBB = msgText.querySelector("#BBTEMP");
+							msgBB.id = "";
+							msgBB.src = prs;
 					}
 					//[IMAGE]
 					tagCount = (msgText.innerHTML.match(/(\[img\])/g) || []).length;
@@ -956,7 +968,10 @@
 							}
 							prs+=msgText.innerHTML.charAt(j);
 						}
-						msgText.innerHTML = msgText.innerHTML.replace("[img]"+prs+"[/img]", '<img style="max-width: 100%" src="'+prs+'">');
+						msgText.innerHTML = msgText.innerHTML.replace("[img]"+prs+"[/img]", '<img id="BBTEMP">');
+						let msgBB = msgText.querySelector("#BBTEMP");
+							msgBB.id = "";
+							msgBB.src = prs;
 					}
 					//[AUDIO]
 					tagCount = (msgText.innerHTML.match(/(\[aud\])/g) || []).length;
@@ -971,7 +986,10 @@
 							}
 							prs+=msgText.innerHTML.charAt(j);
 						}
-						msgText.innerHTML = msgText.innerHTML.replace("[aud]"+prs+"[/aud]", '<audio controls style="max-width: 100%; outline: none;"><source src="'+prs+'"></video>');
+						msgText.innerHTML = msgText.innerHTML.replace("[aud]"+prs+"[/aud]", '<audio controls style="max-width: 100%; outline: none;"><source id="BBTEMP"></audio>');
+						let msgBB = msgText.querySelector("#BBTEMP");
+							msgBB.id = "";
+							msgBB.src = prs;
 					}
 					//[VIDEO]
 					tagCount = (msgText.innerHTML.match(/(\[vid\])/g) || []).length;
@@ -986,7 +1004,10 @@
 							}
 							prs+=msgText.innerHTML.charAt(j);
 						}
-						msgText.innerHTML = msgText.innerHTML.replace("[vid]"+prs+"[/vid]", '<video controls style="max-width: 100%; outline: none;"><source src="'+prs+'"></video>');
+						msgText.innerHTML = msgText.innerHTML.replace("[vid]"+prs+"[/vid]", '<video controls style="max-width: 100%; outline: none;"><source id="BBTEMP"></video>');
+						let msgBB = msgText.querySelector("#BBTEMP");
+							msgBB.id = "";
+							msgBB.src = prs;
 					}
 					//[COLOR]
 					tagCount = (msgText.innerHTML.match(/(\[color=)/g) || []).length;
@@ -998,9 +1019,11 @@
 							}
 							prs+=msgText.innerHTML.charAt(j);
 						}
-						msgText.innerHTML = msgText.innerHTML.replace("[color="+prs+"]", "<span style='color: "+prs+"'>");
+						msgText.innerHTML = msgText.innerHTML.replace("[color="+prs+"]", '<span id="BBTEMP">').replace("[/color]", "</span>");
+						let msgBB = msgText.querySelector("#BBTEMP");
+							msgBB.id = "";
+							msgBB.style.color = prs;
 					}
-					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/color\])/g, "</span>");
 					//[ALIGN]
 					tagCount = (msgText.innerHTML.match(/(\[align=)/g) || []).length;
 					for(let i=0; i<tagCount; i++){
@@ -1011,9 +1034,11 @@
 							}
 							prs+=msgText.innerHTML.charAt(j);
 						}
-						msgText.innerHTML = msgText.innerHTML.replace("[align="+prs+"]", "<p align='"+prs+"'>");
+						msgText.innerHTML = msgText.innerHTML.replace("[align="+prs+"]", '<p id="BBTEMP">').replace("[/align]", "</p>");
+						let msgBB = msgText.querySelector("#BBTEMP");
+							msgBB.id = "";
+							msgBB.style.textAlign = prs;
 					}
-					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/align\])/g, "</p>");
 					//[URL=]
 					tagCount = (msgText.innerHTML.match(/(\[url=)/g) || []).length;
 					for(let i=0; i<tagCount; i++){
@@ -1024,7 +1049,10 @@
 							}
 							prs+=msgText.innerHTML.charAt(j);
 						}
-						msgText.innerHTML = msgText.innerHTML.replace("[url="+prs+"]", "<a href="+prs+">");
+						msgText.innerHTML = msgText.innerHTML.replace("[url="+prs+"]", '<a id="BBTEMP">').replace("[/url]", "</a>");
+						let msgBB = msgText.querySelector("#BBTEMP");
+							msgBB.id = "";
+							msgBB.href = prs;
 					}
 					//[URL]
 					var tagCount = (msgText.innerHTML.match(/(\[url\])/g) || []).length;
@@ -1038,9 +1066,12 @@
 							}
 							prs+=msgText.innerHTML.charAt(j);
 						}
-						msgText.innerHTML = msgText.innerHTML.replace("[url]"+prs+"[/url]", "<a href="+prs+">"+prs+"</a>");
+						msgText.innerHTML = msgText.innerHTML.replace("[url]"+prs+"[/url]", '<a id="BBTEMP"></a>');
+						let msgBB = msgText.querySelector("#BBTEMP");
+							msgBB.id = "";
+							msgBB.href = prs;
+							msgBB.innerText = prs;
 					}
-					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/url\])/g, "</a>");
 					//[SIZE=]
 					tagCount = (msgText.innerHTML.match(/(\[size=)/g) || []).length;
 					for(let i=0; i<tagCount; i++){
@@ -1054,9 +1085,11 @@
 						var iprs = prs;
 						if(parseInt(prs) > 200){iprs='200';}
 						if(parseInt(prs) < 0){iprs='0';}
-						msgText.innerHTML = msgText.innerHTML.replace("[size="+prs+"]", '<span style="font-size: '+iprs+'px">');
+						msgText.innerHTML = msgText.innerHTML.replace("[size="+prs+"]", '<span id="BBTEMP">').replace("[/size]", "</span>");
+						let msgBB = msgText.querySelector("#BBTEMP");
+							msgBB.id = "";
+							msgBB.style.fontSize = prs;
 					}
-					msgText.innerHTML = msgText.innerHTML.replace(/(\[\/size\])/g, "</span>");
 					//msgText.innerHTML = msgText.innerText;
 					//<button style='font-size: 48px; color: #fff; background: #000;' onclick='ClearDropDowns();'>▶</button>
 					msgText.innerHTML = msgText.innerHTML.replace(/(\[b\])/g, '<b>');
@@ -1078,10 +1111,8 @@
 				}
 				else{
 					msgText.innerText = msgText.innerHTML.replace(/(\[notag\])/g, "");
-					msgText.innerText = msgText.innerHTML.replace(/(\[\/notag\])/g, "");
 				}
 				msgText.innerHTML = msgText.innerHTML.replace(/(\[n\])/g, '<br>');
-				msgText.innerHTML = msgText.innerHTML.replace(/(\[\/n\])/g, '</>');
 				
 				msgSender.innerHTML = "<small>"+msgSender.innerText+"<small>";
 				msg.appendChild(msgSender);
@@ -1137,7 +1168,7 @@
 				var un = document.getElementById("un");
 				var error = document.getElementById("error");
 				if(ws.value == ""){
-					error.innerHTML = "WEBSOCKET URL BLANK";
+					error.innerText = "WEBSOCKET URL BLANK";
 					error.className = "";
 					error.style.opacity = 1;
 					setTimeout(function(){
@@ -1147,7 +1178,7 @@
 					return;
 				}
 				if(un.value == ""){
-					error.innerHTML = "USERNAME BLANK";
+					error.innerText = "USERNAME BLANK";
 					error.className = "";
 					error.style.opacity = 1;
 					setTimeout(function(){
@@ -1157,7 +1188,7 @@
 					return;
 				}
 				if(un.length > 32){
-					error.innerHTML = "USERNAME TOO LONG";
+					error.innerText = "USERNAME TOO LONG";
 					error.className = "";
 					error.style.opacity = 1;
 					setTimeout(function(){
@@ -1167,7 +1198,7 @@
 					return;
 				}
 				if(un.value == "client" || un.value == "server"){
-					error.innerHTML = "REGISTERED PROPERTY";
+					error.innerText = "REGISTERED PROPERTY";
 					error.className = "";
 					error.style.opacity = 1;
 					setTimeout(function(){
@@ -1177,7 +1208,7 @@
 					return;
 				}
 				if(un.value.includes('@')){
-					error.innerHTML = "ILLEGAL CHARACTER IN USERNAME";
+					error.innerText = "ILLEGAL CHARACTER IN USERNAME";
 					error.className = "";
 					error.style.opacity = 1;
 					setTimeout(function(){
@@ -1191,7 +1222,7 @@
 				websocket = new WebSocket(ws.value);
 				websocket.onerror = function(event){
 					console.log("Error event:", event);
-					error.innerHTML = "CONNECTION ERROR";
+					error.innerText = "CONNECTION ERROR";
 					error.className = "";
 					error.style.opacity = 1;
 					setTimeout(function(){
@@ -1544,6 +1575,19 @@
 				setCookie('enableTyping', '', -32);
 				location.reload();
 			}
+			function Resize(){
+				let mtl = document.getElementById("MenuTopLayout");
+				if (window.innerWidth < window.innerHeight){
+					mtl.style.top = "unset";
+					mtl.style.bottom = 0;
+					mtl.style.alignItems = "flex-end";
+				}
+				else{
+					mtl.style.top = 0;
+					mtl.style.bottom = "unset";
+					mtl.style.alignItems = "flex-start";
+				}
+			}
 			</script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
 		<link rel="stylesheet" type="text/css" href="prettify.css">
@@ -1551,7 +1595,7 @@
 		<link rel="shortcut icon" href="favicon.png">
 		<link rel="manifest" href="manifest.json" crossorigin="use-credentials">
 	</head>
-	<body onload = "Start()" onbeforeunload="End()" onmousemove="MouseMove(event)" ontouchmove="TouchMove(event)" ontouchend="dragOptions = false;" onmouseup="dragOptions = false;">
+	<body onload = "Start()" onbeforeunload="End()" onmousemove="MouseMove(event)" ontouchmove="TouchMove(event)" ontouchend="dragOptions = false;" onmouseup="dragOptions = false;" onresize="Resize()">
 		<audio id="audio_message">
 			<source src="message.mp3">
 		</audio>
@@ -1625,9 +1669,13 @@
 					<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
 					<div style="display:block; margin-left: auto; margin-right: auto; text-align: center;"><button id="cbHist" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableHistory=false; setCookie('enableHistory', 'false', 365);}else{this.innerText='✓'; enableHistory=true; setCookie('enableHistory', 'true', 365);}">✓</button><span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Request history</span></div>
 					<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</h3>
-					<p id="versionShow" style="position: absolute; top: 2px; left: 4px;"></p>
-					<p style="position: absolute; top: 1.1em; left: 4px; max-width:50%;">© SCP Technologies Ltd 1999-2022<br>SCP Foundation 1982-2022<br>Generate. Collect. Deliver.<br><span onclick='document.getElementById("ws").value = "@S_Messenger TG"'>Hic manebimus optime.</span></p>
-					<div style="display: block; position: absolute; top: 2px; right: 4px;"><button id="updatebutton" class=uibutton onclick="location.reload()">Refresh</button></div>
+					<DIV id="MenuTopLayout" style="display: flex; justify-content: space-between; position: absolute; top: 0; width: calc(100% - 8px); padding: 4px;">
+						<DIV style="float: left; max-width: 65%">
+							<p id="versionShow"></p>
+							<p>© SCP Technologies Ltd 1999-2022<br>SCP Foundation 1982-2022<br><span onclick='document.getElementById("ws").value = "@S_Messenger TG"'>Hic manebimus optime.</span></p>
+						</DIV>
+						<div style="display: block; float: right"><button id="updatebutton" class=uibutton onclick="location.reload()">Refresh</button></div>
+					</DIV>
 				</div>
 			</div>
 			<div id="chat" style="display: none; overflow-y: auto;">

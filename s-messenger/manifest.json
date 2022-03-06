@@ -2,7 +2,7 @@
 	"short_name": "S-Messenger",
 	"name": "S-Messenger",
 	"description": "S-Messenger is the best and most secure solution for on-site and site-to-site messaging.",
-	"version": "1.2.9",
+	"version": "1.3",
 	"icons": [
 	{
 		"src": "favicon.png",
@@ -13,6 +13,7 @@
 	"manifest_version": 2,
 	"default_locale": "en",
 	"start_url": "/scom/s-messenger/",
+	"scope": "/scom/s-messenger/",
 	"background_color": "#000",
 	"display": "standalone",
 	"theme_color": "#898989"
