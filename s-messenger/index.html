@@ -172,6 +172,10 @@
 			else{
 				var enableTyping = StringToBool(getCookie("enableTyping"));
 			}
+			//ENABLE FULLSCREEN
+			if(getCookie("enableFullscreen") == "true"){
+				document.documentElement.requestFullscreen();
+			}
 			//ENABLE NEWLINE REPLACE TAG
 			if(getCookie("enableNTag") == ""){
 				var enableNTag = true;
@@ -388,6 +392,16 @@
 						if (event.keyCode === 13) {
 							document.getElementById("connectbutton").click();
 						}
+					}
+				});
+				document.addEventListener('visibilitychange', function(){
+					if (document.visibilityState == "visible"){
+						navigator.serviceWorker.ready.then(function(registration) {
+							registration.getNotifications().then(function(notificationArray){
+								for (let ntf of notificationArray)
+									ntf.close();
+							});
+						});
 					}
 				});
 				input.addEventListener("keyup", function(event) {
@@ -1245,16 +1259,19 @@
 					servers.style.opacity = 0;
 					document.getElementById("chat").style.display = "block";
 					servers.style.display = "none";
-					Message('server', 'Successfully connected to a server. Online users:');
-					Message('server', username);
-					SendMessage('joincheck', username);
 					if(enableHistory)
 						SendMessage('history', username, '');
+					setTimeout(function(){
+						Message('server', 'Successfully connected to a server. Online users:');
+						Message('server', username);
+						SendMessage('joincheck', username);
+					}, 200);
 					//history.pushState({'page_id': 1, 'user_id': 5}, 'S-Messenger', 's-messenger.html');
 				};
 				websocket.onclose = function(event){
 					//SendMessage('message', 'server', username+' has left the session.');
 					console.log("Close event:", event);
+					document.getElementById("audio_disconnect").play();
 					Message('server', 'Disconnecting...');
 					setTimeout(function(){
 						ClearDropDowns();
@@ -1602,6 +1619,9 @@
 		<audio id="audio_notification">
 			<source src="message1.mp3">
 		</audio>
+		<audio id="audio_disconnect">
+			<source src="disconnect.mp3">
+		</audio>
 		<div id="windowBorder" class=windowBorder style="z-index: 8;">
 			<span style="padding:3px; padding-left: 6px; position: absolute; top: 0;">S-Messenger</span>
 			<img src="../close.png" class=windowButton onclick="Exit()" ondragstart="return false;">
@@ -1633,6 +1653,9 @@
 				<hr>
 				<big style="display: block; margin:4px; margin-bottom: 0px;">OTHER</big>
 				<hr>
+				<button id="cbFS" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; document.exitFullscreen(); setCookie('enableFullscreen', 'false', 365);}else{this.innerText='✓'; document.documentElement.requestFullscreen(); setCookie('enableFullscreen', 'true', 365);}"></button>
+				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Fullscreen</span>
+				<br>
 				<button id="cbNL" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableNTag=false; setCookie('enableNTag', 'false', 365);}else{this.innerText='✓'; enableNTag=true; setCookie('enableNTag', 'true', 365);}">✓</button>
 				<span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Replace newline with [n] on paste</span>
 				<br>
