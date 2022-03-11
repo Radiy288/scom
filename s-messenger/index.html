@@ -1132,7 +1132,8 @@
 				msg.appendChild(msgSender);
 				msgBody.appendChild(msg);
 				document.getElementById("chatbox").appendChild(msgBody);
-				msg.scrollIntoView();
+				if(sender === 'client')
+					msg.scrollIntoView();
 				PR.prettyPrint();
 			}
 			function ClearDropDowns(){
@@ -1606,7 +1607,7 @@
 				}
 			}
 			</script>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
+		<!-- src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></--> 
 		<link rel="stylesheet" type="text/css" href="prettify.css">
 		<script type="text/javascript" src="prettify.js"></script>
 		<link rel="shortcut icon" href="favicon.png">
