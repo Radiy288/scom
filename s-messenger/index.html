@@ -982,7 +982,7 @@
 							}
 							prs+=msgText.innerHTML.charAt(j);
 						}
-						msgText.innerHTML = msgText.innerHTML.replace("[img]"+prs+"[/img]", '<img id="BBTEMP">');
+						msgText.innerHTML = msgText.innerHTML.replace("[img]"+prs+"[/img]", '<img style="max-width:100%" id="BBTEMP">');
 						let msgBB = msgText.querySelector("#BBTEMP");
 							msgBB.id = "";
 							msgBB.src = prs;
