@@ -1132,8 +1132,10 @@
 				msg.appendChild(msgSender);
 				msgBody.appendChild(msg);
 				let chatbox = document.getElementById("chatbox");
+				let shouldScroll = ((chatbox.scrollHeight - chatbox.scrollTop - 6) <= chatbox.clientHeight);
 				chatbox.appendChild(msgBody);
-				if((sender === 'client') || ((chatbox.scrollHeight - chatbox.scrollTop - 6) <= chatbox.clientHeight))
+				console.log(shouldScroll);
+				if((sender === 'client') || shouldScroll)
 					msg.scrollIntoView();
 				PR.prettyPrint();
 			}
