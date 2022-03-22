@@ -1131,8 +1131,9 @@
 				msgSender.innerHTML = "<small>"+msgSender.innerText+"<small>";
 				msg.appendChild(msgSender);
 				msgBody.appendChild(msg);
-				document.getElementById("chatbox").appendChild(msgBody);
-				if(sender === 'client')
+				let chatbox = document.getElementById("chatbox");
+				chatbox.appendChild(msgBody);
+				if((sender === 'client') || ((chatbox.scrollHeight - chatbox.scrollTop - 6) <= chatbox.clientHeight))
 					msg.scrollIntoView();
 				PR.prettyPrint();
 			}
