@@ -202,7 +202,7 @@
 			var logType = true;
 			var peopleTyping = [];
 			var typer;
-			var websocket;
+			var websocket, peer, p2p;
 			var connected = false;
 			var lastElement;
 			var suggestcur = -1;
@@ -342,6 +342,19 @@
 			}
 			
 			function Start(){
+				peer = new Peer();
+				peer.on('open', function(id) {
+					console.log("My peer ID is: " + id);
+					document.getElementById("uuid").innerText = id;
+				});
+				peer.on('connection', function(conn) {
+					p2p = conn;
+					p2p.on('open', function(){
+						document.getElementById("ws").value = p2p.peer;
+						ServerOpen();
+						Connect();
+					});
+				});
 				if(inIframe()){
 					document.getElementById("windowBorder").style.display = "none";
 					document.getElementById("windowContent").style.height = "100%";
@@ -781,7 +794,10 @@
 						time: time,
 						adressant: msgadressant
 					};
-				websocket.send(JSON.stringify(msg));
+				if(websocket)
+					websocket.send(JSON.stringify(msg));
+				else
+					p2p.send(JSON.stringify(msg));
 			}
 			function MessageImage(sender, src, time){
 				var msgBody = document.createElement("div");
@@ -1181,6 +1197,156 @@
 				}
 				return result;
 			}
+			
+			function ServerError(event){
+				console.log("Error event:", event);
+				error.innerText = "CONNECTION ERROR";
+				error.className = "";
+				error.style.opacity = 1;
+				setTimeout(function(){
+					error.className = "fade";
+					error.style.opacity = 0;
+				}, 10);
+				if(websocket)
+					websocket.close();
+				else
+					p2p.close();
+				document.getElementById("connectbutton").disabled = false;
+				return;
+			};
+			function ServerOpen(event){
+				console.log("OPENING");
+				server = document.getElementById("ws").value;
+				setCookie('server', server, 365);
+				setCookie('username', username, 365);
+				SendMessage('message', 'server', username+' has joined the session.');
+				var servers = document.getElementById("servers");
+				connected = true;
+				servers.className = "fade-quick";
+				servers.style.opacity = 0;
+				document.getElementById("chat").style.display = "block";
+				servers.style.display = "none";
+				if(enableHistory)
+					SendMessage('history', username, '');
+				setTimeout(function(){
+					Message('server', 'Successfully connected to a server. Online users:');
+					Message('server', username);
+					SendMessage('joincheck', username);
+				}, 200);
+				//history.pushState({'page_id': 1, 'user_id': 5}, 'S-Messenger', 's-messenger.html');
+			};
+			function ServerClose(event){
+				//SendMessage('message', 'server', username+' has left the session.');
+				console.log("Close event:", event);
+				document.getElementById("audio_disconnect").play();
+				Message('server', 'Disconnecting...');
+				setTimeout(function(){
+					ClearDropDowns();
+					var lastpin = document.getElementById('pin');
+					if(lastpin != null){
+						lastpin.parentNode.removeChild(lastpin);
+					}
+					var msgs = document.getElementsByClassName("chatMessage");
+					while (msgs[0]) {
+						msgs[0].parentNode.removeChild(msgs[0]);
+					}
+					console.log("CLOSING");
+					var servers = document.getElementById("servers");
+					document.getElementById("chat").style.display = "none";
+					servers.style.display = "block";
+					servers.style.opacity = 1;
+					document.getElementById("connectbutton").disabled = false;
+				}, 1000);
+			};
+			function ServerMessage(event){
+				var msg = JSON.parse((typeof event == 'string') ? event : event.data);
+				switch (msg.id){
+					case 'message':
+						Message(msg.sender, msg.text, msg.time);
+						Notify(msg.sender, msg.text);
+						break;
+					case 'kick':
+						if(msg.sender == 'server'){
+							if(msg.text == username){
+								SendMessage('message', 'server', username+' has been kicked from the session.');
+								websocket.close();
+							}
+						}
+						break;
+					case 'end':
+						if(msg.sender == 'server'){
+							websocket.close();
+						}
+						break;
+					case 'check':
+						Message('server', username, '0');
+						SendMessage('message', 'server', username);
+						break;
+					case 'joincheck':
+						SendMessage('private', 'server', username, msg.sender);
+						break;
+						
+					case 'private':
+						if(msg.adressant == username){
+							Message(msg.sender, msg.text, msg.time);
+							Notify(msg.sender, msg.text);
+							if(document.hasFocus()){
+								if(enableSound){
+									document.getElementById("audio_message").play();
+								}
+							}
+							else{
+								if(enableSound){
+									document.getElementById("audio_notification").play();
+								}
+								if(enableNotify){
+									var options = {
+										body: msg.text,
+										icon: "favicon.png"
+									}
+									var msgNotify = new Notification(msg.sender, options);
+								}
+							}
+						}
+						break;
+						
+					case 'pin':
+						PinMessage(msg.text);
+						break;
+					case 'unpin':
+						var lastpin = document.getElementById('pin');
+						if(lastpin != null){
+							lastpin.parentNode.removeChild(lastpin);
+						}
+						break;
+					case 'pinrequest':
+						SendMessage('pin', 'server', document.getElementById("pin").innerText);
+						break;
+						
+					case 'update':
+						location.reload();
+						break;
+						
+					case 'typing':
+						window.clearTimeout(peopleTypingTimeout);
+						typer.style.display = "block";
+						if (!peopleTyping.includes(msg.sender)){
+							peopleTyping.push(msg.sender);
+							typer.innerText = peopleTyping[0]+' is typing...';
+							if(peopleTyping.length>1){
+								typer.innerText = peopleTyping.join(", ")+' are typing...';
+							}
+							if(peopleTyping.length>4){
+								typer.innerText = 'Several people are typing...';
+							}
+						}
+						peopleTypingTimeout = setTimeout(function(){
+							WaitForTimeout(msg.sender);
+						}, 2000);
+						break;
+				}
+			}
+			
 			function Connect(){
 				var ws = document.getElementById("ws");
 				var un = document.getElementById("un");
@@ -1237,151 +1403,23 @@
 				}
 				document.getElementById("connectbutton").disabled = true;
 				username = un.value;
-				websocket = new WebSocket(ws.value);
-				websocket.onerror = function(event){
-					console.log("Error event:", event);
-					error.innerText = "CONNECTION ERROR";
-					error.className = "";
-					error.style.opacity = 1;
-					setTimeout(function(){
-						error.className = "fade";
-						error.style.opacity = 0;
-					}, 10);
-					websocket.close();
-					document.getElementById("connectbutton").disabled = false;
-					return;
-				};
-				websocket.onopen = function(event){
-					console.log("OPENING");
-					server = document.getElementById("ws").value;
-					setCookie('server', server, 365);
-					setCookie('username', username, 365);
-					SendMessage('message', 'server', username+' has joined the session.');
-					var servers = document.getElementById("servers");
-					connected = true;
-					servers.className = "fade-quick";
-					servers.style.opacity = 0;
-					document.getElementById("chat").style.display = "block";
-					servers.style.display = "none";
-					if(enableHistory)
-						SendMessage('history', username, '');
-					setTimeout(function(){
-						Message('server', 'Successfully connected to a server. Online users:');
-						Message('server', username);
-						SendMessage('joincheck', username);
-					}, 200);
-					//history.pushState({'page_id': 1, 'user_id': 5}, 'S-Messenger', 's-messenger.html');
-				};
-				websocket.onclose = function(event){
-					//SendMessage('message', 'server', username+' has left the session.');
-					console.log("Close event:", event);
-					document.getElementById("audio_disconnect").play();
-					Message('server', 'Disconnecting...');
-					setTimeout(function(){
-						ClearDropDowns();
-						var lastpin = document.getElementById('pin');
-						if(lastpin != null){
-							lastpin.parentNode.removeChild(lastpin);
-						}
-						var msgs = document.getElementsByClassName("chatMessage");
-						while (msgs[0]) {
-							msgs[0].parentNode.removeChild(msgs[0]);
-						}
-						console.log("CLOSING");
-						var servers = document.getElementById("servers");
-						document.getElementById("chat").style.display = "none";
-						servers.style.display = "block";
-						servers.style.opacity = 1;
-						document.getElementById("connectbutton").disabled = false;
-					}, 1000);
-				};
-				websocket.onmessage = function(event) {
-					var msg = JSON.parse(event.data);
-					switch (msg.id){
-						case 'message':
-							Message(msg.sender, msg.text, msg.time);
-							Notify(msg.sender, msg.text);
-							break;
-						case 'kick':
-							if(msg.sender == 'server'){
-								if(msg.text == username){
-									SendMessage('message', 'server', username+' has been kicked from the session.');
-									websocket.close();
-								}
-							}
-							break;
-						case 'end':
-							if(msg.sender == 'server'){
-								websocket.close();
-							}
-							break;
-						case 'check':
-							Message('server', username, '0');
-							SendMessage('message', 'server', username);
-							break;
-						case 'joincheck':
-							SendMessage('private', 'server', username, msg.sender);
-							break;
-							
-						case 'private':
-							if(msg.adressant == username){
-								Message(msg.sender, msg.text, msg.time);
-								Notify(msg.sender, msg.text);
-								if(document.hasFocus()){
-									if(enableSound){
-										document.getElementById("audio_message").play();
-									}
-								}
-								else{
-									if(enableSound){
-										document.getElementById("audio_notification").play();
-									}
-									if(enableNotify){
-										var options = {
-											body: msg.text,
-											icon: "favicon.png"
-										}
-										var msgNotify = new Notification(msg.sender, options);
-									}
-								}
-							}
-							break;
-							
-						case 'pin':
-							PinMessage(msg.text);
-							break;
-						case 'unpin':
-							var lastpin = document.getElementById('pin');
-							if(lastpin != null){
-								lastpin.parentNode.removeChild(lastpin);
-							}
-							break;
-						case 'pinrequest':
-							SendMessage('pin', 'server', document.getElementById("pin").innerText);
-							break;
-							
-						case 'update':
-							location.reload();
-							break;
-							
-						case 'typing':
-							window.clearTimeout(peopleTypingTimeout);
-							typer.style.display = "block";
-							if (!peopleTyping.includes(msg.sender)){
-								peopleTyping.push(msg.sender);
-								typer.innerText = peopleTyping[0]+' is typing...';
-								if(peopleTyping.length>1){
-									typer.innerText = peopleTyping.join(", ")+' are typing...';
-								}
-								if(peopleTyping.length>4){
-									typer.innerText = 'Several people are typing...';
-								}
-							}
-							peopleTypingTimeout = setTimeout(function(){
-								WaitForTimeout(msg.sender);
-							}, 2000);
-							break;
-					}
+				
+				
+				if (ws.value.includes('ws')){
+					websocket = new WebSocket(ws.value);
+					websocket.onerror = ServerError;
+					websocket.onopen = ServerOpen;
+					websocket.onclose = ServerClose;
+					websocket.onmessage = ServerMessage;
+				}
+				else{
+					if(!p2p)
+						p2p = peer.connect(ws.value);
+					peer.on('error', ServerError);
+					p2p.on('error', ServerError);
+					p2p.on('open', ServerOpen);
+					p2p.on('close', ServerClose);
+					p2p.on('data', ServerMessage);
 				}
 			}
 			function WaitForTimeout(senders) {
@@ -1399,7 +1437,10 @@
 			function End() {
 				if (connected){
 					SendMessage('message', 'server', username+' has left the session.');
-					websocket.close();
+					if(websocket)
+						websocket.close();
+					else
+						p2p.close();
 				}
 			}
 			function CheckCommand(){
@@ -1609,7 +1650,8 @@
 					mtl.style.alignItems = "flex-start";
 				}
 			}
-			</script>
+		</script>
+		<script src="./peerjs.min.js"></script>
 		<!-- src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></--> 
 		<link rel="stylesheet" type="text/css" href="prettify.css">
 		<script type="text/javascript" src="prettify.js"></script>
@@ -1687,14 +1729,16 @@
 				</div>
 				<div id="serverInput" style="opacity: 0; transition: opacity 0.6s linear;">
 					<h1 align=CENTER>S-Messenger</h1>
-					<p align=CENTER>Websocket URL</p>
+					<p align=CENTER>Websocket URL / Peer ID</p>
 					<div style="margin-bottom:8px; margin-left:auto; margin-right:auto; width: 75%;">
 						<input id="ws" class=inputbox style="display:inline-block; margin-right: 2px; width: calc(100% - 2em - 2px);" placeholder="Enter websocket URL"><div style="display: inline-block; float: right;"><button id="updatebutton" class=uibutton style="width: 2em;" onclick='document.getElementById("ws").value = defaultServer;'>D</button></div>
 					</div>
 					<p align=CENTER>Username</p>
 					<input id="un" class=inputbox style="display:block; margin-left: auto; margin-right: auto; width: 50%; margin-bottom:8px;" placeholder="Enter username">
 					<button id="connectbutton" class=uibutton style="display:block; margin-left: auto; margin-right: auto;" onclick="Connect()">Connect</button>
+					<button id="callbutton" class=uibutton style="display:none; margin-left: auto; margin-right: auto;" onclick="Call()">Call</button>
 					<div style="display:block; margin-left: auto; margin-right: auto; text-align: center;"><button id="cbHist" class="uibutton uicheckbox" onclick="if(this.innerText == '✓'){this.innerText=''; enableHistory=false; setCookie('enableHistory', 'false', 365);}else{this.innerText='✓'; enableHistory=true; setCookie('enableHistory', 'true', 365);}">✓</button><span style="display: inline-block; margin:4px; margin-left: 28px; margin-bottom: 3px;">Request history</span></div>
+					<p id="uuid" style="color: #696969; display:block; margin-left: auto; margin-right: auto; text-align: center;" onclick="var txtarea = document.createElement('textarea'); txtarea.value = document.getElementById('uuid').innerText; document.body.appendChild(txtarea); txtarea.select(); document.execCommand('copy'); txtarea.parentNode.removeChild(txtarea);"></p>
 					<h3 id="error" align=center style="color: red; opacity: 0;">ERROR</h3>
 					<DIV id="MenuTopLayout" style="display: flex; justify-content: space-between; position: absolute; top: 0; width: calc(100% - 8px); padding: 4px;">
 						<DIV style="float: left; max-width: 65%">
